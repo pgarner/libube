@@ -50,6 +50,7 @@ public:
     var(double iData);
     var(const char* iData);
     var(int iSize, const char* iData);
+    var(int iSize, char* const* iData);
 
     // Operators
     bool operator ==(const var& iVar) const;
@@ -61,11 +62,12 @@ public:
     char* operator &();
 
     // Methods
+    bool defined() const;
+    int size() const;
     template<class T> T cast();
     bool heap(int iSize = -1) const;
     void set(int iIndex, var iVar);
     var at(int iIndex) const;
-    int size() const;
     var pop();
     var& push(var iVar);
     var& insert(int iIndex, var iVar);
@@ -73,6 +75,7 @@ public:
     var& unshift(var iVar) { return insert(0, iVar); };
     var shift() { return remove(0); };
     var sort() const;
+    var index(var iVar) const;
 
     // Allow stream output
     friend std::ostream& operator <<(
@@ -84,10 +87,10 @@ public:
     var cos() const;
 
     // string.cpp
-    bool isString() const;
+    var& getline(std::istream& iStream);
     var split(const char* iStr, int iMax=0) const;
     var join(const char* iStr) const;
-
+    
 private:
 
     union dataType {

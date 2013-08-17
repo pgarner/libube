@@ -13,6 +13,36 @@
 #include "var.h"
 
 /**
+ * Read a line from an istream
+ */
+var& var::getline(std::istream& iStream)
+{
+    resize(0);
+    mType = TYPE_CHAR;
+
+    // sgetc()  return this character
+    // sbumpc() return this character & advance
+    // snextc() advance & return next character
+    std::streambuf* buf = iStream.rdbuf();
+    if (buf->sgetc() == EOF)
+    {
+        // The stream is finished; return undef
+        mSize = 0;
+        return *this;
+    }
+
+    while (buf->sgetc() != EOF)
+    {
+        char c = buf->sbumpc();
+        if (c == '\n') // Unix specific!
+            break;
+        push(c);
+    }
+    push('\0');
+    return *this;
+}
+
+/**
  * A method modelled on ruby's split.
  *
  * ...which is of course modelled on perl's split.

@@ -150,6 +150,16 @@ var::var(const char* iData)
     // It's all in the init
 }
 
+var::var(int iSize, char* const* iData)
+{
+    assert(iSize >= 0);
+    VDEBUG(std::cout << "Ctor: " << iData[0] << std::endl);
+    mType = TYPE_VAR;
+    mSize = 0;
+    for (int i=0; i<iSize; i++)
+        push(iData[i]);
+}
+
 bool var::operator ==(const var& iVar) const
 {
     return !(*this != iVar);
@@ -227,6 +237,11 @@ char* var::operator &()
     if (heap())
         return mData.hp->mData.cp;
     return (char*)&mData;
+}
+
+bool var::defined() const
+{
+    return (mSize > 0);
 }
 
 int var::size() const
@@ -710,6 +725,15 @@ var var::sort() const
         int p = r.binary(at(i));
         r.insert(p, at(i));
     }
+    return r;
+}
+
+var var::index(var iVar) const
+{
+    var r; // Undefined
+    for (int i=0; i<mSize; i++)
+        if (at(i) == iVar)
+            r = i;
     return r;
 }
 

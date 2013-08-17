@@ -1,5 +1,7 @@
 #include <cassert>
 #include <var>
+#include <map>
+#include <fstream>
 
 using namespace std;
 
@@ -17,9 +19,7 @@ void useString(var s)
 
 int main(int argc, char** argv)
 {
-    var arg;
-    for (int i=0; i<argc; i++)
-        arg.push(argv[i]);
+    var arg(argc, argv);
     cout << "Arg: " << arg << endl;
     cout << "Arg[0]: " << arg[0] << endl;
     cout << "Arg[0][0]: " << arg[0][0] << endl;
@@ -28,6 +28,11 @@ int main(int argc, char** argv)
         cout << "It's a dot" << endl;
     else
         cout << "It's not a dot" << endl;
+
+    if (arg.index("-f").defined())
+        cout << "There's a -f" << endl;
+    else
+        cout << "There's no -f" << endl;
 
     var s, w, x, y, z, dummy;
     w = 'w';
@@ -84,6 +89,22 @@ int main(int argc, char** argv)
     cout << "Joined: " << arg.join("-") << endl;
 
     cout << arg.sort() << endl;
+
+    // Check that we can act as a std::map key (just needs operator<)
+    std::map<var, int> map;
+    map["One"] = 1;
+    map["Two"] = 2;
+    map["Three"] = 3;
+    cout << map.count("Zero") << endl;
+    cout << map.count("One") << endl;
+
+    // Read a small file
+    var f;
+    std::ifstream is("tests.txt", std::ifstream::in);
+    if (is.fail())
+        std::cout << "Open failed" << std::endl;
+    while (f.getline(is).defined())
+        cout << f << endl;
 
     return 0;
 }
