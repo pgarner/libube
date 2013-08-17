@@ -12,13 +12,6 @@
 
 #include "var.h"
 
-bool var::isString() const
-{
-    if ( (mType != TYPE_CHAR) || (mSize == 0) || (mSize == 1) )
-        return false;
-    return true;
-}
-
 /**
  * A method modelled on ruby's split.
  *
@@ -27,12 +20,10 @@ bool var::isString() const
  */
 var var::split(const char* iStr, int iMax) const
 {
-    if (!isString())
-        throw std::runtime_error("var::split() requires string");
-
     var r;
     int strLen = std::strlen(iStr);
-    const char* source = mData.hp->mData.cp;
+    var s = *this;
+    const char* source = s.cast<char*>();
     const char* p;
     if (iMax != 1)
         while ( (p = std::strstr(source, iStr)) )

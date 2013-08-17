@@ -57,11 +57,11 @@ public:
     bool operator <(const var& iVar) const;
     var& operator +=(const var& iVar);
     var& operator -=(const var& iVar);
-    var operator [](int iIndex) const { return at(iIndex); };
+    const var operator [](int iIndex) const { return at(iIndex); };
+    char* operator &();
 
     // Methods
-    template<class T> T cast() const;
-    template<class T> T* ptr(int iIndex=0);
+    template<class T> T cast();
     bool heap(int iSize = -1) const;
     void set(int iIndex, var iVar);
     var at(int iIndex) const;
@@ -72,6 +72,7 @@ public:
     var remove(int iIndex);
     var& unshift(var iVar) { return insert(0, iVar); };
     var shift() { return remove(0); };
+    var sort() const;
 
     // Allow stream output
     friend std::ostream& operator <<(
@@ -105,10 +106,12 @@ private:
     dataEnum mType; ///< The data type
 
     // Methods
+    template<class T> T& ref(int iIndex);
     void resize(int iSize);
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf();
+    int binary(var iData) const;
 };
 
 std::ostream& operator <<(std::ostream& iStream, const var& iVar);

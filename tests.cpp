@@ -1,3 +1,4 @@
+#include <cassert>
 #include <var>
 
 using namespace std;
@@ -75,12 +76,14 @@ int main(int argc, char** argv)
     cout << "a is: " << a << endl;
     arg.insert(1, "insert");
     cout << "arg is: " << arg << endl;
-    //arg.remove(0);
-    //cout << "arg is: " << arg << endl;
-    //var as = arg.shift();
-    //cout << "arg is: " << arg << " shifted: " << as << endl;
+    arg.remove(0);
+    cout << "arg is: " << arg << endl;
+    var as = arg.shift();
+    cout << "arg is: " << arg << " shifted: " << as << endl;
     cout << "Joining: " << arg << endl;
     cout << "Joined: " << arg.join("-") << endl;
+
+    cout << arg.sort() << endl;
 
     return 0;
 }

@@ -9,31 +9,16 @@
 
 #include <cassert>
 #include <cstring>
-#include <cstdlib>
 #include <stdexcept>
 
 #include "var.h"
 
 #ifdef VARBOSE
+# include <cstdlib>
 # define VDEBUG(a) a
 #else
 # define VDEBUG(a)
 #endif
-
-int sizeOf(var::dataEnum iType)
-{
-    switch (iType)
-    {
-    case var::TYPE_VAR: return sizeof(var);
-    case var::TYPE_CHAR: return sizeof(char);
-    case var::TYPE_INT: return sizeof(int);
-    case var::TYPE_LONG: return sizeof(long);
-    case var::TYPE_FLOAT: return sizeof(float);
-    case var::TYPE_DOUBLE: return sizeof(double);
-    default:
-        throw std::runtime_error("sizeOf(): Unknown type");
-    }
-}
 
 var::var()
 {
@@ -222,10 +207,26 @@ bool var::operator <(const var& iVar) const
         default:
             throw std::runtime_error("operator <(): Unknown type");
         }
+    if ( (mSize > 1) && (mType == TYPE_CHAR) &&
+         (iVar.mSize > 1) && (iVar.mType == TYPE_CHAR) )
+        return (std::strcmp(mData.hp->mData.cp, iVar.mData.hp->mData.cp) < 0);
     for (int i=0; i<std::min(mSize, iVar.mSize); i++)
         if (at(i) < iVar.at(i))
             return true;
     return false;
+}
+
+/**
+ * Get a pointer to the actual storage
+ *
+ * Returns char* as that's what is often needed; must be cast
+ * otherwise.
+ */
+char* var::operator &()
+{
+    if (heap())
+        return mData.hp->mData.cp;
+    return (char*)&mData;
 }
 
 int var::size() const
@@ -239,76 +240,136 @@ int var::size() const
 /**
  * Cast to given type
  *
- * Functions as var to type conversion.  It's the opposite of the
- * initialisation constructors; C++ doesn't allow overloading on
- * return type, so the return type must be specified.  It may or may
- * not be a cast, depending on the actual storage.
+ * It may or may not be a cast, depending on the actual storage.
+ * Return type is always var because the cast may have to allocate
+ * memory.
  */
 template<class T>
-T var::cast() const
+T var::cast()
 {
     if (heap())
     {
         if (mType == TYPE_CHAR)
-            return static_cast<T>(mData.hp->strtold());
+            *this = static_cast<T>(mData.hp->strtold());
         else
             throw std::runtime_error("cast(): Cannot cast array");
+        // and drop though...
     }
+
+    T r;
     switch (mType)
     {
     case TYPE_CHAR:
-        return static_cast<T>(mData.c);
+        *this = r = static_cast<T>(mData.c);
+        return r;
     case TYPE_INT:
-        return static_cast<T>(mData.i);
+        *this = r = static_cast<T>(mData.i);
+        return r;
     case TYPE_LONG:
-        return static_cast<T>(mData.l);
+        *this = r = static_cast<T>(mData.l);
+        return r;
     case TYPE_FLOAT:
-        return static_cast<T>(mData.f);
+        *this = r = static_cast<T>(mData.f);
+        return r;
     case TYPE_DOUBLE:
-        return static_cast<T>(mData.d);
+        *this = r = static_cast<T>(mData.d);
+        return r;
     default:
         throw std::runtime_error("cast(): Unknown type");
     }
+
+    // Should not get here
+    return r;
 }
 
-// Get the raw pointer
-template<> var* var::ptr<var>(int iIndex) {
-    return &mData.hp->mData.vp[iIndex];
-}
-template<> char* var::ptr<char>(int iIndex) {
-    return mSize == 1 ? &mData.c : &mData.hp->mData.cp[iIndex];
-}
-template<> int* var::ptr<int>(int iIndex) {
-    return mSize == 1 ? &mData.i : &mData.hp->mData.ip[iIndex];
-}
-template<> long* var::ptr<long>(int iIndex) {
-    return mSize == 1 ? &mData.l : &mData.hp->mData.lp[iIndex];
-}
-template<> float* var::ptr<float>(int iIndex) {
-    return mSize == 1 ? &mData.f : &mData.hp->mData.fp[iIndex];
-}
-template<> double* var::ptr<double>(int iIndex) {
-    return mSize == 1 ? &mData.d : &mData.hp->mData.dp[iIndex];
-}
-
-var& var::operator +=(const var& iVar)
+/**
+ * Cast to char* is a specialisation
+ */
+template<>
+char* var::cast<char*>()
 {
+    if (heap())
+    {
+        if (mType == TYPE_CHAR)
+            return mData.hp->mData.cp;
+        else
+            throw std::runtime_error("cast<char*>(): Cannot cast array (yet)");
+    }
+
+    const size_t s = 128;
+    char tmp[s];
+    int n;
     switch (mType)
     {
     case TYPE_CHAR:
-        mData.c += iVar.cast<char>();
+        n = snprintf(tmp, s, "%c", mData.c);
         break;
     case TYPE_INT:
-        mData.i += iVar.cast<int>();
+        n = snprintf(tmp, s, "%d", mData.i);
         break;
     case TYPE_LONG:
-        mData.l += iVar.cast<long>();
+        n = snprintf(tmp, s, "%ld", mData.l);
         break;
     case TYPE_FLOAT:
-        mData.f += iVar.cast<float>();
+        n = snprintf(tmp, s, "%f", mData.f);
         break;
     case TYPE_DOUBLE:
-        mData.d += iVar.cast<double>();
+        n = snprintf(tmp, s, "%f", mData.d);
+        break;
+    default:
+        throw std::runtime_error("cast<char*>(): Unknown type");
+    }
+
+    *this = var(n+1, tmp);
+    return mData.hp->mData.cp;
+}
+
+/*
+ * These can be used to get the actual storage in order to convert
+ * back from var to the builtin type. Functions as var to type
+ * conversion.  It's the opposite of the initialisation constructors;
+ * C++ doesn't allow overloading on return type, so the return type
+ * must be specified.
+ */
+template<> var& var::ref<var>(int iIndex) {
+    return mData.hp->mData.vp[iIndex];
+}
+template<> char& var::ref<char>(int iIndex) {
+    return mSize == 1 ? mData.c : mData.hp->mData.cp[iIndex];
+}
+template<> int& var::ref<int>(int iIndex) {
+    return mSize == 1 ? mData.i : mData.hp->mData.ip[iIndex];
+}
+template<> long& var::ref<long>(int iIndex) {
+    return mSize == 1 ? mData.l : mData.hp->mData.lp[iIndex];
+}
+template<> float& var::ref<float>(int iIndex) {
+    return mSize == 1 ? mData.f : mData.hp->mData.fp[iIndex];
+}
+template<> double& var::ref<double>(int iIndex) {
+    return mSize == 1 ? mData.d : mData.hp->mData.dp[iIndex];
+}
+
+// Could pass by value and same the tmp
+var& var::operator +=(const var& iVar)
+{
+    var tmp = iVar;
+    switch (mType)
+    {
+    case TYPE_CHAR:
+        mData.c += tmp.cast<char>();
+        break;
+    case TYPE_INT:
+        mData.i += tmp.cast<int>();
+        break;
+    case TYPE_LONG:
+        mData.l += tmp.cast<long>();
+        break;
+    case TYPE_FLOAT:
+        mData.f += tmp.cast<float>();
+        break;
+    case TYPE_DOUBLE:
+        mData.d += tmp.cast<double>();
         break;
     default:
         throw std::runtime_error("operator +=(): Unknown type");
@@ -319,22 +380,23 @@ var& var::operator +=(const var& iVar)
 
 var& var::operator -=(const var& iVar)
 {
+    var tmp = iVar;
     switch (mType)
     {
     case TYPE_CHAR:
-        mData.c -= iVar.cast<char>();
+        mData.c -= tmp.cast<char>();
         break;
     case TYPE_INT:
-        mData.i -= iVar.cast<int>();
+        mData.i -= tmp.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l -= iVar.cast<long>();
+        mData.l -= tmp.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f -= iVar.cast<float>();
+        mData.f -= tmp.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d -= iVar.cast<double>();
+        mData.d -= tmp.cast<double>();
         break;
     default:
         throw std::runtime_error("operator -=(): Unknown type");
@@ -491,29 +553,73 @@ void var::set(int iIndex, var iVar)
     if (iIndex >= mSize)
         resize(iIndex+1);
 
+    var tmp = iVar;
     switch (mType)
     {
     case TYPE_VAR:
-        *ptr<var>(iIndex) = iVar;
+        ref<var>(iIndex) = iVar;
         break;
     case TYPE_CHAR:
-        *ptr<char>(iIndex) = iVar.cast<char>();
+        ref<char>(iIndex) = tmp.cast<char>();
         break;
     case TYPE_INT:
-        *ptr<int>(iIndex) = iVar.cast<int>();
+        ref<int>(iIndex) = tmp.cast<int>();
         break;
     case TYPE_LONG:
-        *ptr<long>(iIndex) = iVar.cast<long>();
+        ref<long>(iIndex) = tmp.cast<long>();
         break;
     case TYPE_FLOAT:
-        *ptr<float>(iIndex) = iVar.cast<float>();
+        ref<float>(iIndex) = tmp.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *ptr<double>(iIndex) = iVar.cast<double>();
+        ref<double>(iIndex) = tmp.cast<double>();
         break;
     default:
         throw std::runtime_error("set(): Unknown type");
     }    
+}
+
+var var::at(int iIndex) const
+{
+    if (mSize == 0)
+        throw std::runtime_error("at(): uninitialised");
+    if ( (iIndex < 0) || (iIndex >= mSize) )
+        throw std::range_error("at(): index out of bounds");
+
+    if (mType == TYPE_VAR)
+        return mData.hp->mData.vp[iIndex];
+
+    if (!heap())
+        return *this;
+
+    // It's an array; index it.  at() is const, so we can't use
+    // ref<type>(iIndex)
+    var r;
+    r.mSize = 1;
+    r.mType = mType;
+    switch (mType)
+    {
+    case TYPE_CHAR:
+        r.mData.c = mData.hp->mData.cp[iIndex];
+        break;
+    case TYPE_INT:
+        r.mData.i = mData.hp->mData.ip[iIndex];
+        break;
+    case TYPE_LONG:
+        r.mData.l = mData.hp->mData.lp[iIndex];
+        break;
+    case TYPE_FLOAT:
+        r.mData.f = mData.hp->mData.fp[iIndex];
+        break;
+    case TYPE_DOUBLE:
+        r.mData.d = mData.hp->mData.dp[iIndex];
+        break;
+    default:
+        throw std::runtime_error("at(): Unknown type");
+    }
+
+    // Done
+    return r;
 }
 
 var& var::push(var iVar)
@@ -566,7 +672,6 @@ var& var::insert(int iIndex, var iVar)
         for (int i=mSize-1; i>iIndex; i--)
         {
             set(i, at(i-1));
-            //at(i-1).detach();
         }
         set(iIndex, iVar);
     }
@@ -596,19 +701,17 @@ var var::remove(int iIndex)
     return r;
 }
 
-#if 0
-var var::shift()
+var var::sort() const
 {
-    // This is a stop-gap.  Should implement insert() and remove()
-    var r = at(0);
-    if (heap())
+    var r;
+    r.mType = mType;
+    for (int i=0; i<size(); i++)
     {
-        memmove(mData.cp, mData.cp+sizeOf(), sizeOf()*(mSize-1));
-        mSize -= 1;
+        int p = r.binary(at(i));
+        r.insert(p, at(i));
     }
     return r;
 }
-#endif
 
 /**
  * True if this var uses a heap allocation.
@@ -621,227 +724,23 @@ bool var::heap(int iSize) const
     return false;
 }
 
-var var::at(int iIndex) const
+/**
+ * Binary search
+ */
+int var::binary(var iData) const
 {
     if (mSize == 0)
-        throw std::runtime_error("at(): uninitialised");
-    if ( (iIndex < 0) || (iIndex >= mSize) )
-        throw std::range_error("at(): index out of bounds");
+        return 0;
 
-    if (mType == TYPE_VAR)
-        return mData.hp->mData.vp[iIndex];
-
-    if (!heap())
-        return *this;
-
-    // It's an array; index it
-    var r;
-    r.mSize = 1;
-    r.mType = mType;
-    switch (mType)
+    int lo = 0;
+    int hi = size();
+    while (lo != hi)
     {
-    case TYPE_CHAR:
-        r.mData.c = mData.hp->mData.cp[iIndex];
-        break;
-    case TYPE_INT:
-        r.mData.i = mData.hp->mData.ip[iIndex];
-        break;
-    case TYPE_LONG:
-        r.mData.l = mData.hp->mData.lp[iIndex];
-        break;
-    case TYPE_FLOAT:
-        r.mData.f = mData.hp->mData.fp[iIndex];
-        break;
-    case TYPE_DOUBLE:
-        r.mData.d = mData.hp->mData.dp[iIndex];
-        break;
-    default:
-        throw std::runtime_error("at(): Unknown type");
+        int pos = (hi-lo)/2 + lo;
+        if (iData < at(pos))
+            hi = pos;
+        else
+            lo = pos+1;
     }
-
-    // Done
-    return r;
-}
-
-varheap::varheap()
-{
-    mData.vp = 0;
-    mSize = 0;
-    mRefCount = 0;
-}
-
-/**
- * Destructor
- *
- * The dtor should be called when the reference count hits zero.  So
- * the refcount should already be zero here.  The memory will have
- * been freed by the dealloc().
- */
-varheap::~varheap()
-{
-    VDEBUG(std::cout << " Dtor" << std::endl);
-    if (mRefCount)
-        throw std::runtime_error("~varheap: reference count not zero");
-}
-
-varheap::varheap(int iSize, var::dataEnum iType)
-{
-    VDEBUG(std::cout << " Ctor: " << "[" << iSize << "]" << std::endl);
-    assert(iSize >= 0);
-    mSize = 0;
-    mRefCount = 0;
-    resize(iSize, iType);
-}
-
-varheap::varheap(int iSize, const char* iData)
-{
-    VDEBUG(std::cout << " Ctor: " << iData << std::endl);
-    assert(iSize >= 0);
-    mSize = 0;
-    mRefCount = 0;
-    resize(iSize+1, var::TYPE_CHAR);
-    for (int i=0; i<iSize; i++)
-        mData.cp[i] = iData[i];
-    mData.cp[iSize] = 0;
-}
-
-
-/**
- * Find the next power of two above a given size.
- */
-int allocSize(int iSize)
-{
-    assert(iSize > 0);
-    iSize -= 1;
-    int size = 1;
-    while (iSize > 0)
-    {
-        iSize >>= 1;
-        size <<= 1;
-    }
-    return size;
-}
-
-int varheap::attach()
-{
-    assert(mRefCount >= 0);
-    return ++mRefCount;
-}
-
-int varheap::detach(var::dataEnum iType)
-{
-    assert(mRefCount > 0);
-    int count = --mRefCount;
-    if (count == 0)
-    {
-        dealloc(mData, iType);
-        delete this;
-    }
-    return count;
-}
-
-void varheap::resize(int iSize, var::dataEnum iType)
-{
-    // var should translate resize to 0 to a delete
-    assert(iSize > 0);
-    assert(mSize >= 0);
-
-    // Unallocated
-    if (mSize == 0)
-    {
-        // Allocate
-        mSize = allocSize(iSize);
-        alloc(mSize, iType);
-    }
-
-    // Allocated
-    else
-    {
-        // Re-alloc.
-        int newSize = allocSize(iSize);
-        if (mSize < newSize)
-        {
-            dataType old = mData;
-            alloc(newSize, iType);
-            int toCopy = std::min(mSize, newSize);
-            if (iType == var::TYPE_VAR)
-                for (int i=0; i<toCopy; i++)
-                    mData.vp[i] = old.vp[i];
-            else
-                std::memcpy(mData.cp, old.cp, sizeOf(iType)*toCopy);
-            dealloc(old, iType);
-        }
-        mSize = newSize;
-    }
-
-    return;
-}
-
-
-void varheap::alloc(int iSize, var::dataEnum iType)
-{
-    assert(iSize >= 0);
-    switch (iType)
-    {
-    case var::TYPE_VAR:
-        mData.vp = new var[iSize];
-        break;
-    case var::TYPE_CHAR:
-        mData.cp = new char[iSize];
-        break;
-    case var::TYPE_INT:
-        mData.ip = new int[iSize];
-        break;
-    case var::TYPE_LONG:
-        mData.lp = new long[iSize];
-        break;
-    case var::TYPE_FLOAT:
-        mData.fp = new float[iSize];
-        break;
-    case var::TYPE_DOUBLE:
-        mData.dp = new double[iSize];
-        break;
-    default:
-        throw std::runtime_error("alloc(): Unknown type");
-    }
-}
-
-void varheap::dealloc(dataType iData, var::dataEnum iType)
-{
-    switch (iType)
-    {
-    case var::TYPE_VAR:
-        delete [] iData.vp;
-        break;
-    case var::TYPE_CHAR:
-        delete [] iData.cp;
-        break;
-    case var::TYPE_INT:
-        delete [] iData.ip;
-        break;
-    case var::TYPE_LONG:
-        delete [] iData.lp;
-        break;
-    case var::TYPE_FLOAT:
-        delete [] iData.fp;
-        break;
-    case var::TYPE_DOUBLE:
-        delete [] iData.dp;
-        break;
-    default:
-        throw std::runtime_error("dealloc(): Unknown type");
-    }
-}
-
-long double varheap::strtold()
-{
-    // Assume we have a char*
-    char* endPtr;
-    errno = 0;
-    long double ld = std::strtold(mData.cp, &endPtr);
-    if (endPtr == mData.cp)
-        throw std::runtime_error("strtold(): Cannot convert string");
-    if (errno)
-        throw std::runtime_error("strtold(): errno set");
-    return ld;
+    return hi;
 }
