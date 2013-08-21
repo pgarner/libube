@@ -239,6 +239,25 @@ char* var::operator &()
     return (char*)&mData;
 }
 
+/**
+ * Shallow copy
+ *
+ * It's shallow in that a new array is created, but if that array
+ * itself points to other arrays, they are not duplicated.
+ */
+var var::copy() const
+{
+    if (!heap())
+        return *this;
+
+    var r;
+    r.mType = mType;
+    r.resize(mSize);
+    for (int i=0; i<mSize; i++)
+        r.set(i, at(i));
+    return r;
+}
+
 bool var::defined() const
 {
     return (mSize > 0);

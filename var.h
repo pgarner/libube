@@ -62,6 +62,7 @@ public:
     char* operator &();
 
     // Methods
+    var copy() const;
     bool defined() const;
     int size() const;
     template<class T> T cast();
