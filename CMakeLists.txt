@@ -6,10 +6,10 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
 set(HEADERS var.h)
 set(SOURCES
-  var.cpp
   varheap.cpp
   math.cpp
   string.cpp
+  var.cpp
   )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})

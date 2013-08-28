@@ -27,12 +27,13 @@ public:
 
     /** The possible var types */
     enum dataEnum {
-        TYPE_VAR,
+        TYPE_ARRAY = 0,
         TYPE_CHAR,
         TYPE_INT,
         TYPE_LONG,
         TYPE_FLOAT,
-        TYPE_DOUBLE
+        TYPE_DOUBLE,
+        TYPE_VAR
     };
 
     // Special member functions
@@ -65,6 +66,7 @@ public:
     var copy() const;
     bool defined() const;
     int size() const;
+    dataEnum type() const;
     template<class T> T cast();
     bool heap(int iSize = -1) const;
     void set(int iIndex, var iVar);
@@ -77,6 +79,8 @@ public:
     var shift() { return remove(0); };
     var sort() const;
     var index(var iVar) const;
+    var& clear();
+    var& presize(int iSize);
 
     // Allow stream output
     friend std::ostream& operator <<(
@@ -106,7 +110,7 @@ private:
     // Putting the data first makes sure it will be aligned on an
     // allocation boundary
     dataType mData; ///< The payload
-    int mSize;      ///< 0 (unallocated), 1 (datum) or array size
+    int mIndex;     ///< 0, or offset if it's a reference
     dataEnum mType; ///< The data type
 
     // Methods
@@ -119,57 +123,5 @@ private:
 };
 
 std::ostream& operator <<(std::ostream& iStream, const var& iVar);
-
-
-/**
- * Heap object managed by var
- *
- * It's just a reference counted array.  It would make sense to
- * allocate these from a pool, but for the moment they're done
- * individually.
- */
-class varheap
-{
-public:
-    // Special member functions
-    varheap();
-    ~varheap();
-
-    // Overloaded constructors
-    varheap(int iSize, var::dataEnum iType);
-    varheap(int iSize, const char* iData);
-
-    // Chums
-    friend class var;
-    friend std::ostream& operator <<(
-        std::ostream& iStream, const var& iVar
-    );
-
-    // Methods
-    int attach();
-    int detach(var::dataEnum iType);
-    long double strtold();
-
-private:
-    
-    union dataType {
-        var* vp;
-        char* cp;
-        int* ip;
-        long* lp;
-        float* fp;
-        double* dp;
-    };
-
-    // Members
-    dataType mData; ///< Pointer to allocated data
-    int mSize;      ///< The allocation size
-    int mRefCount;  ///< Reference count
-
-    // Methods
-    void resize(int iSize, var::dataEnum iType);
-    void alloc(int iSize, var::dataEnum iType);
-    void dealloc(dataType iData, var::dataEnum iType);
-};
 
 #endif // VAR_H

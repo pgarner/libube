@@ -12,6 +12,7 @@
 #include <stdexcept>
 
 #include "var.h"
+#include "varheap.h"
 
 #ifdef VARBOSE
 # include <cstdlib>
@@ -35,11 +36,16 @@ int sizeOf(var::dataEnum iType)
     }
 }
 
+/**
+ * Default constructor; should all be zero.
+ */
 varheap::varheap()
 {
     mData.vp = 0;
     mSize = 0;
+    mCapacity = 0;
     mRefCount = 0;
+    mType = var::TYPE_VAR;
 }
 
 /**
@@ -61,8 +67,10 @@ varheap::varheap(int iSize, var::dataEnum iType)
     VDEBUG(std::cout << " Ctor: " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
     mSize = 0;
+    mCapacity = 0;
     mRefCount = 0;
-    resize(iSize, iType);
+    mType = (iType == var::TYPE_ARRAY) ? var::TYPE_VAR : iType;
+    resize(iSize);
 }
 
 varheap::varheap(int iSize, const char* iData)
@@ -70,8 +78,10 @@ varheap::varheap(int iSize, const char* iData)
     VDEBUG(std::cout << " Ctor: " << iData << std::endl);
     assert(iSize >= 0);
     mSize = 0;
+    mCapacity = 0;
     mRefCount = 0;
-    resize(iSize+1, var::TYPE_CHAR);
+    mType = var::TYPE_CHAR;
+    resize(iSize);
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
     mData.cp[iSize] = 0;
@@ -83,7 +93,10 @@ varheap::varheap(int iSize, const char* iData)
  */
 int allocSize(int iSize)
 {
-    assert(iSize > 0);
+    assert(iSize >= 0);
+    if (iSize == 0)
+        // Always alloc something
+        return 1;
     iSize -= 1;
     int size = 1;
     while (iSize > 0)
@@ -94,36 +107,45 @@ int allocSize(int iSize)
     return size;
 }
 
+int varheap::size()
+{
+    return mSize;
+}
+
 int varheap::attach()
 {
     assert(mRefCount >= 0);
     return ++mRefCount;
 }
 
-int varheap::detach(var::dataEnum iType)
+int varheap::detach()
 {
     assert(mRefCount > 0);
     int count = --mRefCount;
     if (count == 0)
     {
-        dealloc(mData, iType);
+        dealloc(mData);
         delete this;
     }
     return count;
 }
 
-void varheap::resize(int iSize, var::dataEnum iType)
+void varheap::resize(int iSize)
 {
-    // var should translate resize to 0 to a delete
-    assert(iSize > 0);
-    assert(mSize >= 0);
+    // It is possible to resize to zero; the capacity stays the same
+    assert(mCapacity >= 0);
+    mSize = iSize;
+
+    // strings have an extra '\0'
+    if (mType == var::TYPE_CHAR)
+        iSize += 1;
 
     // Unallocated
-    if (mSize == 0)
+    if (mCapacity == 0)
     {
         // Allocate
-        mSize = allocSize(iSize);
-        alloc(mSize, iType);
+        mCapacity = allocSize(iSize);
+        alloc(mCapacity);
     }
 
     // Allocated
@@ -131,29 +153,33 @@ void varheap::resize(int iSize, var::dataEnum iType)
     {
         // Re-alloc.
         int newSize = allocSize(iSize);
-        if (mSize < newSize)
+        if (mCapacity < newSize)
         {
             dataType old = mData;
-            alloc(newSize, iType);
-            int toCopy = std::min(mSize, newSize);
-            if (iType == var::TYPE_VAR)
+            alloc(newSize);
+            int toCopy = std::min(mCapacity, newSize);
+            if (mType == var::TYPE_VAR)
                 for (int i=0; i<toCopy; i++)
                     mData.vp[i] = old.vp[i];
             else
-                std::memcpy(mData.cp, old.cp, sizeOf(iType)*toCopy);
-            dealloc(old, iType);
+                std::memcpy(mData.cp, old.cp, sizeOf(mType)*toCopy);
+            dealloc(old);
         }
-        mSize = newSize;
+        mCapacity = newSize;
     }
 
+    // Put in the null terminator
+    if (mType == var::TYPE_CHAR)
+        mData.cp[mSize] = 0;
+        
     return;
 }
 
 
-void varheap::alloc(int iSize, var::dataEnum iType)
+void varheap::alloc(int iSize)
 {
     assert(iSize >= 0);
-    switch (iType)
+    switch (mType)
     {
     case var::TYPE_VAR:
         mData.vp = new var[iSize];
@@ -178,9 +204,9 @@ void varheap::alloc(int iSize, var::dataEnum iType)
     }
 }
 
-void varheap::dealloc(dataType iData, var::dataEnum iType)
+void varheap::dealloc(dataType iData)
 {
-    switch (iType)
+    switch (mType)
     {
     case var::TYPE_VAR:
         delete [] iData.vp;
@@ -216,4 +242,38 @@ long double varheap::strtold()
     if (errno)
         throw std::runtime_error("strtold(): errno set");
     return ld;
+}
+
+var varheap::at(int iIndex) const
+{
+    if ( (iIndex < 0) || (iIndex >= mSize) )
+        throw std::range_error("varheap::at(): index out of bounds");
+    
+    if (mType == var::TYPE_VAR)
+        return mData.vp[iIndex];
+
+    var r;
+    switch (mType)
+    {
+    case var::TYPE_CHAR:
+        r = mData.cp[iIndex];
+        break;
+    case var::TYPE_INT:
+        r = mData.ip[iIndex];
+        break;
+    case var::TYPE_LONG:
+        r = mData.lp[iIndex];
+        break;
+    case var::TYPE_FLOAT:
+        r = mData.fp[iIndex];
+        break;
+    case var::TYPE_DOUBLE:
+        r = mData.dp[iIndex];
+        break;
+    default:
+        throw std::runtime_error("varheap::at(): Unknown type");
+    }
+
+    // Done
+    return r;
 }

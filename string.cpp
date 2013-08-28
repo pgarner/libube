@@ -17,8 +17,11 @@
  */
 var& var::getline(std::istream& iStream)
 {
-    resize(0);
-    mType = TYPE_CHAR;
+    // Start off as a zero length string
+    if (type() != TYPE_CHAR)
+        *this = "";
+    else
+        resize(0);
 
     // sgetc()  return this character
     // sbumpc() return this character & advance
@@ -27,8 +30,7 @@ var& var::getline(std::istream& iStream)
     if (buf->sgetc() == EOF)
     {
         // The stream is finished; return undef
-        mSize = 0;
-        return *this;
+        return clear();
     }
 
     while (buf->sgetc() != EOF)
@@ -38,7 +40,6 @@ var& var::getline(std::istream& iStream)
             break;
         push(c);
     }
-    push('\0');
     return *this;
 }
 
@@ -65,8 +66,7 @@ var var::split(const char* iStr, int iMax) const
                 continue;
             }
 
-            var s(len+1, source);
-            s.set(len, 0);
+            var s(len, source);
             r.push(s);
             source = p+strLen;
 
@@ -80,19 +80,19 @@ var var::split(const char* iStr, int iMax) const
 
 var var::join(const char* iStr) const
 {
-    if (mType == TYPE_CHAR)
+    if (type() == TYPE_CHAR)
         return *this;
 
-    var r = '\0';
+    var r = "";
     var s = iStr;
-    for (int i=0; i<mSize; i++)
+    for (int i=0; i<size(); i++)
     {
         if (i == 0)
             r.insert(0, at(0));
         else
         {
-            r.pop(); r.insert(r.size(), s);
-            r.pop(); r.insert(r.size(), at(i));
+            r.insert(r.size(), s);
+            r.insert(r.size(), at(i));
         }
     }
 
