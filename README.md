@@ -16,7 +16,7 @@ cout << s[0] << endl;
 ```
 i.e., it behaves in a similar way to variables in modern dynamic languages.
 
-If a var is an array, it is reference to that array, meaning that it
+If a var is an array, it is a reference to that array, meaning that it
 can be passed around by value and returned from functions.  Arrays are
 reference counted and hence garbage collected.
 

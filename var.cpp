@@ -21,16 +21,53 @@
 # define VDEBUG(a)
 #endif
 
+
+/*
+ * Template specialisations (before any get used)
+ *
+ * These can be used to get the actual storage in order to convert
+ * back from var to the builtin type. Functions as var to type
+ * conversion.  It's the opposite of the initialisation constructors;
+ * C++ doesn't allow overloading on return type, so the return type
+ * must be specified.
+ */
+template<> var& var::ref<var>(int iIndex) {
+    assert(mData.hp);
+    return mData.hp->mData.vp[iIndex];
+}
+template<> char& var::ref<char>(int iIndex) {
+    return !heap() ? mData.c : mData.hp->mData.cp[iIndex];
+}
+template<> int& var::ref<int>(int iIndex) {
+    return !heap() ? mData.i : mData.hp->mData.ip[iIndex];
+}
+template<> long& var::ref<long>(int iIndex) {
+    return !heap() ? mData.l : mData.hp->mData.lp[iIndex];
+}
+template<> float& var::ref<float>(int iIndex) {
+    return !heap() ? mData.f : mData.hp->mData.fp[iIndex];
+}
+template<> double& var::ref<double>(int iIndex) {
+    return !heap() ? mData.d : mData.hp->mData.dp[iIndex];
+}
+
+
 /**
  * Default constructor.  Should be all zero.
  */
 var::var()
 {
+    VDEBUG(std::cout << "Ctor(default)" << std::endl);
     mData.hp = 0;
     mIndex = 0;
     mType = TYPE_ARRAY;
 }
 
+
+/**
+ * Destructor.  Detaches from heap storage, which in turn reduces the
+ * reference count.
+ */
 var::~var()
 {
     VDEBUG(std::cout << "Dtor: ");
@@ -39,42 +76,90 @@ var::~var()
     detach();
 }
 
-var::var(const var& iVar)
-{
-    VDEBUG(std::cout << "Const copy: " << iVar << std::endl);
-    mData = iVar.mData;
-    mIndex = iVar.mIndex;
-    mType = iVar.mType;
-    attach();
-}
-
-var::var(var& iVar)
-{
-    VDEBUG(std::cout << "Copy: " << iVar << std::endl);
-    mData = iVar.mData;
-    mIndex = iVar.mIndex;
-    mType = iVar.mType;
-    attach();
-}
 
 /**
- * This is the one that gets called when functions return vars.  The
- * argument is non-const because it has to update the reference count.
+ * Copy constructor.
+ *
+ * This one gets called when vars gets passed as function parameters
+ * and the like.
  */
-var& var::operator =(var iVar)
+var::var(const var& iVar)
 {
-    VDEBUG(std::cout << "Copy assignment: " << iVar << std::endl);
-
-    // Record whether the old value was a heap allocation. If so,
-    // detach it after attaching the new value.
-    varheap* tmp = heap() ? mData.hp : 0;
+    VDEBUG(std::cout << "Const copy" << std::endl);
     mData = iVar.mData;
     mIndex = iVar.mIndex;
     mType = iVar.mType;
     attach();
-    if (tmp)
-        detach(tmp);
+    dereference(); // which may detach() again
+}
 
+#if 0
+// I think this one is unnecessary
+var::var(var& iVar)
+{
+    VDEBUG(std::cout << "Copy" << std::endl);
+    mData = iVar.mData;
+    mIndex = iVar.mIndex;
+    mType = iVar.mType;
+    attach();
+}
+#endif
+
+
+/**
+ * Copy assignment
+ *
+ * This is the one that gets called when functions return vars.
+ */
+var& var::operator =(const var& iVar)
+{
+    VDEBUG(std::cout << "Copy assignment" << std::endl);
+
+    if (reference())
+    {
+        // We are a reference; have to write directly into a typed
+        // array.  However, no new storage is allocated, so no need to
+        // detach from old storage
+        var v(iVar);
+        //v.dereference();
+        int index = -mIndex-1;
+        switch (type())
+        {
+        case TYPE_VAR:
+            ref<var>(index) = v;
+            break;
+        case TYPE_CHAR:
+            ref<char>(index) = v.cast<char>();
+            break;
+        case TYPE_INT:
+            ref<int>(index) = v.cast<int>();
+            break;
+        case TYPE_LONG:
+            ref<long>(index) = v.cast<long>();
+            break;
+        case TYPE_FLOAT:
+            ref<float>(index) = v.cast<float>();
+            break;
+        case TYPE_DOUBLE:
+            ref<double>(index) = v.cast<double>();
+            break;
+        default:
+            throw std::runtime_error("var::set(): Unknown type");
+        }
+        assert(mData.hp->mData.vp); // Any of the pointers
+    }
+    else
+    {
+        // Not a reference.  Record whether the old value was a heap
+        // allocation. If so, detach it after attaching the new value.
+        varheap* tmp = heap() ? mData.hp : 0;
+        mData = iVar.mData;
+        mIndex = iVar.mIndex;
+        mType = iVar.mType;
+        attach();
+        if (tmp)
+            detach(tmp);
+    }
     return *this;
 }
 
@@ -87,10 +172,10 @@ var& var::operator =(var& iVar)
     mIndex = iVar.mIndex;
     mType = iVar.mType;
     attach();
-
     return *this;
 }
 #endif
+
 
 /**
  * Constructors that take an initialiser.  These are the primary
@@ -99,7 +184,7 @@ var& var::operator =(var& iVar)
 
 var::var(char iData)
 {
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(char): " << iData << std::endl);
     mData.c = iData;
     mIndex = 0;
     mType = TYPE_CHAR;
@@ -107,7 +192,7 @@ var::var(char iData)
 
 var::var(int iData)
 {
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(int): " << iData << std::endl);
     mData.i = iData;
     mIndex = 0;
     mType = TYPE_INT;
@@ -115,7 +200,7 @@ var::var(int iData)
 
 var::var(long iData)
 {
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(long): " << iData << std::endl);
     mData.l = iData;
     mIndex = 0;
     mType = TYPE_LONG;
@@ -123,7 +208,7 @@ var::var(long iData)
 
 var::var(float iData)
 {
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(float): " << iData << std::endl);
     mData.f = iData;
     mIndex = 0;
     mType = TYPE_FLOAT;
@@ -131,7 +216,7 @@ var::var(float iData)
 
 var::var(double iData)
 {
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(double): " << iData << std::endl);
     mData.d = iData;
     mIndex = 0;
     mType = TYPE_DOUBLE;
@@ -140,7 +225,7 @@ var::var(double iData)
 var::var(int iSize, const char* iData)
 {
     assert(iSize >= 0);
-    VDEBUG(std::cout << "Ctor: " << iData << std::endl);
+    VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
     mType = TYPE_ARRAY;
     mData.hp = new varheap(iSize, iData);
     mIndex = 0;
@@ -156,7 +241,7 @@ var::var(const char* iData)
 var::var(int iSize, char* const* iData)
 {
     assert(iSize >= 0);
-    VDEBUG(std::cout << "Ctor: " << iData[0] << std::endl);
+    VDEBUG(std::cout << "Ctor(char**): " << iData[0] << std::endl);
     mData.hp = 0;
     mType = TYPE_ARRAY;
     mIndex = 0;
@@ -164,38 +249,55 @@ var::var(int iSize, char* const* iData)
         push(iData[i]);
 }
 
+
+var::var(int iSize, const int* iData)
+{
+    assert(iSize >= 0);
+    VDEBUG(std::cout << "Ctor(int*): " << iData << std::endl);
+    mType = TYPE_ARRAY;
+    mData.hp = new varheap(iSize, iData);
+    mIndex = 0;
+    attach();
+}
+
+
 bool var::operator ==(const var& iVar) const
 {
     return !(*this != iVar);
 }
 
+
 bool var::operator !=(const var& iVar) const
 {
-    if (mType != iVar.mType)
+    var v1 = *this;
+    v1.dereference();
+    var v2 = iVar;
+    if (v1.mType != v2.mType)
         return true;
-    if (size() != iVar.size())
+    if (v1.size() != v2.size())
         return true;
-    if (mType != TYPE_ARRAY)
-        switch (mType)
+    if (v1.mType != TYPE_ARRAY)
+        switch (v1.mType)
         {
         case TYPE_CHAR:
-            return (mData.c != iVar.mData.c);
+            return (v1.mData.c != v2.mData.c);
         case TYPE_INT:
-            return (mData.i != iVar.mData.i);
+            return (v1.mData.i != v2.mData.i);
         case TYPE_LONG:
-            return (mData.l != iVar.mData.l);
+            return (v1.mData.l != v2.mData.l);
         case TYPE_FLOAT:
-            return (mData.f != iVar.mData.f);
+            return (v1.mData.f != v2.mData.f);
         case TYPE_DOUBLE:
-            return (mData.d != iVar.mData.d);
+            return (v1.mData.d != v2.mData.d);
         default:
             throw std::runtime_error("operator !=(): Unknown type");
         }
-    for (int i=0; i<size(); i++)
-        if (at(i) != iVar.at(i))
+    for (int i=0; i<v1.size(); i++)
+        if (v1.at(i) != v2.at(i))
             return true;
     return false;
 }
+
 
 bool var::operator <(const var& iVar) const
 {
@@ -226,6 +328,7 @@ bool var::operator <(const var& iVar) const
     return false;
 }
 
+
 /**
  * Get a pointer to the actual storage
  *
@@ -238,6 +341,7 @@ char* var::operator &()
         return mData.hp->mData.cp;
     return (char*)&mData;
 }
+
 
 /**
  * Shallow copy
@@ -258,11 +362,13 @@ var var::copy() const
     return r;
 }
 
+
 bool var::defined() const
 {
     // = not undefined
     return !( (mType == TYPE_ARRAY) && !mData.hp );
 }
+
 
 int var::size() const
 {
@@ -270,6 +376,7 @@ int var::size() const
         return mData.hp ? mData.hp->size() : 0;
     return 1;
 }
+
 
 var::dataEnum var::type() const
 {
@@ -308,7 +415,8 @@ T var::cast()
         *this = r = static_cast<T>(mData.c);
         return r;
     case TYPE_INT:
-        *this = r = static_cast<T>(mData.i);
+        r = static_cast<T>(mData.i);
+        *this = r;
         return r;
     case TYPE_LONG:
         *this = r = static_cast<T>(mData.l);
@@ -326,6 +434,7 @@ T var::cast()
     // Should not get here
     return r;
 }
+
 
 /**
  * Cast to char* is a specialisation
@@ -369,31 +478,6 @@ char* var::cast<char*>()
     return mData.hp->mData.cp;
 }
 
-/*
- * These can be used to get the actual storage in order to convert
- * back from var to the builtin type. Functions as var to type
- * conversion.  It's the opposite of the initialisation constructors;
- * C++ doesn't allow overloading on return type, so the return type
- * must be specified.
- */
-template<> var& var::ref<var>(int iIndex) {
-    return mData.hp->mData.vp[iIndex];;
-}
-template<> char& var::ref<char>(int iIndex) {
-    return !heap() ? mData.c : mData.hp->mData.cp[iIndex];
-}
-template<> int& var::ref<int>(int iIndex) {
-    return !heap() ? mData.i : mData.hp->mData.ip[iIndex];
-}
-template<> long& var::ref<long>(int iIndex) {
-    return !heap() ? mData.l : mData.hp->mData.lp[iIndex];
-}
-template<> float& var::ref<float>(int iIndex) {
-    return !heap() ? mData.f : mData.hp->mData.fp[iIndex];
-}
-template<> double& var::ref<double>(int iIndex) {
-    return !heap() ? mData.d : mData.hp->mData.dp[iIndex];
-}
 
 // Could pass by value and same the tmp
 var& var::operator +=(const var& iVar)
@@ -423,6 +507,7 @@ var& var::operator +=(const var& iVar)
     return *this;
 }
 
+
 var& var::operator -=(const var& iVar)
 {
     var tmp = iVar;
@@ -450,30 +535,64 @@ var& var::operator -=(const var& iVar)
     return *this;
 }
 
+
+/**
+ * The operator[] just creates a reference.
+ */
+var var::operator [](int iIndex)
+{
+    if (!defined())
+        throw std::runtime_error("operator []: Not defined");
+    if (iIndex < 0)
+        throw std::runtime_error("operator []: Negative index");
+    if (mType != TYPE_ARRAY)
+        throw std::runtime_error("operator []: Not an array");
+    if (iIndex >= size())
+        resize(iIndex+1);
+    var r = *this;
+    r.dereference();
+    r.mIndex = -iIndex-1;
+    return r;
+}
+
+
 std::ostream& operator <<(std::ostream& iStream, const var& iVar)
 {
     if (iVar.size() == 0)
         return iStream;
-    if (iVar.heap())
+    var v = iVar;
+    v.dereference();
+    if (v.heap())
     {
         // Array
-        switch (iVar.mData.hp->mType)
+        assert(iVar.mData.hp->mData.vp); // Any of the pointers
+        assert(v.mData.hp->mData.vp); // Any of the pointers
+        if (v.type() != var::TYPE_CHAR)
+            iStream << "{";
+        switch (v.type())
         {
         case var::TYPE_VAR:
-            for (int i=0; i<iVar.size(); i++)
+            for (int i=0; i<v.size(); i++)
             {
-                iStream << " " << iVar.mData.hp->mData.vp[i];
+                if (i != 0)
+                    iStream << ", ";
+                iStream << v.mData.hp->mData.vp[i];
             }
             break;
         case var::TYPE_CHAR:
-            iStream << iVar.mData.hp->mData.cp;
+            iStream << v.mData.hp->mData.cp;
             break;
         case var::TYPE_INT:
-            for (int i=0; i<iVar.size(); i++)
+            for (int i=0; i<v.size(); i++)
             {
-                iStream << " " << iVar.mData.hp->mData.ip[i];
+                if (i != 0)
+                    iStream << ", ";
+                iStream << v.mData.hp->mData.ip[i];
                 if (i > 5)
+                {
+                    iStream << ", ...";
                     break;
+                }
             }
             break;
         case var::TYPE_LONG:
@@ -482,24 +601,26 @@ std::ostream& operator <<(std::ostream& iStream, const var& iVar)
         default:
             throw std::runtime_error("<<(): Unknown type");
         }
+        if (v.type() != var::TYPE_CHAR)
+            iStream << "}";
     }
     else
-        switch (iVar.mType)
+        switch (v.mType)
         {
         case var::TYPE_CHAR:
-            iStream << iVar.mData.c;
+            iStream << v.mData.c;
             break;
         case var::TYPE_INT:
-            iStream << iVar.mData.i;
+            iStream << v.mData.i;
             break;
         case var::TYPE_LONG:
-            iStream << iVar.mData.l;
+            iStream << v.mData.l;
             break;
         case var::TYPE_FLOAT:
-            iStream << iVar.mData.f;
+            iStream << v.mData.f;
             break;
         case var::TYPE_DOUBLE:
-            iStream << iVar.mData.d;
+            iStream << v.mData.d;
             break;
         default:
             throw std::runtime_error("<<(): Unknown type");
@@ -507,6 +628,7 @@ std::ostream& operator <<(std::ostream& iStream, const var& iVar)
 
     return iStream;
 }
+
 
 void var::resize(int iSize)
 {
@@ -540,12 +662,14 @@ void var::resize(int iSize)
     }
 }
 
+
 int var::attach()
 {
     if (heap())
         return mData.hp->attach();
     return 0;
 }
+
 
 int var::detach(varheap* iHeap)
 {
@@ -555,6 +679,7 @@ int var::detach(varheap* iHeap)
         return mData.hp->detach();
     return 0;
 }
+
 
 const char* var::typeOf()
 {
@@ -571,6 +696,7 @@ const char* var::typeOf()
         throw std::runtime_error("typeOf(): Unknown type");
     }
 }
+
 
 /**
  * Set the value at iIndex to the value of iVar
@@ -602,18 +728,22 @@ void var::set(int iIndex, var iVar)
         ref<double>(iIndex) = tmp.cast<double>();
         break;
     default:
-        throw std::runtime_error("set(): Unknown type");
+        throw std::runtime_error("var::set(): Unknown type");
     }    
 }
+
 
 var var::at(int iIndex) const
 {
     if (!defined())
-        throw std::runtime_error("at(): uninitialised");
+        throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)
         return mData.hp->at(iIndex);
-    return *this;
+    if (iIndex == 0)
+        return *this;
+    throw std::runtime_error("var::at(): Index out of bounds");
 }
+
 
 var& var::push(var iVar)
 {
@@ -638,12 +768,14 @@ var& var::push(var iVar)
     return *this;
 }
 
+
 var var::pop()
 {
     var r = at(size()-1);
     resize(size()-1);
     return r;
 }
+
 
 /**
  * Insert.  Not a fundamentally efficient thing for an array, and not
@@ -676,6 +808,7 @@ var& var::insert(int iIndex, var iVar)
     return *this;
 }
 
+
 var var::remove(int iIndex)
 {
     assert(iIndex >= 0);
@@ -689,6 +822,7 @@ var var::remove(int iIndex)
     return r;
 }
 
+
 var var::sort() const
 {
     var r;
@@ -701,6 +835,7 @@ var var::sort() const
     return r;
 }
 
+
 var var::index(var iVar) const
 {
     var r; // Undefined
@@ -709,6 +844,7 @@ var var::index(var iVar) const
             r = i;
     return r;
 }
+
 
 /**
  * Sets the value to the equvalent of undefined
@@ -722,6 +858,7 @@ var& var::clear()
     return *this;
 }
 
+
 var& var::presize(int iSize)
 {
     // There is no doubt a more efficient way
@@ -731,6 +868,7 @@ var& var::presize(int iSize)
     return *this;
 }
 
+
 /**
  * True if this var uses a heap allocation.
  */
@@ -738,12 +876,74 @@ bool var::heap(int iSize) const
 {
     // iSize defaults to -1
     if (iSize < 0)
-        return ( (mType == TYPE_ARRAY) && (mData.hp) );
+        return ( (mType == TYPE_ARRAY) && mData.hp );
     if ( ((mType != TYPE_ARRAY) && (iSize > 1)) ||
          ((mType == TYPE_ARRAY) && (iSize >= 0)) )
         return true;
     return false;
 }
+
+
+/**
+ * True if this var is a reference
+ */
+bool var::reference() const
+{
+    VDEBUG(std::cout << "var::reference(): " << mIndex << std::endl);
+    if ((mIndex < 0) && (mType == TYPE_ARRAY))
+        return true;
+    return false;
+}
+
+
+/**
+ * Converts a reference to an actual var in place
+ */
+var& var::dereference()
+{
+    if (!reference())
+        return *this;
+
+    int index = -mIndex-1;
+    if (type() == TYPE_VAR)
+    {
+        // Set mIndex to not-a-reference, then let operator=() do the
+        // housekeeping
+        mIndex = 0;
+        *this = mData.hp->mData.vp[index];
+    }
+    else
+    {
+        // Normal de-reference
+        assert(heap());
+        varheap* tmp = mData.hp;
+        mType = type();
+        mIndex = 0;
+        switch (mType)
+        {
+        case TYPE_CHAR:
+            mData.c = mData.hp->mData.cp[index];
+            break;
+        case TYPE_INT:
+            mData.i = mData.hp->mData.ip[index];
+            break;
+        case TYPE_LONG:
+            mData.l = mData.hp->mData.lp[index];
+            break;
+        case TYPE_FLOAT:
+            mData.f = mData.hp->mData.fp[index];
+            break;
+        case TYPE_DOUBLE:
+            mData.d = mData.hp->mData.dp[index];
+            break;
+        default:
+            throw std::runtime_error("var::dereference(): Unknown type");
+        }
+        detach(tmp);
+    }
+    return *this;
+}
+
 
 /**
  * Binary search

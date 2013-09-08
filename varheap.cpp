@@ -64,7 +64,7 @@ varheap::~varheap()
 
 varheap::varheap(int iSize, var::dataEnum iType)
 {
-    VDEBUG(std::cout << " Ctor: " << "[" << iSize << "]" << std::endl);
+    VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
     mSize = 0;
     mCapacity = 0;
@@ -85,6 +85,15 @@ varheap::varheap(int iSize, const char* iData)
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
     mData.cp[iSize] = 0;
+}
+
+
+varheap::varheap(int iSize, const int* iData)
+    : varheap(iSize, var::TYPE_INT)
+{
+    VDEBUG(std::cout << " Ctor(int*): " << iData << std::endl);
+    for (int i=0; i<iSize; i++)
+        mData.ip[i] = iData[i];
 }
 
 

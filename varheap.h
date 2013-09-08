@@ -30,6 +30,7 @@ public:
     // Overloaded constructors
     varheap(int iSize, var::dataEnum iType);
     varheap(int iSize, const char* iData);
+    varheap(int iSize, const int* iData);
 
     // Chums
     friend class var;

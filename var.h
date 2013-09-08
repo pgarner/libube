@@ -39,9 +39,8 @@ public:
     // Special member functions
     var();
     ~var();
-    var(var& iVar);
-    var(const var& iVar);  // Used by operator[]
-    var& operator =(var iVar);
+    var(const var& iVar);
+    var& operator =(const var& iVar);
 
     // Overloaded constructors
     var(char iData);
@@ -52,6 +51,7 @@ public:
     var(const char* iData);
     var(int iSize, const char* iData);
     var(int iSize, char* const* iData);
+    var(int iSize, const int* iData);
 
     // Operators
     bool operator ==(const var& iVar) const;
@@ -60,6 +60,7 @@ public:
     var& operator +=(const var& iVar);
     var& operator -=(const var& iVar);
     const var operator [](int iIndex) const { return at(iIndex); };
+    var operator [](int iIndex);
     char* operator &();
 
     // Methods
@@ -119,6 +120,8 @@ private:
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf();
+    bool reference() const;
+    var& dereference();
     int binary(var iData) const;
 };
 

@@ -7,6 +7,7 @@ using namespace std;
 
 var getString()
 {
+    cout << "In getString()" << endl;
     var str;
     str = "An example string with spaces.";
     return str;
@@ -77,6 +78,7 @@ int main(int argc, char** argv)
         cout << "not equal" << endl;
 
     // Pass a string into a function, it's still valid outside
+    cout << "Calling getString()" << endl;
     var b = getString();
     cout << "b is: " << b << endl;
     useString(b);
@@ -131,6 +133,13 @@ int main(int argc, char** argv)
     c2.pop();
     cout << c2 << endl;
     cout << arg << endl;
+
+    // Modify an array using operator[]
+    int xxa[] = {1,2,3,4,5};
+    var xa(5, xxa);
+    cout << "xa is " << xa << endl;
+    xa[3] = 7;
+    cout << "xa is " << xa << endl;
 
     return 0;
 }
