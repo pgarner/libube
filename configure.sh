@@ -7,7 +7,7 @@
 # Author(s):
 #   Phil Garner, July 2013
 #
-rm -f CMakeCache.txt CMakeFiles cmake_install.cmake
+rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 cmake \
     -D CMAKE_BUILD_TYPE=debug \
     .
