@@ -111,7 +111,7 @@ private:
     // Putting the data first makes sure it will be aligned on an
     // allocation boundary
     dataType mData; ///< The payload
-    int mIndex;     ///< 0, or offset if it's a reference
+    int mIndex;     ///< 0, or (negative) offset if it's a reference
     dataEnum mType; ///< The data type
 
     // Methods

@@ -121,7 +121,6 @@ var& var::operator =(const var& iVar)
         // array.  However, no new storage is allocated, so no need to
         // detach from old storage
         var v(iVar);
-        //v.dereference();
         int index = -mIndex-1;
         switch (type())
         {
@@ -479,12 +478,42 @@ char* var::cast<char*>()
 }
 
 
-// Could pass by value and same the tmp
+// Could pass by value and save the tmp
 var& var::operator +=(const var& iVar)
 {
     var tmp = iVar;
     switch (mType)
     {
+    case TYPE_ARRAY:
+        if (mIndex < 0)
+        {
+            // It's a reference
+            int index = -mIndex-1;
+            // Like set()
+            switch (type())
+            {
+            case TYPE_VAR:
+                ref<var>(index) += tmp;
+            case TYPE_CHAR:
+                ref<char>(index) += tmp.cast<char>();
+                break;
+            case TYPE_INT:
+                ref<int>(index) += tmp.cast<int>();
+                break;
+            case TYPE_LONG:
+                ref<long>(index) += tmp.cast<long>();
+                break;
+            case TYPE_FLOAT:
+                ref<float>(index) += tmp.cast<float>();
+                break;
+            case TYPE_DOUBLE:
+                ref<double>(index) += tmp.cast<double>();
+                break;
+            default:
+                throw std::runtime_error("var::+=(): Unknown type");
+            }
+        }
+        break;
     case TYPE_CHAR:
         mData.c += tmp.cast<char>();
         break;
@@ -847,7 +876,7 @@ var var::index(var iVar) const
 
 
 /**
- * Sets the value to the equvalent of undefined
+ * Sets the value to the equivalent of undefined
  */
 var& var::clear()
 {

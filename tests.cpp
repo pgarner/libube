@@ -139,6 +139,7 @@ int main(int argc, char** argv)
     var xa(5, xxa);
     cout << "xa is " << xa << endl;
     xa[3] = 7;
+    xa[4] += 7;
     cout << "xa is " << xa << endl;
 
     return 0;
