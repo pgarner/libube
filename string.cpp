@@ -88,11 +88,11 @@ var var::join(const char* iStr) const
     for (int i=0; i<size(); i++)
     {
         if (i == 0)
-            r.insert(0, at(0));
+            r.insert(at(0));
         else
         {
-            r.insert(r.size(), s);
-            r.insert(r.size(), at(i));
+            r.insert(s, r.size());
+            r.insert(at(i), r.size());
         }
     }
 

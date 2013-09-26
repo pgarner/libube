@@ -90,11 +90,11 @@ int main(int argc, char** argv)
     cout << "sp is: " << sp << endl;
 
     // Basic string insert
-    a.insert(1, "ddd");
+    a.insert("ddd", 1);
     cout << "a is: " << a << endl;
 
     // Shifting of command line
-    arg.insert(1, "insert");
+    arg.insert("insert", 1);
     cout << "arg is: " << arg << endl;
     arg.remove(0);
     cout << "arg is: " << arg << endl;
@@ -138,8 +138,13 @@ int main(int argc, char** argv)
     int xxa[] = {1,2,3,4,5};
     var xa(5, xxa);
     cout << "xa is " << xa << endl;
+    xa[2] += xa[1];
     xa[3] = 7;
     xa[4] += 7;
+    cout << "xa is " << xa << endl;
+
+    // set() on an array broadcasts over the array
+    xa.set(2);
     cout << "xa is " << xa << endl;
 
     return 0;

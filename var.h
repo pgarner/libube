@@ -70,13 +70,13 @@ public:
     dataEnum type() const;
     template<class T> T cast();
     bool heap(int iSize = -1) const;
-    var& set(int iIndex, var iVar);
+    var& set(var iVar, int iIndex=-1);
     var at(int iIndex) const;
     var pop();
     var& push(var iVar);
-    var& insert(int iIndex, var iVar);
+    var& insert(var iVar, int iIndex=0);
     var remove(int iIndex);
-    var& unshift(var iVar) { return insert(0, iVar); };
+    var& unshift(var iVar) { return insert(iVar); };
     var shift() { return remove(0); };
     var sort() const;
     var index(var iVar) const;

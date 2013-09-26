@@ -21,6 +21,12 @@
 # define VDEBUG(a)
 #endif
 
+/*
+ * Notes
+ *
+ * main(argc, argv): template for size + array
+ * set(var, index=-1): template for array + index
+ */
 
 #if 0
 /*
@@ -334,7 +340,7 @@ var var::copy() const
     r.mType = mType;
     r.resize(size());
     for (int i=0; i<size(); i++)
-        r.set(i, at(i));
+        r.set(at(i), i);
     return r;
 }
 
@@ -369,8 +375,8 @@ var::dataEnum var::type() const
  * Cast to given type
  *
  * It may or may not be a cast, depending on the actual storage.
- * Return type is always var because the cast may have to allocate
- * memory.
+ * Return type is always the target of the cast, but it happens in
+ * place because the cast may have to allocate memory.
  */
 template<class T>
 T var::cast()
@@ -632,7 +638,7 @@ var& var::resize(int iSize)
                 mData.hp = new varheap(iSize, mType);
                 mType = TYPE_ARRAY;
                 attach();
-                set(0, tmp);
+                set(tmp, 0);
             }
         }
     }
@@ -683,7 +689,7 @@ const char* var::typeOf()
 /**
  * Set the value at iIndex to the value of iVar
  */
-var& var::set(int iIndex, var iVar)
+var& var::set(var iVar, int iIndex)
 {
     if (iIndex >= size())
         resize(iIndex+1);
@@ -726,7 +732,7 @@ var& var::push(var iVar)
         
     int last = size();
     resize(last+1);
-    set(last, iVar);
+    set(iVar, last);
     return *this;
 }
 
@@ -743,7 +749,7 @@ var var::pop()
  * Insert.  Not a fundamentally efficient thing for an array, and not
  * implemented in an efficient way.
  */
-var& var::insert(int iIndex, var iVar)
+var& var::insert(var iVar, int iIndex)
 {
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
@@ -753,18 +759,18 @@ var& var::insert(int iIndex, var iVar)
         resize(size()+1);
         for (int i=size()-1; i>iIndex; i--)
         {
-            set(i, at(i-1));
+            set(at(i-1), i);
         }
-        set(iIndex, iVar);
+        set(iVar, iIndex);
     }
     else
     {
         // It's a fundamental type, insert the whole array
         resize(size()+iVar.size());
         for (int i=size()-1; i>iIndex+iVar.size()-1; i--)
-            set(i, at(i-iVar.size()));
+            set(at(i-iVar.size()), i);
         for (int i=0; i<iVar.size(); i++)
-            set(iIndex+i, iVar.at(i));
+            set(iVar.at(i), iIndex+i);
     }
 
     return *this;
@@ -778,7 +784,7 @@ var var::remove(int iIndex)
         throw std::range_error("remove(): index too large");
     var r = at(iIndex);
     for (int i=iIndex+1; i<size(); i++)
-        set(i-1, at(i));
+        set(at(i), i-1);
     resize(size()-1);
     
     return r;
@@ -792,7 +798,7 @@ var var::sort() const
     for (int i=0; i<size(); i++)
     {
         int p = r.binary(at(i));
-        r.insert(p, at(i));
+        r.insert(at(i), p);
     }
     return r;
 }
