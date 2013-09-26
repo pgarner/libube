@@ -286,3 +286,93 @@ var varheap::at(int iIndex) const
     // Done
     return r;
 }
+
+void varheap::set(var iVar, int iIndex)
+{
+    int lo = (iIndex < 0) ? 0 : iIndex;
+    int hi = (iIndex < 0) ? mSize : iIndex+1;
+    for (int i=lo; i<hi; i++)
+        switch (mType)
+        {
+        case var::TYPE_VAR:
+            mData.vp[i] = iVar;
+            break;
+        case var::TYPE_CHAR:
+            mData.cp[i] = iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.ip[i] = iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.lp[i] = iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.fp[i] = iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] = iVar.cast<double>();
+            break;
+        default:
+            throw std::runtime_error("varheap::set(): Unknown type");
+        }
+}
+
+void varheap::add(var iVar, int iIndex)
+{
+    int lo = (iIndex < 0) ? 0 : iIndex;
+    int hi = (iIndex < 0) ? mSize : iIndex+1;
+    for (int i=lo; i<hi; i++)
+        switch (mType)
+        {
+        case var::TYPE_VAR:
+            mData.vp[i] += iVar;
+            break;
+        case var::TYPE_CHAR:
+            mData.cp[i] += iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.ip[i] += iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.lp[i] += iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.fp[i] += iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] += iVar.cast<double>();
+            break;
+        default:
+            throw std::runtime_error("varheap::add(): Unknown type");
+        }
+}
+
+void varheap::sub(var iVar, int iIndex)
+{
+    int lo = (iIndex < 0) ? 0 : iIndex;
+    int hi = (iIndex < 0) ? mSize : iIndex+1;
+    for (int i=lo; i<hi; i++)
+        switch (mType)
+        {
+        case var::TYPE_VAR:
+            mData.vp[i] -= iVar;
+            break;
+        case var::TYPE_CHAR:
+            mData.cp[i] -= iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.ip[i] -= iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.lp[i] -= iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.fp[i] -= iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] -= iVar.cast<double>();
+            break;
+        default:
+            throw std::runtime_error("varheap::add(): Unknown type");
+        }
+}

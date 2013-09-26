@@ -42,8 +42,12 @@ public:
     int size();
     int attach();
     int detach();
+    void resize(int iSize);
     long double strtold();
     var at(int iIndex) const;
+    void set(var iVar, int iIndex=-1);
+    void add(var iVar, int iIndex=-1);
+    void sub(var iVar, int iIndex=-1);
 
 private:
     
@@ -64,7 +68,6 @@ private:
     var::dataEnum mType; ///< The data type
 
     // Methods
-    void resize(int iSize);
     void alloc(int iSize);
     void dealloc(dataType iData);
 };

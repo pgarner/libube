@@ -57,8 +57,8 @@ public:
     bool operator ==(const var& iVar) const;
     bool operator !=(const var& iVar) const;
     bool operator <(const var& iVar) const;
-    var& operator +=(const var& iVar);
-    var& operator -=(const var& iVar);
+    var& operator +=(var iVar);
+    var& operator -=(var iVar);
     const var operator [](int iIndex) const { return at(iIndex); };
     var operator [](int iIndex);
     char* operator &();
@@ -70,7 +70,7 @@ public:
     dataEnum type() const;
     template<class T> T cast();
     bool heap(int iSize = -1) const;
-    void set(int iIndex, var iVar);
+    var& set(int iIndex, var iVar);
     var at(int iIndex) const;
     var pop();
     var& push(var iVar);
@@ -116,7 +116,7 @@ private:
 
     // Methods
     template<class T> T& ref(int iIndex);
-    void resize(int iSize);
+    var& resize(int iSize);
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf();

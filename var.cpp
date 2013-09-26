@@ -22,6 +22,7 @@
 #endif
 
 
+#if 0
 /*
  * Template specialisations (before any get used)
  *
@@ -50,7 +51,7 @@ template<> float& var::ref<float>(int iIndex) {
 template<> double& var::ref<double>(int iIndex) {
     return !heap() ? mData.d : mData.hp->mData.dp[iIndex];
 }
-
+#endif
 
 /**
  * Default constructor.  Should be all zero.
@@ -120,31 +121,7 @@ var& var::operator =(const var& iVar)
         // We are a reference; have to write directly into a typed
         // array.  However, no new storage is allocated, so no need to
         // detach from old storage
-        var v(iVar);
-        int index = -mIndex-1;
-        switch (type())
-        {
-        case TYPE_VAR:
-            ref<var>(index) = v;
-            break;
-        case TYPE_CHAR:
-            ref<char>(index) = v.cast<char>();
-            break;
-        case TYPE_INT:
-            ref<int>(index) = v.cast<int>();
-            break;
-        case TYPE_LONG:
-            ref<long>(index) = v.cast<long>();
-            break;
-        case TYPE_FLOAT:
-            ref<float>(index) = v.cast<float>();
-            break;
-        case TYPE_DOUBLE:
-            ref<double>(index) = v.cast<double>();
-            break;
-        default:
-            throw std::runtime_error("var::set(): Unknown type");
-        }
+        mData.hp->set(iVar, -mIndex-1);
         assert(mData.hp->mData.vp); // Any of the pointers
     }
     else
@@ -398,6 +375,8 @@ var::dataEnum var::type() const
 template<class T>
 T var::cast()
 {
+    assert(!reference()); // Don't know what to do yet
+
     if (heap())
     {
         if (mType == TYPE_CHAR)
@@ -478,56 +457,27 @@ char* var::cast<char*>()
 }
 
 
-// Could pass by value and save the tmp
-var& var::operator +=(const var& iVar)
+var& var::operator +=(var iVar)
 {
-    var tmp = iVar;
     switch (mType)
     {
     case TYPE_ARRAY:
-        if (mIndex < 0)
-        {
-            // It's a reference
-            int index = -mIndex-1;
-            // Like set()
-            switch (type())
-            {
-            case TYPE_VAR:
-                ref<var>(index) += tmp;
-            case TYPE_CHAR:
-                ref<char>(index) += tmp.cast<char>();
-                break;
-            case TYPE_INT:
-                ref<int>(index) += tmp.cast<int>();
-                break;
-            case TYPE_LONG:
-                ref<long>(index) += tmp.cast<long>();
-                break;
-            case TYPE_FLOAT:
-                ref<float>(index) += tmp.cast<float>();
-                break;
-            case TYPE_DOUBLE:
-                ref<double>(index) += tmp.cast<double>();
-                break;
-            default:
-                throw std::runtime_error("var::+=(): Unknown type");
-            }
-        }
+        mData.hp->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
-        mData.c += tmp.cast<char>();
+        mData.c += iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i += tmp.cast<int>();
+        mData.i += iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l += tmp.cast<long>();
+        mData.l += iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f += tmp.cast<float>();
+        mData.f += iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d += tmp.cast<double>();
+        mData.d += iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator +=(): Unknown type");
@@ -537,25 +487,27 @@ var& var::operator +=(const var& iVar)
 }
 
 
-var& var::operator -=(const var& iVar)
+var& var::operator -=(var iVar)
 {
-    var tmp = iVar;
     switch (mType)
     {
+    case TYPE_ARRAY:
+        mData.hp->sub(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        break;
     case TYPE_CHAR:
-        mData.c -= tmp.cast<char>();
+        mData.c -= iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i -= tmp.cast<int>();
+        mData.i -= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l -= tmp.cast<long>();
+        mData.l -= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f -= tmp.cast<float>();
+        mData.f -= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d -= tmp.cast<double>();
+        mData.d -= iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator -=(): Unknown type");
@@ -659,7 +611,7 @@ std::ostream& operator <<(std::ostream& iStream, const var& iVar)
 }
 
 
-void var::resize(int iSize)
+var& var::resize(int iSize)
 {
     VDEBUG(std::cout << "var::resize(" << iSize << ")" << std::endl);
     assert(iSize >= 0);
@@ -689,6 +641,7 @@ void var::resize(int iSize)
         // It's allocated already
         mData.hp->resize(iSize);
     }
+    return *this;
 }
 
 
@@ -730,35 +683,15 @@ const char* var::typeOf()
 /**
  * Set the value at iIndex to the value of iVar
  */
-void var::set(int iIndex, var iVar)
+var& var::set(int iIndex, var iVar)
 {
     if (iIndex >= size())
         resize(iIndex+1);
-
-    var tmp = iVar;
-    switch (type())
-    {
-    case TYPE_VAR:
-        ref<var>(iIndex) = iVar;
-        break;
-    case TYPE_CHAR:
-        ref<char>(iIndex) = tmp.cast<char>();
-        break;
-    case TYPE_INT:
-        ref<int>(iIndex) = tmp.cast<int>();
-        break;
-    case TYPE_LONG:
-        ref<long>(iIndex) = tmp.cast<long>();
-        break;
-    case TYPE_FLOAT:
-        ref<float>(iIndex) = tmp.cast<float>();
-        break;
-    case TYPE_DOUBLE:
-        ref<double>(iIndex) = tmp.cast<double>();
-        break;
-    default:
-        throw std::runtime_error("var::set(): Unknown type");
-    }    
+    if (heap())
+        mData.hp->set(iVar, iIndex);
+    else
+        *this = iVar;
+    return *this;
 }
 
 
