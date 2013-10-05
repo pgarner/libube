@@ -109,7 +109,7 @@ int main(int argc, char** argv)
     cout << arg.sort() << endl;
 
     // Check that we can act as a std::map key (just needs operator<)
-    std::map<var, int> map;
+    map<var, int> map;
     map["One"] = 1;
     map["Two"] = 2;
     map["Three"] = 3;
@@ -118,9 +118,9 @@ int main(int argc, char** argv)
 
     // Read a small file
     var f;
-    std::ifstream is("tests.txt", std::ifstream::in);
+    ifstream is("tests.txt", ifstream::in);
     if (is.fail())
-        std::cout << "Open failed" << std::endl;
+        cout << "Open failed" << endl;
     while (f.getline(is).defined())
         cout << f << endl;
 
@@ -138,6 +138,7 @@ int main(int argc, char** argv)
     int xxa[] = {1,2,3,4,5};
     var xa(5, xxa);
     cout << "xa is " << xa << endl;
+    xa[1] = xa[0];
     xa[2] += xa[1];
     xa[3] = 7;
     xa[4] += 7;
@@ -146,6 +147,11 @@ int main(int argc, char** argv)
     // set() on an array broadcasts over the array
     xa.set(2);
     cout << "xa is " << xa << endl;
+
+    // Array of vars just by assigning indeces
+    var arr;
+    arr[1] = "Hi!";
+    cout << arr << endl;
 
     return 0;
 }

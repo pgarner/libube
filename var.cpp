@@ -24,8 +24,16 @@
 /*
  * Notes
  *
- * main(argc, argv): template for size + array
- * set(var, index=-1): template for array + index
+ * main(argc, argv): template for paramters size + array
+ * set(var, index=-1): template for parameters array + index
+ *
+ * We want to be able to say
+ *
+ *  x["Blue"] = 7;
+ *
+ * This will result in a reference where "Blue" is lost, replaced by a
+ * negative index.  Hence, operator[] must allocate the "Blue" entry
+ * before returning.
  */
 
 #if 0
@@ -87,8 +95,10 @@ var::~var()
 /**
  * Copy constructor.
  *
- * This one gets called when vars gets passed as function parameters
- * and the like.
+ * This one gets called when vars get passed as function parameters
+ * and the like; also when vars are returned from functions, assuming
+ * it's not optimised out.  For operator[] to work, this function
+ * cannot dereference.
  */
 var::var(const var& iVar)
 {
@@ -97,31 +107,21 @@ var::var(const var& iVar)
     mIndex = iVar.mIndex;
     mType = iVar.mType;
     attach();
-    dereference(); // which may detach() again
 }
-
-#if 0
-// I think this one is unnecessary
-var::var(var& iVar)
-{
-    VDEBUG(std::cout << "Copy" << std::endl);
-    mData = iVar.mData;
-    mIndex = iVar.mIndex;
-    mType = iVar.mType;
-    attach();
-}
-#endif
 
 
 /**
  * Copy assignment
  *
- * This is the one that gets called when functions return vars.
+ * This is the one that gets called when functions return vars and
+ * they are assigned to other vars.  Pass by value just allows
+ * in-place dereference.
  */
-var& var::operator =(const var& iVar)
+var& var::operator =(var iVar)
 {
     VDEBUG(std::cout << "Copy assignment" << std::endl);
 
+    iVar.dereference();
     if (reference())
     {
         // We are a reference; have to write directly into a typed
@@ -144,19 +144,6 @@ var& var::operator =(const var& iVar)
     }
     return *this;
 }
-
-#if 0
-// I think this one is unnecessary
-var& var::operator =(var& iVar)
-{
-    VDEBUG(std::cout << "Basic copy assignment: " << iVar << std::endl);
-    mData = iVar.mData;
-    mIndex = iVar.mIndex;
-    mType = iVar.mType;
-    attach();
-    return *this;
-}
-#endif
 
 
 /**
@@ -381,7 +368,8 @@ var::dataEnum var::type() const
 template<class T>
 T var::cast()
 {
-    assert(!reference()); // Don't know what to do yet
+    dereference();
+    //assert(!reference()); // Don't know what to do yet
 
     if (heap())
     {
@@ -528,27 +516,42 @@ var& var::operator -=(var iVar)
  */
 var var::operator [](int iIndex)
 {
-    if (!defined())
-        throw std::runtime_error("operator []: Not defined");
     if (iIndex < 0)
         throw std::runtime_error("operator []: Negative index");
-    if (mType != TYPE_ARRAY)
-        throw std::runtime_error("operator []: Not an array");
+    dereference();
     if (iIndex >= size())
         resize(iIndex+1);
-    var r = *this;
-    r.dereference();
+    var r(*this);
     r.mIndex = -iIndex-1;
+    return r;
+}
+
+
+var var::operator [](var iVar)
+{
+    dereference();
+    if (mType != TYPE_ARRAY)
+        throw std::runtime_error("operator []: Not an array");
+    int index = binary(iVar);
+    if ( (index >= size()) || (at(index) != iVar) )
+        insert(iVar, index);
+    var r(*this);
+    r.mIndex = -index-1;
     return r;
 }
 
 
 std::ostream& operator <<(std::ostream& iStream, const var& iVar)
 {
-    if (iVar.size() == 0)
-        return iStream;
     var v = iVar;
     v.dereference();
+
+    if (!v.defined())
+    {
+        iStream << "nil";
+        return iStream;
+    }
+
     if (v.heap())
     {
         // Array

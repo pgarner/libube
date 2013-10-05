@@ -40,7 +40,7 @@ public:
     var();
     ~var();
     var(const var& iVar);
-    var& operator =(const var& iVar);
+    var& operator =(var iVar);
 
     // Overloaded constructors
     var(char iData);
@@ -61,6 +61,7 @@ public:
     var& operator -=(var iVar);
     const var operator [](int iIndex) const { return at(iIndex); };
     var operator [](int iIndex);
+    var operator [](var iVar);
     char* operator &();
 
     // Methods
