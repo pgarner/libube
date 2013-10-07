@@ -33,7 +33,8 @@ public:
         TYPE_LONG,
         TYPE_FLOAT,
         TYPE_DOUBLE,
-        TYPE_VAR
+        TYPE_VAR,
+        TYPE_PAIR
     };
 
     // Special member functions
@@ -72,7 +73,7 @@ public:
     template<class T> T cast();
     bool heap(int iSize = -1) const;
     var& set(var iVar, int iIndex=-1);
-    var at(int iIndex) const;
+    var at(int iIndex, bool iKey=false) const;
     var pop();
     var& push(var iVar);
     var& insert(var iVar, int iIndex=0);

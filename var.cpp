@@ -24,15 +24,18 @@
 /*
  * Notes
  *
- * main(argc, argv): template for paramters size + array
+ * main(argc, argv): template for parameters size + array
+ *                   (i.e., it's coded into the standard, size is mandatory)
+ *
  * set(var, index=-1): template for parameters array + index
+ *                     (index is optional, hence last)
  *
  * We want to be able to say
  *
  *  x["Blue"] = 7;
  *
  * This will result in a reference where "Blue" is lost, replaced by a
- * negative index.  Hence, operator[] must allocate the "Blue" entry
+ * (negative) index.  Hence, operator[] must allocate the "Blue" entry
  * before returning.
  */
 
@@ -230,6 +233,13 @@ var::var(int iSize, const int* iData)
 }
 
 
+/**
+ * Equality operator
+ *
+ * It turns out that the negation is easier to code; i.e., there are
+ * lots of not equal cases where you just want to bail out as soon as
+ * you know it's not equal.
+ */
 bool var::operator ==(const var& iVar) const
 {
     return !(*this != iVar);
@@ -241,6 +251,7 @@ bool var::operator !=(const var& iVar) const
     var v1 = *this;
     v1.dereference();
     var v2 = iVar;
+    v2.dereference();
     if (v1.mType != v2.mType)
         return true;
     if (v1.size() != v2.size())
@@ -268,6 +279,11 @@ bool var::operator !=(const var& iVar) const
 }
 
 
+/*
+ * Operator <
+ *
+ * This is the one that gets used by std::map in its search.
+ */
 bool var::operator <(const var& iVar) const
 {
     if (mType != iVar.mType)
@@ -512,12 +528,16 @@ var& var::operator -=(var iVar)
 
 
 /**
- * The operator[] just creates a reference.
+ * operator[int]
+ *
+ * In principle, just creates a reference.  In practice it calls
+ * resize(), that in turn can create a larger array, or an array of
+ * vars if unset.
  */
 var var::operator [](int iIndex)
 {
     if (iIndex < 0)
-        throw std::runtime_error("operator []: Negative index");
+        throw std::runtime_error("operator [int]: Negative index");
     dereference();
     if (iIndex >= size())
         resize(iIndex+1);
@@ -527,13 +547,29 @@ var var::operator [](int iIndex)
 }
 
 
+/**
+ * operator[var]
+ *
+ * In principle, just creates a reference.  However, it is also the
+ * primary means of creating a map type (array of TYPE_PAIR).
+ */
 var var::operator [](var iVar)
 {
     dereference();
-    if (mType != TYPE_ARRAY)
-        throw std::runtime_error("operator []: Not an array");
+    if (!defined())
+    {
+        // A kind of constructor
+        mType = TYPE_ARRAY;
+        mData.hp = new varheap(0, TYPE_PAIR);
+        mIndex = 0;
+        attach();
+    }
+    else
+        if (type() != TYPE_PAIR)
+            throw std::runtime_error("operator [var]: Not a map");
+
     int index = binary(iVar);
-    if ( (index >= size()) || (at(index) != iVar) )
+    if ( (index >= size()) || (at(index, true) != iVar) )
         insert(iVar, index);
     var r(*this);
     r.mIndex = -index-1;
@@ -561,14 +597,6 @@ std::ostream& operator <<(std::ostream& iStream, const var& iVar)
             iStream << "{";
         switch (v.type())
         {
-        case var::TYPE_VAR:
-            for (int i=0; i<v.size(); i++)
-            {
-                if (i != 0)
-                    iStream << ", ";
-                iStream << v.mData.hp->mData.vp[i];
-            }
-            break;
         case var::TYPE_CHAR:
             iStream << v.mData.hp->mData.cp;
             break;
@@ -588,6 +616,23 @@ std::ostream& operator <<(std::ostream& iStream, const var& iVar)
         case var::TYPE_LONG:
         case var::TYPE_FLOAT:
         case var::TYPE_DOUBLE:
+        case var::TYPE_VAR:
+            for (int i=0; i<v.size(); i++)
+            {
+                if (i != 0)
+                    iStream << ", ";
+                iStream << v.mData.hp->mData.vp[i];
+            }
+            break;
+        case var::TYPE_PAIR:
+            for (int i=0; i<v.size(); i++)
+            {
+                if (i != 0)
+                    iStream << ", ";
+                iStream << "{" << v.mData.hp->mData.pp[i].key;
+                iStream << ", " << v.mData.hp->mData.pp[i].val << "}";
+            }
+            break;
         default:
             throw std::runtime_error("<<(): Unknown type");
         }
@@ -704,12 +749,12 @@ var& var::set(var iVar, int iIndex)
 }
 
 
-var var::at(int iIndex) const
+var var::at(int iIndex, bool iKey) const
 {
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)
-        return mData.hp->at(iIndex);
+        return mData.hp->at(iIndex, iKey);
     if (iIndex == 0)
         return *this;
     throw std::runtime_error("var::at(): Index out of bounds");
@@ -765,6 +810,17 @@ var& var::insert(var iVar, int iIndex)
             set(at(i-1), i);
         }
         set(iVar, iIndex);
+    }
+    else if (type() == TYPE_PAIR)
+    {
+        // Implies array; insert a single pair
+        resize(size()+1);
+        for (int i=size()-1; i>iIndex; i--)
+        {
+            mData.hp->set(at(i-1, true), i, true);
+            mData.hp->set(at(i-1), i);
+        }
+        mData.hp->set(iVar, iIndex, true);
     }
     else
     {
@@ -883,6 +939,13 @@ var& var::dereference()
         mIndex = 0;
         *this = mData.hp->mData.vp[index];
     }
+    else if (type() == TYPE_PAIR)
+    {
+        // Set mIndex to not-a-reference, then let operator=() do the
+        // housekeeping
+        mIndex = 0;
+        *this = mData.hp->mData.pp[index].val;
+    }
     else
     {
         // Normal de-reference
@@ -929,10 +992,10 @@ int var::binary(var iData) const
     while (lo != hi)
     {
         int pos = (hi-lo)/2 + lo;
-        if (iData < at(pos))
-            hi = pos;
-        else
+        if (at(pos, true) < iData) // index on key rather than value
             lo = pos+1;
+        else
+            hi = pos;
     }
     return hi;
 }

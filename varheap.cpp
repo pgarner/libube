@@ -25,12 +25,13 @@ int sizeOf(var::dataEnum iType)
 {
     switch (iType)
     {
-    case var::TYPE_VAR: return sizeof(var);
     case var::TYPE_CHAR: return sizeof(char);
     case var::TYPE_INT: return sizeof(int);
     case var::TYPE_LONG: return sizeof(long);
     case var::TYPE_FLOAT: return sizeof(float);
     case var::TYPE_DOUBLE: return sizeof(double);
+    case var::TYPE_VAR: return sizeof(var);
+    case var::TYPE_PAIR: return sizeof(pair);
     default:
         throw std::runtime_error("sizeOf(): Unknown type");
     }
@@ -170,6 +171,9 @@ void varheap::resize(int iSize)
             if (mType == var::TYPE_VAR)
                 for (int i=0; i<toCopy; i++)
                     mData.vp[i] = old.vp[i];
+            else if (mType == var::TYPE_PAIR)
+                for (int i=0; i<toCopy; i++)
+                    mData.pp[i] = old.pp[i];
             else
                 std::memcpy(mData.cp, old.cp, sizeOf(mType)*toCopy);
             dealloc(old);
@@ -190,9 +194,6 @@ void varheap::alloc(int iSize)
     assert(iSize >= 0);
     switch (mType)
     {
-    case var::TYPE_VAR:
-        mData.vp = new var[iSize];
-        break;
     case var::TYPE_CHAR:
         mData.cp = new char[iSize];
         break;
@@ -208,6 +209,12 @@ void varheap::alloc(int iSize)
     case var::TYPE_DOUBLE:
         mData.dp = new double[iSize];
         break;
+    case var::TYPE_VAR:
+        mData.vp = new var[iSize];
+        break;
+    case var::TYPE_PAIR:
+        mData.pp = new pair[iSize];
+        break;
     default:
         throw std::runtime_error("alloc(): Unknown type");
     }
@@ -217,9 +224,6 @@ void varheap::dealloc(dataType iData)
 {
     switch (mType)
     {
-    case var::TYPE_VAR:
-        delete [] iData.vp;
-        break;
     case var::TYPE_CHAR:
         delete [] iData.cp;
         break;
@@ -234,6 +238,12 @@ void varheap::dealloc(dataType iData)
         break;
     case var::TYPE_DOUBLE:
         delete [] iData.dp;
+        break;
+    case var::TYPE_VAR:
+        delete [] iData.vp;
+        break;
+    case var::TYPE_PAIR:
+        delete [] iData.pp;
         break;
     default:
         throw std::runtime_error("dealloc(): Unknown type");
@@ -253,14 +263,11 @@ long double varheap::strtold()
     return ld;
 }
 
-var varheap::at(int iIndex) const
+var varheap::at(int iIndex, bool iKey) const
 {
     if ( (iIndex < 0) || (iIndex >= mSize) )
         throw std::range_error("varheap::at(): index out of bounds");
     
-    if (mType == var::TYPE_VAR)
-        return mData.vp[iIndex];
-
     var r;
     switch (mType)
     {
@@ -279,6 +286,12 @@ var varheap::at(int iIndex) const
     case var::TYPE_DOUBLE:
         r = mData.dp[iIndex];
         break;
+    case var::TYPE_VAR:
+        r = mData.vp[iIndex];
+        break;
+    case var::TYPE_PAIR:
+        r = iKey ? mData.pp[iIndex].key : mData.pp[iIndex].val;
+        break;
     default:
         throw std::runtime_error("varheap::at(): Unknown type");
     }
@@ -287,16 +300,13 @@ var varheap::at(int iIndex) const
     return r;
 }
 
-void varheap::set(var iVar, int iIndex)
+void varheap::set(var iVar, int iIndex, bool iKey)
 {
     int lo = (iIndex < 0) ? 0 : iIndex;
     int hi = (iIndex < 0) ? mSize : iIndex+1;
     for (int i=lo; i<hi; i++)
         switch (mType)
         {
-        case var::TYPE_VAR:
-            mData.vp[i] = iVar;
-            break;
         case var::TYPE_CHAR:
             mData.cp[i] = iVar.cast<char>();
             break;
@@ -312,6 +322,15 @@ void varheap::set(var iVar, int iIndex)
         case var::TYPE_DOUBLE:
             mData.dp[i] = iVar.cast<double>();
             break;
+        case var::TYPE_VAR:
+            mData.vp[i] = iVar;
+            break;
+        case var::TYPE_PAIR:
+            if (iKey)
+                mData.pp[i].key = iVar;
+            else
+                mData.pp[i].val = iVar;
+            break;
         default:
             throw std::runtime_error("varheap::set(): Unknown type");
         }
@@ -324,9 +343,6 @@ void varheap::add(var iVar, int iIndex)
     for (int i=lo; i<hi; i++)
         switch (mType)
         {
-        case var::TYPE_VAR:
-            mData.vp[i] += iVar;
-            break;
         case var::TYPE_CHAR:
             mData.cp[i] += iVar.cast<char>();
             break;
@@ -342,6 +358,9 @@ void varheap::add(var iVar, int iIndex)
         case var::TYPE_DOUBLE:
             mData.dp[i] += iVar.cast<double>();
             break;
+        case var::TYPE_VAR:
+            mData.vp[i] += iVar;
+            break;
         default:
             throw std::runtime_error("varheap::add(): Unknown type");
         }
@@ -354,9 +373,6 @@ void varheap::sub(var iVar, int iIndex)
     for (int i=lo; i<hi; i++)
         switch (mType)
         {
-        case var::TYPE_VAR:
-            mData.vp[i] -= iVar;
-            break;
         case var::TYPE_CHAR:
             mData.cp[i] -= iVar.cast<char>();
             break;
@@ -371,6 +387,9 @@ void varheap::sub(var iVar, int iIndex)
             break;
         case var::TYPE_DOUBLE:
             mData.dp[i] -= iVar.cast<double>();
+            break;
+        case var::TYPE_VAR:
+            mData.vp[i] -= iVar;
             break;
         default:
             throw std::runtime_error("varheap::add(): Unknown type");

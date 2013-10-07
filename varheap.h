@@ -12,6 +12,15 @@
 
 #include <var>
 
+
+/** Two vars */
+struct pair
+{
+    var key;
+    var val;
+};
+
+
 /**
  * Heap object managed by var
  *
@@ -44,20 +53,21 @@ public:
     int detach();
     void resize(int iSize);
     long double strtold();
-    var at(int iIndex) const;
-    void set(var iVar, int iIndex=-1);
+    var at(int iIndex, bool iKey=false) const;
+    void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);
     void sub(var iVar, int iIndex=-1);
 
 private:
     
     union dataType {
-        var* vp;
         char* cp;
         int* ip;
         long* lp;
         float* fp;
         double* dp;
+        var* vp;
+        pair* pp;
     };
 
     // Members

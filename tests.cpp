@@ -153,5 +153,15 @@ int main(int argc, char** argv)
     arr[1] = "Hi!";
     cout << arr << endl;
 
+    // Array indexed by var
+    var vmap;
+    vmap["one"] = 1;
+    vmap["two"] = 2;
+    vmap["three"] = 3;
+    cout << "vmap[0] is " << vmap[0] << endl;
+    cout << "vmap[1] is " << vmap[1] << endl;
+    cout << "vmap[""three""] is " << vmap["three"] << endl;
+    cout << "vmap is " << vmap << endl;
+
     return 0;
 }
