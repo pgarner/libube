@@ -160,7 +160,7 @@ int main(int argc, char** argv)
     vmap["three"] = 3;
     cout << "vmap[0] is " << vmap[0] << endl;
     cout << "vmap[1] is " << vmap[1] << endl;
-    cout << "vmap[""three""] is " << vmap["three"] << endl;
+    cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
 
     return 0;

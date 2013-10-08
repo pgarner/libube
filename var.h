@@ -87,7 +87,7 @@ public:
 
     // Allow stream output
     friend std::ostream& operator <<(
-        std::ostream& iStream, const var& iVar
+        std::ostream& iStream, var iVar
     );
 
     // math.cpp
@@ -127,6 +127,6 @@ private:
     int binary(var iData) const;
 };
 
-std::ostream& operator <<(std::ostream& iStream, const var& iVar);
+std::ostream& operator <<(std::ostream& iStream, var iVar);
 
 #endif // VAR_H

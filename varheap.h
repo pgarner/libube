@@ -43,9 +43,6 @@ public:
 
     // Chums
     friend class var;
-    friend std::ostream& operator <<(
-        std::ostream& iStream, const var& iVar
-    );
 
     // Methods
     int size();
@@ -53,6 +50,7 @@ public:
     int detach();
     void resize(int iSize);
     long double strtold();
+    void format(std::ostream& iStream);
     var at(int iIndex, bool iKey=false) const;
     void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);

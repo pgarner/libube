@@ -263,6 +263,58 @@ long double varheap::strtold()
     return ld;
 }
 
+
+void varheap::format(std::ostream& iStream)
+{
+    assert(mData.vp); // Any of the pointers
+    if (mType != var::TYPE_CHAR)
+        iStream << "{";
+    switch (mType)
+    {
+    case var::TYPE_CHAR:
+        iStream << mData.cp;
+        break;
+    case var::TYPE_INT:
+        for (int i=0; i<mSize; i++)
+        {
+            if (i != 0)
+                iStream << ", ";
+            iStream << mData.ip[i];
+            if (i > 5)
+            {
+                iStream << ", ...";
+                break;
+            }
+        }
+        break;
+    case var::TYPE_LONG:
+    case var::TYPE_FLOAT:
+    case var::TYPE_DOUBLE:
+    case var::TYPE_VAR:
+        for (int i=0; i<mSize; i++)
+        {
+            if (i != 0)
+                iStream << ", ";
+            iStream << mData.vp[i];
+        }
+        break;
+    case var::TYPE_PAIR:
+        for (int i=0; i<mSize; i++)
+        {
+            if (i != 0)
+                iStream << ", ";
+            iStream << "{" << mData.pp[i].key;
+            iStream << ", " << mData.pp[i].val << "}";
+        }
+        break;
+    default:
+        throw std::runtime_error("varheap::format(): Unknown type");
+    }
+    if (mType != var::TYPE_CHAR)
+        iStream << "}";
+}
+
+
 var varheap::at(int iIndex, bool iKey) const
 {
     if ( (iIndex < 0) || (iIndex >= mSize) )

@@ -577,89 +577,35 @@ var var::operator [](var iVar)
 }
 
 
-std::ostream& operator <<(std::ostream& iStream, const var& iVar)
+std::ostream& operator <<(std::ostream& iStream, var iVar)
 {
-    var v = iVar;
-    v.dereference();
-
-    if (!v.defined())
+    iVar.dereference();
+    switch (iVar.mType)
     {
-        iStream << "nil";
-        return iStream;
+    case var::TYPE_ARRAY:
+        if (iVar.mData.hp)
+            iVar.mData.hp->format(iStream);
+        else
+            iStream << "nil";
+        break;
+    case var::TYPE_CHAR:
+        iStream << iVar.mData.c;
+        break;
+    case var::TYPE_INT:
+        iStream << iVar.mData.i;
+        break;
+    case var::TYPE_LONG:
+        iStream << iVar.mData.l;
+        break;
+    case var::TYPE_FLOAT:
+        iStream << iVar.mData.f;
+        break;
+    case var::TYPE_DOUBLE:
+        iStream << iVar.mData.d;
+        break;
+    default:
+        throw std::runtime_error("<<(): Unknown type");
     }
-
-    if (v.heap())
-    {
-        // Array
-        assert(iVar.mData.hp->mData.vp); // Any of the pointers
-        assert(v.mData.hp->mData.vp); // Any of the pointers
-        if (v.type() != var::TYPE_CHAR)
-            iStream << "{";
-        switch (v.type())
-        {
-        case var::TYPE_CHAR:
-            iStream << v.mData.hp->mData.cp;
-            break;
-        case var::TYPE_INT:
-            for (int i=0; i<v.size(); i++)
-            {
-                if (i != 0)
-                    iStream << ", ";
-                iStream << v.mData.hp->mData.ip[i];
-                if (i > 5)
-                {
-                    iStream << ", ...";
-                    break;
-                }
-            }
-            break;
-        case var::TYPE_LONG:
-        case var::TYPE_FLOAT:
-        case var::TYPE_DOUBLE:
-        case var::TYPE_VAR:
-            for (int i=0; i<v.size(); i++)
-            {
-                if (i != 0)
-                    iStream << ", ";
-                iStream << v.mData.hp->mData.vp[i];
-            }
-            break;
-        case var::TYPE_PAIR:
-            for (int i=0; i<v.size(); i++)
-            {
-                if (i != 0)
-                    iStream << ", ";
-                iStream << "{" << v.mData.hp->mData.pp[i].key;
-                iStream << ", " << v.mData.hp->mData.pp[i].val << "}";
-            }
-            break;
-        default:
-            throw std::runtime_error("<<(): Unknown type");
-        }
-        if (v.type() != var::TYPE_CHAR)
-            iStream << "}";
-    }
-    else
-        switch (v.mType)
-        {
-        case var::TYPE_CHAR:
-            iStream << v.mData.c;
-            break;
-        case var::TYPE_INT:
-            iStream << v.mData.i;
-            break;
-        case var::TYPE_LONG:
-            iStream << v.mData.l;
-            break;
-        case var::TYPE_FLOAT:
-            iStream << v.mData.f;
-            break;
-        case var::TYPE_DOUBLE:
-            iStream << v.mData.d;
-            break;
-        default:
-            throw std::runtime_error("<<(): Unknown type");
-        }
 
     return iStream;
 }
