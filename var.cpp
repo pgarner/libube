@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cstring>
+#include <cstdarg>
 #include <stdexcept>
 
 #include "var.h"
@@ -230,6 +231,18 @@ var::var(int iSize, const int* iData)
     mData.hp = new varheap(iSize, iData);
     mIndex = 0;
     attach();
+}
+
+var::var(int iSize, int iFirst, ...)
+{
+    va_list ap;
+    va_start(ap, 1);
+    mData.i = iFirst;
+    mIndex = 0;
+    mType = TYPE_INT;
+    for (int i=1; i<iSize; i++)
+        push(va_arg(ap, int));
+    va_end(ap);
 }
 
 

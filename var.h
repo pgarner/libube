@@ -53,6 +53,7 @@ public:
     var(int iSize, const char* iData);
     var(int iSize, char* const* iData);
     var(int iSize, const int* iData);
+    var(int iSize, int iFirst, ...);
 
     // Operators
     bool operator ==(const var& iVar) const;
