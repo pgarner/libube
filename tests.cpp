@@ -118,11 +118,16 @@ int main(int argc, char** argv)
 
     // Read a small file
     var f;
+    var t;
     ifstream is("tests.txt", ifstream::in);
     if (is.fail())
         cout << "Open failed" << endl;
     while (f.getline(is).defined())
+    {
         cout << f << endl;
+        t.push(f.copy());
+    }
+    cout << t << endl;
 
     // Shallow copy
     var c1 = arg;
@@ -162,6 +167,15 @@ int main(int argc, char** argv)
     cout << "vmap[1] is " << vmap[1] << endl;
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
+
+    // Init from variable argument list
+    var ai(5, 5,4,3,2,1);
+    cout << "ai is: " << ai << endl;
+
+    // Read a text file via a dynamic library
+    var txt;
+    txt.read("tests.txt", "txt");
+    cout << "Loaded: " << txt << endl;
 
     return 0;
 }

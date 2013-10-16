@@ -6,6 +6,7 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
 set(HEADERS var.h)
 set(SOURCES
+  varfile.cpp
   varheap.cpp
   math.cpp
   string.cpp
@@ -18,6 +19,13 @@ set_target_properties(static-lib
   PROPERTIES OUTPUT_NAME   "var"
   PUBLIC_HEADER "${HEADERS}"
   )
+target_link_libraries(static-lib "-ldl")
 
 add_executable(tests tests.cpp)
 target_link_libraries(tests static-lib)
+
+# Shared dynamic library
+add_library(txt-lib SHARED txtfile.cpp)
+set_target_properties(txt-lib
+  PROPERTIES OUTPUT_NAME   "txt"
+  )

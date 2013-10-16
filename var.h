@@ -99,6 +99,10 @@ public:
     var& getline(std::istream& iStream);
     var split(const char* iStr, int iMax=0) const;
     var join(const char* iStr) const;
+
+    // Files
+    var& read(const char* iFile, const char* iType);
+    var& write(const char* iFile, const char* iType);
     
 private:
 

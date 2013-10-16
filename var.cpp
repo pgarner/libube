@@ -233,10 +233,11 @@ var::var(int iSize, const int* iData)
     attach();
 }
 
+
 var::var(int iSize, int iFirst, ...)
 {
     va_list ap;
-    va_start(ap, 1);
+    va_start(ap, iFirst);
     mData.i = iFirst;
     mIndex = 0;
     mType = TYPE_INT;
@@ -353,7 +354,7 @@ var var::copy() const
         return *this;
 
     var r;
-    r.mType = mType;
+    r.mType = type();
     r.resize(size());
     for (int i=0; i<size(); i++)
         r.set(at(i), i);
