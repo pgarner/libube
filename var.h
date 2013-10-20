@@ -54,6 +54,7 @@ public:
     var(int iSize, char* const* iData);
     var(int iSize, const int* iData);
     var(int iSize, int iFirst, ...);
+    var(int iSize, float iFirst, ...);
 
     // Operators
     bool operator ==(const var& iVar) const;
@@ -61,6 +62,12 @@ public:
     bool operator <(const var& iVar) const;
     var& operator +=(var iVar);
     var& operator -=(var iVar);
+    var& operator *=(var iVar);
+    var& operator /=(var iVar);
+    var operator +(var iVar) const;
+    var operator -(var iVar) const;
+    var operator *(var iVar) const;
+    var operator /(var iVar) const;
     const var operator [](int iIndex) const { return at(iIndex); };
     var operator [](int iIndex);
     var operator [](var iVar);
@@ -85,6 +92,7 @@ public:
     var index(var iVar) const;
     var& clear();
     var& presize(int iSize);
+    var sum() const;
 
     // Allow stream output
     friend std::ostream& operator <<(
@@ -92,8 +100,12 @@ public:
     );
 
     // math.cpp
+    var abs();
+    var floor();
     var sin() const;
     var cos() const;
+    var sqrt() const;
+    var pow(var iPower) const;
 
     // string.cpp
     var& getline(std::istream& iStream);

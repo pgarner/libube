@@ -247,6 +247,19 @@ var::var(int iSize, int iFirst, ...)
 }
 
 
+var::var(int iSize, float iFirst, ...)
+{
+    va_list ap;
+    va_start(ap, iFirst);
+    mData.f = iFirst;
+    mIndex = 0;
+    mType = TYPE_FLOAT;
+    for (int i=1; i<iSize; i++)
+        push((float)(va_arg(ap, double)));
+    va_end(ap);
+}
+
+
 /**
  * Equality operator
  *
@@ -350,14 +363,16 @@ char* var::operator &()
  */
 var var::copy() const
 {
-    if (!heap())
-        return *this;
+    var d(*this);
+    d.dereference();
+    if (!d.heap())
+        return d;
 
     var r;
-    r.mType = type();
-    r.resize(size());
+    r.mType = d.type();
+    r.resize(d.size());
     for (int i=0; i<size(); i++)
-        r.set(at(i), i);
+        r.set(d.at(i), i);
     return r;
 }
 
@@ -538,6 +553,98 @@ var& var::operator -=(var iVar)
     }
 
     return *this;
+}
+
+
+var& var::operator *=(var iVar)
+{
+    switch (mType)
+    {
+    case TYPE_ARRAY:
+        mData.hp->mul(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        break;
+    case TYPE_CHAR:
+        mData.c *= iVar.cast<char>();
+        break;
+    case TYPE_INT:
+        mData.i *= iVar.cast<int>();
+        break;
+    case TYPE_LONG:
+        mData.l *= iVar.cast<long>();
+        break;
+    case TYPE_FLOAT:
+        mData.f *= iVar.cast<float>();
+        break;
+    case TYPE_DOUBLE:
+        mData.d *= iVar.cast<double>();
+        break;
+    default:
+        throw std::runtime_error("operator *=(): Unknown type");
+    }
+
+    return *this;
+}
+
+
+var& var::operator /=(var iVar)
+{
+    switch (mType)
+    {
+    case TYPE_ARRAY:
+        mData.hp->div(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        break;
+    case TYPE_CHAR:
+        mData.c /= iVar.cast<char>();
+        break;
+    case TYPE_INT:
+        mData.i /= iVar.cast<int>();
+        break;
+    case TYPE_LONG:
+        mData.l /= iVar.cast<long>();
+        break;
+    case TYPE_FLOAT:
+        mData.f /= iVar.cast<float>();
+        break;
+    case TYPE_DOUBLE:
+        mData.d /= iVar.cast<double>();
+        break;
+    default:
+        throw std::runtime_error("operator /=(): Unknown type");
+    }
+
+    return *this;
+}
+
+
+var var::operator +(var iVar) const
+{
+    iVar.dereference();
+    var r = copy();
+    r += iVar;
+    return r;
+}
+
+var var::operator -(var iVar) const
+{
+    iVar.dereference();
+    var r = copy();
+    r -= iVar;
+    return r;
+}
+
+var var::operator *(var iVar) const
+{
+    var r = copy();
+    r *= iVar;
+    return r;
+}
+
+var var::operator /(var iVar) const
+{
+    iVar.dereference();
+    var r = copy();
+    r /= iVar;
+    return r;
 }
 
 
@@ -853,6 +960,17 @@ var& var::presize(int iSize)
     resize(iSize);
     resize(s);
     return *this;
+}
+
+
+var var::sum() const
+{
+    var d(*this);
+    d.dereference();
+    var sum = 0.0;
+    for (int i=0; i<d.size(); i++)
+        sum += d.at(i);
+    return sum;
 }
 
 

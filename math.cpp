@@ -11,6 +11,28 @@
 #include <stdexcept>
 
 #include "var.h"
+#include "varheap.h"
+
+
+#define MATH(func) var var::func() \
+{ \
+    var r; \
+    switch(mType) \
+    { \
+    case TYPE_FLOAT: \
+        r = std::func(mData.f); \
+        break; \
+    case TYPE_DOUBLE: \
+        r = std::func(mData.d); \
+        break; \
+    default: \
+        throw std::runtime_error("Unknown type"); \
+    } \
+    return r; \
+}
+
+MATH(abs)
+MATH(floor)
 
 var var::sin() const
 {
@@ -50,4 +72,70 @@ var var::cos() const
     }
 
     return r;
+}
+
+var var::sqrt() const
+{
+    var r;
+
+    switch(mType)
+    {
+    case TYPE_FLOAT:
+        r = std::sqrt(mData.f);
+        break;
+    case TYPE_DOUBLE:
+        r = std::sqrt(mData.d);
+        break;
+    default:
+        throw std::runtime_error("Unknown type");
+    }
+
+    return r;
+}
+
+
+var var::pow(var iPower) const
+{
+    var r;
+
+    switch(mType)
+    {
+    case TYPE_ARRAY:
+        r = *this;
+        if (mData.hp)
+            mData.hp->pow(iPower);
+        else
+            throw std::runtime_error("var::pow(): undefined");
+        break;
+    case TYPE_FLOAT:
+        r = std::pow(mData.f, iPower.cast<float>());
+        break;
+    case TYPE_DOUBLE:
+        r = std::pow(mData.d, iPower.cast<double>());
+        break;
+    default:
+        throw std::runtime_error("Unknown type");
+    }
+
+    return r;
+}
+
+
+void varheap::pow(var iPower)
+{
+    for (int i=0; i<mSize; i++)
+        switch (mType)
+        {
+        case var::TYPE_FLOAT:
+            mData.fp[i] = std::pow(mData.fp[i], iPower.cast<float>());
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] = std::pow(mData.dp[i], iPower.cast<double>());
+            break;
+        case var::TYPE_VAR:
+            mData.vp[i] = mData.vp[i].pow(iPower);
+            break;
+        default:
+            throw std::runtime_error("Unknown type");
+        }
 }

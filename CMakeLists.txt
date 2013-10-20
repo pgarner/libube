@@ -24,8 +24,12 @@ target_link_libraries(static-lib "-ldl")
 add_executable(tests tests.cpp)
 target_link_libraries(tests static-lib)
 
+add_executable(aspect aspect.cpp)
+target_link_libraries(aspect static-lib)
+
 # Shared dynamic library
 add_library(txt-lib SHARED txtfile.cpp)
 set_target_properties(txt-lib
   PROPERTIES OUTPUT_NAME   "txt"
   )
+

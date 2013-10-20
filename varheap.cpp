@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2013 by Philip N. Garner
  *
@@ -267,51 +268,43 @@ long double varheap::strtold()
 void varheap::format(std::ostream& iStream)
 {
     assert(mData.vp); // Any of the pointers
-    if (mType != var::TYPE_CHAR)
-        iStream << "{";
-    switch (mType)
+    if (mType == var::TYPE_CHAR)
     {
-    case var::TYPE_CHAR:
         iStream << mData.cp;
-        break;
-    case var::TYPE_INT:
-        for (int i=0; i<mSize; i++)
+        return;
+    }
+
+    iStream << "{";
+    for (int i=0; i<mSize; i++)
+    {
+        if (i != 0)
+            iStream << ", ";
+        switch (mType)
         {
-            if (i != 0)
-                iStream << ", ";
+        case var::TYPE_INT:
             iStream << mData.ip[i];
-            if (i > 5)
-            {
-                iStream << ", ...";
-                break;
-            }
-        }
-        break;
-    case var::TYPE_LONG:
-    case var::TYPE_FLOAT:
-    case var::TYPE_DOUBLE:
-    case var::TYPE_VAR:
-        for (int i=0; i<mSize; i++)
-        {
-            if (i != 0)
-                iStream << ", ";
+            break;
+        case var::TYPE_LONG:
+            iStream << mData.lp[i];
+            break;
+        case var::TYPE_FLOAT:
+            iStream << mData.fp[i];
+            break;
+        case var::TYPE_DOUBLE:
+            iStream << mData.dp[i];
+            break;
+        case var::TYPE_VAR:
             iStream << mData.vp[i];
-        }
-        break;
-    case var::TYPE_PAIR:
-        for (int i=0; i<mSize; i++)
-        {
-            if (i != 0)
-                iStream << ", ";
+            break;
+        case var::TYPE_PAIR:
             iStream << "{" << mData.pp[i].key;
             iStream << ", " << mData.pp[i].val << "}";
+            break;
+        default:
+            throw std::runtime_error("varheap::format(): Unknown type");
         }
-        break;
-    default:
-        throw std::runtime_error("varheap::format(): Unknown type");
     }
-    if (mType != var::TYPE_CHAR)
-        iStream << "}";
+    iStream << "}";
 }
 
 
@@ -445,5 +438,67 @@ void varheap::sub(var iVar, int iIndex)
             break;
         default:
             throw std::runtime_error("varheap::add(): Unknown type");
+        }
+}
+
+
+void varheap::mul(var iVar, int iIndex)
+{
+    int lo = (iIndex < 0) ? 0 : iIndex;
+    int hi = (iIndex < 0) ? mSize : iIndex+1;
+    for (int i=lo; i<hi; i++)
+        switch (mType)
+        {
+        case var::TYPE_CHAR:
+            mData.cp[i] *= iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.ip[i] *= iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.lp[i] *= iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.fp[i] *= iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] *= iVar.cast<double>();
+            break;
+        case var::TYPE_VAR:
+            mData.vp[i] *= iVar;
+            break;
+        default:
+            throw std::runtime_error("varheap::mul(): Unknown type");
+        }
+}
+
+
+void varheap::div(var iVar, int iIndex)
+{
+    int lo = (iIndex < 0) ? 0 : iIndex;
+    int hi = (iIndex < 0) ? mSize : iIndex+1;
+    for (int i=lo; i<hi; i++)
+        switch (mType)
+        {
+        case var::TYPE_CHAR:
+            mData.cp[i] /= iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.ip[i] /= iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.lp[i] /= iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.fp[i] /= iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.dp[i] /= iVar.cast<double>();
+            break;
+        case var::TYPE_VAR:
+            mData.vp[i] /= iVar;
+            break;
+        default:
+            throw std::runtime_error("varheap::div(): Unknown type");
         }
 }

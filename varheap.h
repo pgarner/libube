@@ -55,6 +55,11 @@ public:
     void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);
     void sub(var iVar, int iIndex=-1);
+    void mul(var iVar, int iIndex=-1);
+    void div(var iVar, int iIndex=-1);
+
+    // Maths
+    void pow(var iPower);
 
 private:
     
