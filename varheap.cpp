@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2013 by Philip N. Garner
  *
@@ -273,6 +272,16 @@ long double varheap::strtold()
 void varheap::format(std::ostream& iStream)
 {
     assert(mData.vp); // Any of the pointers
+
+    if (mView)
+    {
+        if (mSize > 1)
+            formatview(iStream);
+        else
+            mView->format(iStream);
+        return;
+    }
+
     if (mType == var::TYPE_CHAR)
     {
         iStream << mData.cp;
@@ -284,30 +293,7 @@ void varheap::format(std::ostream& iStream)
     {
         if (i != 0)
             iStream << ", ";
-        switch (mType)
-        {
-        case var::TYPE_INT:
-            iStream << mData.ip[i];
-            break;
-        case var::TYPE_LONG:
-            iStream << mData.lp[i];
-            break;
-        case var::TYPE_FLOAT:
-            iStream << mData.fp[i];
-            break;
-        case var::TYPE_DOUBLE:
-            iStream << mData.dp[i];
-            break;
-        case var::TYPE_VAR:
-            iStream << mData.vp[i];
-            break;
-        case var::TYPE_PAIR:
-            iStream << "{" << mData.pp[i].key;
-            iStream << ", " << mData.pp[i].val << "}";
-            break;
-        default:
-            throw std::runtime_error("varheap::format(): Unknown type");
-        }
+        iStream << at(i);
     }
     iStream << "}";
 }
@@ -316,37 +302,48 @@ void varheap::format(std::ostream& iStream)
 void varheap::formatview(std::ostream& iStream)
 {
     assert(mData.vp); // Any of the pointers
-    iStream << "{";
-    for (int i=0; i<mSize; i++)
+    assert(mType == var::TYPE_INT);
+
+    // Output shape if it's more than a matrix
+    if (mSize > 2)
     {
-        if (i != 0)
-            iStream << ", ";
-        switch (mType)
+        for (int i=0; i<mSize; i++)
         {
-        case var::TYPE_INT:
-            iStream << mData.ip[i];
-            break;
-        case var::TYPE_LONG:
-            iStream << mData.lp[i];
-            break;
-        case var::TYPE_FLOAT:
-            iStream << mData.fp[i];
-            break;
-        case var::TYPE_DOUBLE:
-            iStream << mData.dp[i];
-            break;
-        case var::TYPE_VAR:
-            iStream << mData.vp[i];
-            break;
-        case var::TYPE_PAIR:
-            iStream << "{" << mData.pp[i].key;
-            iStream << ", " << mData.pp[i].val << "}";
-            break;
-        default:
-            throw std::runtime_error("varheap::format(): Unknown type");
+            iStream << mData.ip[i] << " ";
+            if (i != mSize-1)
+                iStream << "x ";
         }
+        iStream << "tensor:" << std::endl;
     }
-    iStream << "}";
+
+    // Calculate how many matrices we have
+    int nMats = 1;
+    for (int i=0; i<mSize-2; i++)
+        nMats *= mData.ip[i];
+
+    // Format as a sequence of matrices
+    int nRows = mData.ip[mSize-2];
+    int nCols = mData.ip[mSize-1];
+    for (int k=0; k<nMats; k++)
+    {
+        iStream << "{";
+        for (int j=0; j<nRows; j++)
+        {
+            if (j != 0)
+                iStream << " ";
+            for (int i=0; i<nCols; i++)
+            {
+                iStream << mView->at(k*nRows*nCols + j*nCols + i);
+                if ( (i != nCols-1 ) || (j != nRows-1) )
+                    iStream << ", ";
+            }
+            if (j != nRows-1)
+                iStream << std::endl;
+        }
+        iStream << "}";
+        if (k != nMats-1)
+            iStream << std::endl;
+    }
 }
 
 

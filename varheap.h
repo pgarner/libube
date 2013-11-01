@@ -51,6 +51,7 @@ public:
     void resize(int iSize);
     long double strtold();
     void format(std::ostream& iStream);
+    void formatview(std::ostream& iStream);
     var at(int iIndex, bool iKey=false) const;
     void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);

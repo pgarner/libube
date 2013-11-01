@@ -182,9 +182,11 @@ int main(int argc, char** argv)
     ts.resize(16);
     for (int i=0; i<16; i++)
         ts[i] = (float)i;
-    var ten = ts.view(2, 4, 4);
+    var t1 = ts.view(2, 4, 4);
+    var t2 = ts.view(3, 2, 2, 4);
     cout << ts << endl;
-    cout << ten << endl;
+    cout << t1 << endl;
+    cout << t2 << endl;
 
     return 0;
 }
