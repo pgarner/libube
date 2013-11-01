@@ -177,5 +177,14 @@ int main(int argc, char** argv)
     txt.read("tests.txt", "txt");
     cout << "Loaded: " << txt << endl;
 
+    // Tensors
+    var ts = 0.0f;
+    ts.resize(16);
+    for (int i=0; i<16; i++)
+        ts[i] = (float)i;
+    var ten = ts.view(2, 4, 4);
+    cout << ts << endl;
+    cout << ten << endl;
+
     return 0;
 }
