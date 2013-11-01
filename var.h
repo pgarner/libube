@@ -91,8 +91,10 @@ public:
     var sort() const;
     var index(var iVar) const;
     var& clear();
+    var& resize(int iSize);
     var& presize(int iSize);
     var sum() const;
+    var prod() const;
 
     // Allow stream output
     friend std::ostream& operator <<(
@@ -115,6 +117,9 @@ public:
     // Files
     var& read(const char* iFile, const char* iType);
     var& write(const char* iFile, const char* iType);
+
+    // Tensors
+    var view(int iDim, int iFirst, ...);
     
 private:
 
@@ -135,7 +140,6 @@ private:
 
     // Methods
     template<class T> T& ref(int iIndex);
-    var& resize(int iSize);
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf();

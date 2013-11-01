@@ -57,6 +57,7 @@ public:
     void sub(var iVar, int iIndex=-1);
     void mul(var iVar, int iIndex=-1);
     void div(var iVar, int iIndex=-1);
+    void setView(varheap* iVarHeap);
 
     // Maths
     void pow(var iPower);
@@ -79,6 +80,7 @@ private:
     int mCapacity ; ///< The allocation size
     int mRefCount;  ///< Reference count
     var::dataEnum mType; ///< The data type
+    varheap* mView; ///< If this is a view, the real storage
 
     // Methods
     void alloc(int iSize);

@@ -974,6 +974,18 @@ var var::sum() const
 }
 
 
+/* Quite likely to be unstable in general */
+var var::prod() const
+{
+    var d(*this);
+    d.dereference();
+    var prod = 1.0;
+    for (int i=0; i<d.size(); i++)
+        prod *= d.at(i);
+    return prod;
+}
+
+
 /**
  * True if this var uses a heap allocation.
  */
@@ -1076,4 +1088,39 @@ int var::binary(var iData) const
             hi = pos;
     }
     return hi;
+}
+
+
+/**
+ * Assuming that *this is an array, returns a view of the array.  A
+ * view is just another array of type int holding the dimensions of
+ * the new view.
+ */
+var var::view(int iDim, int iFirst, ...)
+{
+    va_list ap;
+    va_start(ap, iFirst);
+
+    // The dimension vector must be an array, even if only 1D
+    var v;
+    v.mType = TYPE_ARRAY;
+    v.mData.hp = new varheap(1, &iFirst);
+    v.mIndex = 0;
+    v.attach();
+    for (int i=1; i<iDim; i++)
+        v.push(va_arg(ap, int));
+    va_end(ap);
+
+    int d = v.prod().cast<int>();
+    if (!defined())
+        resize(d);
+    else
+        if (d != size())
+            throw std::runtime_error("var::view(): Incompatible dimensions");
+
+    // Tell the heap object that it's a view
+    assert(mType == TYPE_ARRAY);
+    v.mData.hp->setView(mData.hp);
+
+    return v;
 }

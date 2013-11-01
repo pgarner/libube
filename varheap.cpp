@@ -48,6 +48,7 @@ varheap::varheap()
     mCapacity = 0;
     mRefCount = 0;
     mType = var::TYPE_VAR;
+    mView = 0;
 }
 
 /**
@@ -62,6 +63,8 @@ varheap::~varheap()
     VDEBUG(std::cout << " Dtor" << std::endl);
     if (mRefCount)
         throw std::runtime_error("~varheap: reference count not zero");
+    if (mView)
+        mView->detach();
 }
 
 varheap::varheap(int iSize, var::dataEnum iType)
@@ -72,6 +75,7 @@ varheap::varheap(int iSize, var::dataEnum iType)
     mCapacity = 0;
     mRefCount = 0;
     mType = (iType == var::TYPE_ARRAY) ? var::TYPE_VAR : iType;
+    mView = 0;
     resize(iSize);
 }
 
@@ -87,6 +91,7 @@ varheap::varheap(int iSize, const char* iData)
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
     mData.cp[iSize] = 0;
+    mView = 0;
 }
 
 
@@ -308,11 +313,48 @@ void varheap::format(std::ostream& iStream)
 }
 
 
+void varheap::formatview(std::ostream& iStream)
+{
+    assert(mData.vp); // Any of the pointers
+    iStream << "{";
+    for (int i=0; i<mSize; i++)
+    {
+        if (i != 0)
+            iStream << ", ";
+        switch (mType)
+        {
+        case var::TYPE_INT:
+            iStream << mData.ip[i];
+            break;
+        case var::TYPE_LONG:
+            iStream << mData.lp[i];
+            break;
+        case var::TYPE_FLOAT:
+            iStream << mData.fp[i];
+            break;
+        case var::TYPE_DOUBLE:
+            iStream << mData.dp[i];
+            break;
+        case var::TYPE_VAR:
+            iStream << mData.vp[i];
+            break;
+        case var::TYPE_PAIR:
+            iStream << "{" << mData.pp[i].key;
+            iStream << ", " << mData.pp[i].val << "}";
+            break;
+        default:
+            throw std::runtime_error("varheap::format(): Unknown type");
+        }
+    }
+    iStream << "}";
+}
+
+
 var varheap::at(int iIndex, bool iKey) const
 {
     if ( (iIndex < 0) || (iIndex >= mSize) )
         throw std::range_error("varheap::at(): index out of bounds");
-    
+
     var r;
     switch (mType)
     {
@@ -501,4 +543,12 @@ void varheap::div(var iVar, int iIndex)
         default:
             throw std::runtime_error("varheap::div(): Unknown type");
         }
+}
+
+void varheap::setView(varheap* iVarHeap)
+{
+    if (mView)
+        mView->detach();
+    mView = iVarHeap;
+    mView->attach();
 }
