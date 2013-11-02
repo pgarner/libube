@@ -144,7 +144,8 @@ private:
     template<class T> T& ref(int iIndex);
     int attach();
     int detach(varheap* iData=0);
-    const char* typeOf();
+    const char* typeOf(dataEnum iType);
+    var typeOf();
     bool reference() const;
     var& dereference();
     int binary(var iData) const;

@@ -50,11 +50,9 @@ var read(const char* iFile)
                 throw std::runtime_error("inifile::read(): couldn't split");
             kv[0].strip();
             kv[1].strip();
-            std::cout << section << "." << kv[0] << "=" << kv[1] << std::endl;
             r[section][kv[0]] = kv[1];
         }
     }
-    std::cout << r << std::endl;
     return r;
 }
 

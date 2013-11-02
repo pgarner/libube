@@ -789,9 +789,9 @@ int var::detach(varheap* iHeap)
 }
 
 
-const char* var::typeOf()
+const char* var::typeOf(dataEnum iType)
 {
-    switch (mType)
+    switch (iType)
     {
     case TYPE_ARRAY: return "array";
     case TYPE_CHAR: return "char";
@@ -800,9 +800,23 @@ const char* var::typeOf()
     case TYPE_FLOAT: return "float";
     case TYPE_DOUBLE: return "double";
     case TYPE_VAR: return "var";
+    case TYPE_PAIR: return "pair";
     default:
         throw std::runtime_error("typeOf(): Unknown type");
     }
+}
+
+
+var var::typeOf()
+{
+    if (mType == TYPE_ARRAY)
+    {
+        var s = "array[";
+        s += typeOf(type());
+        s += "]";
+        return s;
+    }
+    return typeOf(mType);
 }
 
 

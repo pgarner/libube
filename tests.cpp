@@ -194,7 +194,7 @@ int main(int argc, char** argv)
 
     // Read a .ini file via a dynamic library
     var ini;
-    txt.read("tests.ini", "ini");
+    ini.read("tests.ini", "ini");
     cout << "Loaded: " << ini << endl;
 
     // Tensors

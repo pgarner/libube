@@ -101,10 +101,10 @@ var var::join(const char* iStr) const
 
 var& var::strip()
 {
+    var& deref = dereference();
     if (type() != TYPE_CHAR)
         return *this;
 
-    var& deref = dereference();
     char* ptr = &deref;
     int leading = 0;
     while ((leading < deref.size()) && (isspace(ptr[leading])))
