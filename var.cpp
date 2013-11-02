@@ -467,32 +467,28 @@ char* var::cast<char*>()
             throw std::runtime_error("cast<char*>(): Cannot cast array (yet)");
     }
 
-    const size_t s = 128;
-    char tmp[s];
-    int n;
     switch (mType)
     {
     case TYPE_CHAR:
-        n = snprintf(tmp, s, "%c", mData.c);
+        sprintf("%c", mData.c);
         break;
     case TYPE_INT:
-        n = snprintf(tmp, s, "%d", mData.i);
+        sprintf("%d", mData.i);
         break;
     case TYPE_LONG:
-        n = snprintf(tmp, s, "%ld", mData.l);
+        sprintf("%ld", mData.l);
         break;
     case TYPE_FLOAT:
-        n = snprintf(tmp, s, "%f", mData.f);
+        sprintf("%f", mData.f);
         break;
     case TYPE_DOUBLE:
-        n = snprintf(tmp, s, "%f", mData.d);
+        sprintf("%f", mData.d);
         break;
     default:
         throw std::runtime_error("cast<char*>(): Unknown type");
     }
 
-    *this = var(n, tmp);
-    return mData.hp->mData.cp;
+    return &(*this);
 }
 
 

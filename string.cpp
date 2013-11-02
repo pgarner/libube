@@ -8,7 +8,9 @@
  */
 
 #include <stdexcept>
+#include <cassert>
 #include <cstring>
+#include <cstdarg>
 
 #include "var.h"
 
@@ -119,4 +121,33 @@ var& var::strip()
     if (newSize != deref.size())
         deref.resize(newSize);
     return deref;
+}
+
+
+var& var::sprintf(const char* iFormat, ...)
+{
+    va_list ap;
+    int n = 8; 
+    clear();
+    mType = TYPE_CHAR;
+    resize(n);
+
+    while (1)
+    {
+        // Bear in mind that libvar handles the null terminator
+        // implicitly.
+        va_start(ap, iFormat);
+        int m = vsnprintf(&(*this), size(), iFormat, ap);
+        va_end(ap);
+        if (m < 0)
+            throw std::runtime_error("var::sprintf(): Some error");
+        if (m <= size())
+            return *this;
+        if (m > size())
+            resize(m);
+    }
+
+    // Shouldn't get here
+    assert(0);
+    return *this;
 }

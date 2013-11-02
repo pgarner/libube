@@ -93,15 +93,23 @@ int main(int argc, char** argv)
 
     // String strip
     var ss = "  Hello ";
-    cout << "\"" << ss << "\"";
+    cout << ss;
     cout << " strips to ";
-    cout << "\"" << ss.strip() << "\"" << endl;
+    cout << ss.strip() << endl;
 
     // Basic string insert
     a.insert("ddd", 1);
     cout << "a is: " << a << endl;
     a.append("aaa");
     cout << "a is: " << a << endl;
+
+    // String sprintf
+    var str;
+    cout << "sprintf: " << str.sprintf("This string is %d %f", 1, 0.1) << endl;
+
+    // Cast to char*
+    y.cast<char*>();
+    cout << "y is: " << y << endl;
 
     // Shifting of command line
     arg.insert("insert", 1);

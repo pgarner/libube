@@ -115,6 +115,7 @@ public:
     var split(const char* iStr, int iMax=0) const;
     var join(const char* iStr) const;
     var& strip();
+    var& sprintf(const char* iFormat, ...);
 
     // Files
     var& read(const char* iFile, const char* iType);
