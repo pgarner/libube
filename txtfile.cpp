@@ -12,19 +12,20 @@
 #include <stdexcept>
 
 extern "C" {
-    void read(const char* iFile, var& iVar);
+    var read(const char* iFile);
     void write(const char* iFile, var iVar);
 }
 
-void read(const char* iFile, var& iVar)
+var read(const char* iFile)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("txtfile::read(): Open failed");
+    var r;
     var f;
-    iVar.clear();
     while (f.getline(is).defined())
-        iVar.push(f.copy());
+        r.push(f.copy());
+    return r;
 }
 
 void write(const char* iFile, var iVar)

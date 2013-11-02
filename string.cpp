@@ -98,3 +98,25 @@ var var::join(const char* iStr) const
 
     return r;
 }
+
+var& var::strip()
+{
+    if (type() != TYPE_CHAR)
+        return *this;
+
+    var& deref = dereference();
+    char* ptr = &deref;
+    int leading = 0;
+    while ((leading < deref.size()) && (isspace(ptr[leading])))
+        leading++;
+    int trailing = 0;
+    while ((trailing < deref.size()) && (isspace(ptr[size()-trailing-1])))
+        trailing++;
+
+    int newSize = deref.size() - leading - trailing;
+    if (leading > 0)
+        std::memmove(ptr, ptr+leading, newSize);
+    if (newSize != deref.size())
+        deref.resize(newSize);
+    return deref;
+}

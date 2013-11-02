@@ -87,6 +87,7 @@ public:
     var& insert(var iVar, int iIndex=0);
     var remove(int iIndex);
     var& unshift(var iVar) { return insert(iVar); };
+    var& append(var iVar) { return insert(iVar, size()); };
     var shift() { return remove(0); };
     var sort() const;
     var index(var iVar) const;
@@ -113,6 +114,7 @@ public:
     var& getline(std::istream& iStream);
     var split(const char* iStr, int iMax=0) const;
     var join(const char* iStr) const;
+    var& strip();
 
     // Files
     var& read(const char* iFile, const char* iType);

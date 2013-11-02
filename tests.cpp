@@ -15,7 +15,9 @@ var getString()
 
 void useString(var s)
 {
-    cout << "Using: " << s << endl;
+    // The ampersand suppresses the double quotes by passing the raw
+    // char* to the format operator.
+    cout << "Using: " << &s << endl;
 }
 
 int main(int argc, char** argv)
@@ -89,8 +91,16 @@ int main(int argc, char** argv)
     sp = b.split("n");
     cout << "sp is: " << sp << endl;
 
+    // String strip
+    var ss = "  Hello ";
+    cout << "\"" << ss << "\"";
+    cout << " strips to ";
+    cout << "\"" << ss.strip() << "\"" << endl;
+
     // Basic string insert
     a.insert("ddd", 1);
+    cout << "a is: " << a << endl;
+    a.append("aaa");
     cout << "a is: " << a << endl;
 
     // Shifting of command line
@@ -168,6 +178,11 @@ int main(int argc, char** argv)
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
 
+    var wmap;
+    wmap["one"]["two"] = "three";
+    wmap["one"]["four"] = "five";
+    cout << "wmap is " << wmap << endl;
+
     // Init from variable argument list
     var ai(5, 5,4,3,2,1);
     cout << "ai is: " << ai << endl;
@@ -176,6 +191,11 @@ int main(int argc, char** argv)
     var txt;
     txt.read("tests.txt", "txt");
     cout << "Loaded: " << txt << endl;
+
+    // Read a .ini file via a dynamic library
+    var ini;
+    txt.read("tests.ini", "ini");
+    cout << "Loaded: " << ini << endl;
 
     // Tensors
     var ts = 0.0f;

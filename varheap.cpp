@@ -282,20 +282,33 @@ void varheap::format(std::ostream& iStream)
         return;
     }
 
-    if (mType == var::TYPE_CHAR)
+    switch (mType)
     {
+    case var::TYPE_CHAR:
+        iStream << "\"";
         iStream << mData.cp;
-        return;
+        iStream << "\"";
+        break;
+    case var::TYPE_PAIR:
+        iStream << "{";
+        for (int i=0; i<mSize; i++)
+        {
+            iStream << "[" << at(i, true) << "] = " << at(i);
+            //if (i != mSize-1)
+                iStream << "; ";
+        }
+        iStream << "}";
+        break;
+    default:
+        iStream << "{";
+        for (int i=0; i<mSize; i++)
+        {
+            if (i != 0)
+                iStream << ", ";
+            iStream << at(i);
+        }
+        iStream << "}";
     }
-
-    iStream << "{";
-    for (int i=0; i<mSize; i++)
-    {
-        if (i != 0)
-            iStream << ", ";
-        iStream << at(i);
-    }
-    iStream << "}";
 }
 
 
@@ -309,11 +322,11 @@ void varheap::formatview(std::ostream& iStream)
     {
         for (int i=0; i<mSize; i++)
         {
-            iStream << mData.ip[i] << " ";
+            iStream << mData.ip[i];
             if (i != mSize-1)
-                iStream << "x ";
+                iStream << "x";
         }
-        iStream << "tensor:" << std::endl;
+        iStream << " tensor:" << std::endl;
     }
 
     // Calculate how many matrices we have

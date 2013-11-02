@@ -15,20 +15,23 @@
 var& var::read(const char* iFile, const char* iType)
 {
     // Open the library
-    void* handle = dlopen("libtxt.so", RTLD_LAZY);
+    var lib = "lib";
+    lib += iType;
+    lib += ".so";
+    void* handle = dlopen(&lib, RTLD_LAZY);
     if (!handle)
         throw std::runtime_error("var::read(): dlopen failed");
 
     // Find the function
     char *error;
-    void (*dynamicRead)(const char* iFile, var& iVar);
+    var (*dynamicRead)(const char* iFile);
     dlerror();
     *(void **)(&dynamicRead) = dlsym(handle, "read");
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
 
     // Run the dynamically loaded function
-    (*dynamicRead)(iFile, *this);
+    *this = (*dynamicRead)(iFile);
 
     // Close the library
     dlclose(handle);

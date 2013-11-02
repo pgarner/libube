@@ -501,7 +501,10 @@ var& var::operator +=(var iVar)
     switch (mType)
     {
     case TYPE_ARRAY:
-        mData.hp->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        if (type() == TYPE_CHAR)
+            append(iVar);
+        else
+            mData.hp->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
         mData.c += iVar.cast<char>();
@@ -659,10 +662,10 @@ var var::operator [](int iIndex)
 {
     if (iIndex < 0)
         throw std::runtime_error("operator [int]: Negative index");
-    dereference();
-    if (iIndex >= size())
-        resize(iIndex+1);
-    var r(*this);
+    var& deref = dereference();
+    if (iIndex >= deref.size())
+        deref.resize(iIndex+1);
+    var r(deref);
     r.mIndex = -iIndex-1;
     return r;
 }
@@ -676,23 +679,23 @@ var var::operator [](int iIndex)
  */
 var var::operator [](var iVar)
 {
-    dereference();
-    if (!defined())
+    var& deref = dereference();
+    if (!deref.defined())
     {
         // A kind of constructor
-        mType = TYPE_ARRAY;
-        mData.hp = new varheap(0, TYPE_PAIR);
-        mIndex = 0;
-        attach();
+        deref.mType = TYPE_ARRAY;
+        deref.mData.hp = new varheap(0, TYPE_PAIR);
+        deref.mIndex = 0;
+        deref.attach();
     }
     else
-        if (type() != TYPE_PAIR)
+        if (deref.type() != TYPE_PAIR)
             throw std::runtime_error("operator [var]: Not a map");
 
-    int index = binary(iVar);
-    if ( (index >= size()) || (at(index, true) != iVar) )
-        insert(iVar, index);
-    var r(*this);
+    int index = deref.binary(iVar);
+    if ( (index >= deref.size()) || (deref.at(index, true) != iVar) )
+        deref.insert(iVar, index);
+    var r(deref);
     r.mIndex = -index-1;
     return r;
 }
@@ -710,7 +713,9 @@ std::ostream& operator <<(std::ostream& iStream, var iVar)
             iStream << "nil";
         break;
     case var::TYPE_CHAR:
+        iStream << "\'";
         iStream << iVar.mData.c;
+        iStream << "\'";
         break;
     case var::TYPE_INT:
         iStream << iVar.mData.i;
@@ -1015,6 +1020,10 @@ bool var::reference() const
 
 /**
  * Converts a reference to an actual var in place
+ *
+ * However, if the ref is to another var, it takes a copy but returns
+ * a reference to the original var.  That way, it can be modified by
+ * the caller if necessary.
  */
 var& var::dereference()
 {
@@ -1027,14 +1036,18 @@ var& var::dereference()
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
         mIndex = 0;
-        *this = mData.hp->mData.vp[index];
+        var& r = mData.hp->mData.vp[index];
+        *this = r;
+        return r;
     }
     else if (type() == TYPE_PAIR)
     {
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
         mIndex = 0;
-        *this = mData.hp->mData.pp[index].val;
+        var& r = mData.hp->mData.pp[index].val;
+        *this = r;
+        return r;
     }
     else
     {

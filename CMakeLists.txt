@@ -27,9 +27,12 @@ target_link_libraries(tests static-lib)
 add_executable(aspect aspect.cpp)
 target_link_libraries(aspect static-lib)
 
-# Shared dynamic library
+# Shared dynamic libraries
 add_library(txt-lib SHARED txtfile.cpp)
 set_target_properties(txt-lib
   PROPERTIES OUTPUT_NAME   "txt"
   )
-
+add_library(ini-lib SHARED inifile.cpp)
+set_target_properties(ini-lib
+  PROPERTIES OUTPUT_NAME   "ini"
+  )
