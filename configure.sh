@@ -8,11 +8,6 @@
 #   Phil Garner, July 2013
 #
 rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
-mklvars=/opt/intel/mkl/bin/mklvars.sh
-if [ -e $mkvars ]
-then
-    . $mklvars intel64
-fi
 cmake \
     -D CMAKE_BUILD_TYPE=debug \
     .
