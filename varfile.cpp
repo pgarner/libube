@@ -42,7 +42,10 @@ var& var::read(const char* iFile, const char* iType)
 var& var::write(const char* iFile, const char* iType)
 {
     // Open the library
-    void* handle = dlopen("libtxt.so", RTLD_LAZY);
+    var lib = "lib";
+    lib += iType;
+    lib += ".so";
+    void* handle = dlopen(&lib, RTLD_LAZY);
     if (!handle)
         throw std::runtime_error("var::read(): dlopen failed");
 

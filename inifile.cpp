@@ -11,10 +11,8 @@
 #include <fstream>
 #include <stdexcept>
 
-extern "C" {
-    var read(const char* iFile);
-    void write(const char* iFile, var iVar);
-}
+#include "varfile.h"
+
 
 var read(const char* iFile)
 {

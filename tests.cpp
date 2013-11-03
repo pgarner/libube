@@ -205,6 +205,12 @@ int main(int argc, char** argv)
     ini.read("tests.ini", "ini");
     cout << "Loaded: " << ini << endl;
 
+    // Plot something with gnuplot
+    var gnu;
+    gnu.push("plot sin(x), \"-\"");
+    gnu.push(ai);
+    gnu.write("tests.eps", "gnuplot");
+
     // Tensors
     var ts = 0.0f;
     ts.resize(16);

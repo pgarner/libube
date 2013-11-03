@@ -36,3 +36,7 @@ add_library(ini-lib SHARED inifile.cpp)
 set_target_properties(ini-lib
   PROPERTIES OUTPUT_NAME   "ini"
   )
+add_library(gnuplot-lib SHARED gnuplot.cpp)
+set_target_properties(gnuplot-lib
+  PROPERTIES OUTPUT_NAME   "gnuplot"
+  )
