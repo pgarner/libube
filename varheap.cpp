@@ -50,6 +50,7 @@ varheap::varheap()
     mView = 0;
 }
 
+
 /**
  * Destructor
  *
@@ -65,6 +66,35 @@ varheap::~varheap()
     if (mView)
         mView->detach();
 }
+
+
+/**
+ * Copy constructor
+ *
+ * Like the var version, it is non-recursive; it copies the array, but
+ * deeper arrays are not copied.  Just the reference counts are
+ * implicitly bumped.
+ *
+ * Copying a view might not work properly; let's see.
+ */
+varheap::varheap(const varheap& iHeap)
+{
+    mSize = 0;
+    mCapacity = 0;
+    mRefCount = 0;
+    mType = iHeap.mType;
+    resize(iHeap.mSize);
+    for (int i=0; i<mSize; i++)
+    {
+        set(iHeap.at(i), i);
+        if (mType == var::TYPE_PAIR)
+            set(iHeap.at(i), i, true);
+    }
+    mView = iHeap.mView;
+    if (mView)
+        mView->attach();
+}
+
 
 varheap::varheap(int iSize, var::dataEnum iType)
 {

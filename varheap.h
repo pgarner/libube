@@ -35,6 +35,7 @@ public:
     // Special member functions
     varheap();
     ~varheap();
+    varheap(const varheap& iHeap);
 
     // Overloaded constructors
     varheap(int iSize, var::dataEnum iType);

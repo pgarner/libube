@@ -363,16 +363,16 @@ char* var::operator &()
  */
 var var::copy() const
 {
+    // Deref and return if there's no heap
     var d(*this);
     d.dereference();
     if (!d.heap())
         return d;
 
+    // It's a heap
     var r;
-    r.mType = d.type();
-    r.resize(d.size());
-    for (int i=0; i<size(); i++)
-        r.set(d.at(i), i);
+    r.mData.hp = new varheap(*d.mData.hp);
+    r.attach();
     return r;
 }
 
