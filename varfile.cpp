@@ -24,14 +24,14 @@ var& var::read(const char* iFile, const char* iType)
 
     // Find the function
     char *error;
-    var (*dynamicRead)(const char* iFile);
+    void (*dynamicRead)(const char* iFile, var& oVar);
     dlerror();
     *(void **)(&dynamicRead) = dlsym(handle, "read");
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
 
     // Run the dynamically loaded function
-    *this = (*dynamicRead)(iFile);
+    (*dynamicRead)(iFile, *this);
 
     // Close the library
     dlclose(handle);

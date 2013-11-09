@@ -14,16 +14,16 @@
 #include "varfile.h"
 
 
-var read(const char* iFile)
+void read(const char* iFile, var& oVar)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("txtfile::read(): Open failed");
-    var r;
+
+    oVar.clear();
     var f;
     while (f.getline(is).defined())
-        r.push(f.copy());
-    return r;
+        oVar.push(f.copy());
 }
 
 void write(const char* iFile, var iVar)

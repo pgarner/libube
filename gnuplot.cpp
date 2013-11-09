@@ -48,11 +48,9 @@ void gnuplot::puts(const char* iStr)
 }
 
 
-var read(const char* iFile)
+void read(const char* iFile, var& oVar)
 {
     throw std::runtime_error("gnuplot::read() Read not defined");
-    var nil;
-    return nil;
 }
 
 

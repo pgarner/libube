@@ -8,6 +8,6 @@
  */
 
 extern "C" {
-    var read(const char* iFile);
+    void read(const char* iFile, var& oVar);
     void write(const char* iFile, var iVar);
 }

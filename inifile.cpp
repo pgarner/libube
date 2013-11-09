@@ -14,12 +14,13 @@
 #include "varfile.h"
 
 
-var read(const char* iFile)
+void read(const char* iFile, var& oVar)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("inifile::read(): Open failed");
-    var r;
+
+    oVar.clear();
     var f;
     var section = "";
     while (f.getline(is).defined())
@@ -48,10 +49,9 @@ var read(const char* iFile)
                 throw std::runtime_error("inifile::read(): couldn't split");
             kv[0].strip();
             kv[1].strip();
-            r[section][kv[0]] = kv[1];
+            oVar[section][kv[0]] = kv[1];
         }
     }
-    return r;
 }
 
 void write(const char* iFile, var iVar)
