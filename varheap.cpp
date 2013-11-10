@@ -452,6 +452,17 @@ var varheap::at(int iIndex, bool iKey) const
     return r;
 }
 
+
+var& varheap::key(int iIndex)
+{
+    if (mType != var::TYPE_PAIR)
+        throw std::runtime_error("varheap::key(): Not a key:value pair");
+    if ( (iIndex < 0) || (iIndex >= mSize) )
+        throw std::range_error("varheap::at(): index out of bounds");
+    return mData.pp[iIndex].key;
+}
+
+
 void varheap::set(var iVar, int iIndex, bool iKey)
 {
     int lo = (iIndex < 0) ? 0 : iIndex;

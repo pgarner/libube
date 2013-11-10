@@ -311,20 +311,6 @@ bool var::operator <(const var& iVar) const
 
 
 /**
- * Get a pointer to the actual storage
- *
- * Returns char* as that's what is often needed; must be cast
- * otherwise.
- */
-char* var::operator &()
-{
-    if (heap())
-        return mData.hp->ref();
-    return (char*)&mData;
-}
-
-
-/**
  * Shallow copy
  *
  * It's shallow in that a new array is created, but if that array
@@ -617,20 +603,38 @@ var var::operator /(var iVar) const
 
 
 /**
+ * Get a pointer to the actual storage
+ *
+ * Returns char* as that's what is often needed; must be cast
+ * otherwise.
+ */
+char* var::operator &()
+{
+    if (heap())
+        return mData.hp->ref();
+    return (char*)&mData;
+}
+
+
+/**
  * operator[int]
  *
  * In principle, just creates a reference.  In practice it calls
  * resize(), that in turn can create a larger array, or an array of
  * vars if unset.
+ *
+ * Can't be const because it calls resize(), which might change the
+ * type.
  */
 var var::operator [](int iIndex)
 {
+    if (reference())
+        return deref(*this).operator [](iIndex);
     if (iIndex < 0)
         throw std::runtime_error("operator [int]: Negative index");
-    var& deref = dereference();
-    if (iIndex >= deref.size())
-        deref.resize(iIndex+1);
-    var r(deref);
+    if (iIndex >= size())
+        resize(iIndex+1);
+    var r(*this);
     r.mIndex = -iIndex-1;
     return r;
 }
@@ -641,28 +645,44 @@ var var::operator [](int iIndex)
  *
  * In principle, just creates a reference.  However, it is also the
  * primary means of creating a map type (array of TYPE_PAIR).
+ *
+ * Can't be const because it calls resize(), which might change the
+ * type.
  */
 var var::operator [](var iVar)
 {
-    var& deref = dereference();
-    if (!deref.defined())
+    if (reference())
+        return deref(*this).operator [](iVar);
+    if (!defined())
     {
         // A kind of constructor
-        deref.mType = TYPE_ARRAY;
-        deref.mData.hp = new varheap(0, TYPE_PAIR);
-        deref.mIndex = 0;
-        deref.attach();
+        mType = TYPE_ARRAY;
+        mData.hp = new varheap(0, TYPE_PAIR);
+        mIndex = 0;
+        attach();
     }
     else
-        if (deref.type() != TYPE_PAIR)
+        if (type() != TYPE_PAIR)
             throw std::runtime_error("operator [var]: Not a map");
 
-    int index = deref.binary(iVar);
-    if ( (index >= deref.size()) || (deref.at(index, true) != iVar) )
-        deref.insert(iVar, index);
-    var r(deref);
+    int index = binary(iVar);
+    if ( (index >= size()) || (mData.hp->key(index) != iVar) )
+        insert(iVar, index);
+    var r(*this);
     r.mIndex = -index-1;
     return r;
+}
+
+
+var var::at(int iIndex) const
+{
+    if (!defined())
+        throw std::runtime_error("var::at(): uninitialised");
+    if (mType == TYPE_ARRAY)
+        return mData.hp->at(iIndex);
+    if (iIndex == 0)
+        return *this;
+    throw std::runtime_error("var::at(): Index out of bounds");
 }
 
 
@@ -800,18 +820,6 @@ var& var::set(var iVar, int iIndex)
 }
 
 
-var var::at(int iIndex, bool iKey) const
-{
-    if (!defined())
-        throw std::runtime_error("var::at(): uninitialised");
-    if (mType == TYPE_ARRAY)
-        return mData.hp->at(iIndex, iKey);
-    if (iIndex == 0)
-        return *this;
-    throw std::runtime_error("var::at(): Index out of bounds");
-}
-
-
 var& var::push(var iVar)
 {
     VDEBUG(std::cout << "push: ");
@@ -868,7 +876,7 @@ var& var::insert(var iVar, int iIndex)
         resize(size()+1);
         for (int i=size()-1; i>iIndex; i--)
         {
-            mData.hp->set(at(i-1, true), i, true);
+            mData.hp->set(mData.hp->key(i-1), i, true);
             mData.hp->set(at(i-1), i);
         }
         mData.hp->set(iVar, iIndex, true);
@@ -998,6 +1006,20 @@ bool var::reference() const
 
 
 /**
+ * deref() function
+ *
+ * Trivially calls the dereference() method, but has the effect of
+ * copying the var so the caller can be const.
+ *
+ * Can't overload the name dereference(); why?
+ */
+var& deref(var iVar)
+{
+    return iVar.dereference();
+}
+
+
+/**
  * Converts a reference to an actual var in place
  *
  * However, if the ref is to another var, it takes a copy but returns
@@ -1071,10 +1093,12 @@ int var::binary(var iData) const
 
     int lo = 0;
     int hi = size();
+    bool pair = (type() == TYPE_PAIR); // index on key rather than value
     while (lo != hi)
     {
         int pos = (hi-lo)/2 + lo;
-        if (at(pos, true) < iData) // index on key rather than value
+        var x = pair ? mData.hp->key(pos) : at(pos);
+        if (x < iData)
             lo = pos+1;
         else
             hi = pos;

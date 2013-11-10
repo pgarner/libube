@@ -186,6 +186,11 @@ int main(int argc, char** argv)
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
 
+    var iarr;
+    iarr[1][2] = 3;
+    iarr[1][4] = 5;
+    cout << "iarr is " << iarr << endl;
+
     var wmap;
     wmap["one"]["two"] = "three";
     wmap["one"]["four"] = "five";

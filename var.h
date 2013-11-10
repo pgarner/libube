@@ -68,12 +68,12 @@ public:
     var operator -(var iVar) const;
     var operator *(var iVar) const;
     var operator /(var iVar) const;
-    const var operator [](int iIndex) const { return at(iIndex); };
+    char* operator &();
     var operator [](int iIndex);
     var operator [](var iVar);
-    char* operator &();
 
     // Methods
+    var at(int iIndex) const;
     var copy() const;
     bool defined() const;
     int size() const;
@@ -81,7 +81,6 @@ public:
     template<class T> T cast();
     bool heap(int iSize = -1) const;
     var& set(var iVar, int iIndex=-1);
-    var at(int iIndex, bool iKey=false) const;
     var pop();
     var& push(var iVar);
     var& insert(var iVar, int iIndex=0);
@@ -97,7 +96,8 @@ public:
     var sum() const;
     var prod() const;
 
-    // Allow stream output
+    // Chums
+    friend var& deref(var iVar);
     friend std::ostream& operator <<(
         std::ostream& iStream, var iVar
     );
@@ -152,6 +152,5 @@ private:
     int binary(var iData) const;
 };
 
-std::ostream& operator <<(std::ostream& iStream, var iVar);
 
 #endif // VAR_H

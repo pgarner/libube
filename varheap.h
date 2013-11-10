@@ -57,6 +57,7 @@ public:
     long double strtold();
     void format(std::ostream& iStream);
     var at(int iIndex, bool iKey=false) const;
+    var& key(int iIndex);
     void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);
     void sub(var iVar, int iIndex=-1);
