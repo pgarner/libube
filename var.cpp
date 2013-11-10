@@ -235,40 +235,39 @@ var::var(int iSize, float iFirst, ...)
  * lots of not equal cases where you just want to bail out as soon as
  * you know it's not equal.
  */
-bool var::operator ==(const var& iVar) const
+bool var::operator ==(var iVar) const
 {
     return !(*this != iVar);
 }
 
 
-bool var::operator !=(const var& iVar) const
+bool var::operator !=(var iVar) const
 {
-    var v1 = *this;
-    v1.dereference();
-    var v2 = iVar;
-    v2.dereference();
-    if (v1.mType != v2.mType)
+    if (reference())
+        return deref(*this).operator !=(iVar);
+    iVar.dereference();
+    if (mType != iVar.mType)
         return true;
-    if (v1.size() != v2.size())
+    if (size() != iVar.size())
         return true;
-    if (v1.mType != TYPE_ARRAY)
-        switch (v1.mType)
+    if (mType != TYPE_ARRAY)
+        switch (mType)
         {
         case TYPE_CHAR:
-            return (v1.mData.c != v2.mData.c);
+            return (mData.c != iVar.mData.c);
         case TYPE_INT:
-            return (v1.mData.i != v2.mData.i);
+            return (mData.i != iVar.mData.i);
         case TYPE_LONG:
-            return (v1.mData.l != v2.mData.l);
+            return (mData.l != iVar.mData.l);
         case TYPE_FLOAT:
-            return (v1.mData.f != v2.mData.f);
+            return (mData.f != iVar.mData.f);
         case TYPE_DOUBLE:
-            return (v1.mData.d != v2.mData.d);
+            return (mData.d != iVar.mData.d);
         default:
             throw std::runtime_error("operator !=(): Unknown type");
         }
-    for (int i=0; i<v1.size(); i++)
-        if (v1.at(i) != v2.at(i))
+    for (int i=0; i<size(); i++)
+        if (at(i) != iVar.at(i))
             return true;
     return false;
 }
@@ -279,8 +278,12 @@ bool var::operator !=(const var& iVar) const
  *
  * This is the one that gets used by std::map in its search.
  */
-bool var::operator <(const var& iVar) const
+bool var::operator <(var iVar) const
 {
+    if (reference())
+        return deref(*this).operator <(iVar);
+    iVar.dereference();
+
     if (mType != iVar.mType)
         return (mType < iVar.mType);
     if ( (mType != TYPE_ARRAY) && (iVar.mType != TYPE_ARRAY) )
@@ -319,14 +322,14 @@ bool var::operator <(const var& iVar) const
 var var::copy() const
 {
     // Deref and return if there's no heap
-    var d(*this);
-    d.dereference();
-    if (!d.heap())
-        return d;
+    if (reference())
+        return deref(*this).copy();
+    if (!heap())
+        return *this;
 
     // It's a heap
     var r;
-    r.mData.hp = new varheap(*d.mData.hp);
+    r.mData.hp = new varheap(*mData.hp);
     r.attach();
     return r;
 }
@@ -588,6 +591,7 @@ var var::operator -(var iVar) const
 
 var var::operator *(var iVar) const
 {
+    iVar.dereference();
     var r = copy();
     r *= iVar;
     return r;
@@ -610,6 +614,8 @@ var var::operator /(var iVar) const
  */
 char* var::operator &()
 {
+    if (reference())
+        return deref(*this).operator &();
     if (heap())
         return mData.hp->ref();
     return (char*)&mData;
@@ -676,6 +682,8 @@ var var::operator [](var iVar)
 
 var var::at(int iIndex) const
 {
+    if (reference())
+        return deref(*this).at(iIndex);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)

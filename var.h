@@ -57,9 +57,9 @@ public:
     var(int iSize, float iFirst, ...);
 
     // Operators
-    bool operator ==(const var& iVar) const;
-    bool operator !=(const var& iVar) const;
-    bool operator <(const var& iVar) const;
+    bool operator ==(var iVar) const;
+    bool operator !=(var iVar) const;
+    bool operator <(var iVar) const;
     var& operator +=(var iVar);
     var& operator -=(var iVar);
     var& operator *=(var iVar);
