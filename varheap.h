@@ -37,22 +37,25 @@ public:
     ~varheap();
     varheap(const varheap& iHeap);
 
+    // Templates
+    template<class T> T& ref(int iIndex);
+
     // Overloaded constructors
     varheap(int iSize, var::dataEnum iType);
     varheap(int iSize, const char* iData);
     varheap(int iSize, const int* iData);
 
-    // Chums
-    friend class var;
+    // Trivial accessors
+    var::dataEnum type() const { return mType; };
+    int size() const { return mSize; };
+    char* ref() const { return mData.cp; };
 
     // Methods
-    int size();
     int attach();
     int detach();
     void resize(int iSize);
     long double strtold();
     void format(std::ostream& iStream);
-    void formatview(std::ostream& iStream);
     var at(int iIndex, bool iKey=false) const;
     void set(var iVar, int iIndex=-1, bool iKey=false);
     void add(var iVar, int iIndex=-1);
@@ -87,6 +90,7 @@ private:
     // Methods
     void alloc(int iSize);
     void dealloc(dataType iData);
+    void formatView(std::ostream& iStream);
 };
 
 #endif // VARHEAP_H

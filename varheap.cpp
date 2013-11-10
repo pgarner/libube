@@ -21,6 +21,36 @@
 # define VDEBUG(a)
 #endif
 
+
+/*
+ * Template specialisations (before any get used)
+ *
+ * These can be used to get the actual storage.  C++ doesn't allow
+ * overloading on return type, so the return type must be specified.
+ */
+template<> char& varheap::ref<char>(int iIndex) {
+    return mData.cp[iIndex];
+}
+template<> int& varheap::ref<int>(int iIndex) {
+    return mData.ip[iIndex];
+}
+template<> long& varheap::ref<long>(int iIndex) {
+    return mData.lp[iIndex];
+}
+template<> float& varheap::ref<float>(int iIndex) {
+    return mData.fp[iIndex];
+}
+template<> double& varheap::ref<double>(int iIndex) {
+    return mData.dp[iIndex];
+}
+template<> var& varheap::ref<var>(int iIndex) {
+    return mData.vp[iIndex];
+}
+template<> pair& varheap::ref<pair>(int iIndex) {
+    return mData.pp[iIndex];
+}
+
+
 int sizeOf(var::dataEnum iType)
 {
     switch (iType)
@@ -150,11 +180,6 @@ int allocSize(int iSize)
         size <<= 1;
     }
     return size;
-}
-
-int varheap::size()
-{
-    return mSize;
 }
 
 int varheap::attach()
@@ -306,7 +331,7 @@ void varheap::format(std::ostream& iStream)
     if (mView)
     {
         if (mSize > 1)
-            formatview(iStream);
+            formatView(iStream);
         else
             mView->format(iStream);
         return;
@@ -342,7 +367,7 @@ void varheap::format(std::ostream& iStream)
 }
 
 
-void varheap::formatview(std::ostream& iStream)
+void varheap::formatView(std::ostream& iStream)
 {
     assert(mData.vp); // Any of the pointers
     assert(mType == var::TYPE_INT);

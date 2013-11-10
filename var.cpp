@@ -40,37 +40,6 @@
  * before returning.
  */
 
-#if 0
-/*
- * Template specialisations (before any get used)
- *
- * These can be used to get the actual storage in order to convert
- * back from var to the builtin type. Functions as var to type
- * conversion.  It's the opposite of the initialisation constructors;
- * C++ doesn't allow overloading on return type, so the return type
- * must be specified.
- */
-template<> var& var::ref<var>(int iIndex) {
-    assert(mData.hp);
-    return mData.hp->mData.vp[iIndex];
-}
-template<> char& var::ref<char>(int iIndex) {
-    return !heap() ? mData.c : mData.hp->mData.cp[iIndex];
-}
-template<> int& var::ref<int>(int iIndex) {
-    return !heap() ? mData.i : mData.hp->mData.ip[iIndex];
-}
-template<> long& var::ref<long>(int iIndex) {
-    return !heap() ? mData.l : mData.hp->mData.lp[iIndex];
-}
-template<> float& var::ref<float>(int iIndex) {
-    return !heap() ? mData.f : mData.hp->mData.fp[iIndex];
-}
-template<> double& var::ref<double>(int iIndex) {
-    return !heap() ? mData.d : mData.hp->mData.dp[iIndex];
-}
-#endif
-
 /**
  * Default constructor.  Should be all zero.
  */
@@ -132,7 +101,6 @@ var& var::operator =(var iVar)
         // array.  However, no new storage is allocated, so no need to
         // detach from old storage
         mData.hp->set(iVar, -mIndex-1);
-        assert(mData.hp->mData.vp); // Any of the pointers
     }
     else
     {
@@ -331,9 +299,10 @@ bool var::operator <(const var& iVar) const
         default:
             throw std::runtime_error("operator <(): Unknown type");
         }
+
     if ( heap() && (type() == TYPE_CHAR) &&
          iVar.heap() && (iVar.type() == TYPE_CHAR) )
-        return (std::strcmp(mData.hp->mData.cp, iVar.mData.hp->mData.cp) < 0);
+        return (std::strcmp(mData.hp->ref(), iVar.mData.hp->ref()) < 0);
     for (int i=0; i<std::min(size(), iVar.size()); i++)
         if (at(i) < iVar.at(i))
             return true;
@@ -350,7 +319,7 @@ bool var::operator <(const var& iVar) const
 char* var::operator &()
 {
     if (heap())
-        return mData.hp->mData.cp;
+        return mData.hp->ref();
     return (char*)&mData;
 }
 
@@ -397,7 +366,7 @@ var::dataEnum var::type() const
     if (mType == TYPE_ARRAY)
     {
         if (mData.hp)
-            return mData.hp->mType;
+            return mData.hp->type();
     }
     return mType;
 }
@@ -461,8 +430,8 @@ char* var::cast<char*>()
 {
     if (heap())
     {
-        if (mData.hp->mType == TYPE_CHAR)
-            return mData.hp->mData.cp;
+        if (mData.hp->type() == TYPE_CHAR)
+            return &(*this);
         else
             throw std::runtime_error("cast<char*>(): Cannot cast array (yet)");
     }
@@ -1046,7 +1015,7 @@ var& var::dereference()
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
         mIndex = 0;
-        var& r = mData.hp->mData.vp[index];
+        var& r = mData.hp->ref<var>(index);
         *this = r;
         return r;
     }
@@ -1055,7 +1024,7 @@ var& var::dereference()
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
         mIndex = 0;
-        var& r = mData.hp->mData.pp[index].val;
+        var& r = mData.hp->ref<pair>(index).val;
         *this = r;
         return r;
     }
@@ -1069,19 +1038,19 @@ var& var::dereference()
         switch (mType)
         {
         case TYPE_CHAR:
-            mData.c = mData.hp->mData.cp[index];
+            mData.c = mData.hp->ref<char>(index);
             break;
         case TYPE_INT:
-            mData.i = mData.hp->mData.ip[index];
+            mData.i = mData.hp->ref<int>(index);
             break;
         case TYPE_LONG:
-            mData.l = mData.hp->mData.lp[index];
+            mData.l = mData.hp->ref<long>(index);
             break;
         case TYPE_FLOAT:
-            mData.f = mData.hp->mData.fp[index];
+            mData.f = mData.hp->ref<float>(index);
             break;
         case TYPE_DOUBLE:
-            mData.d = mData.hp->mData.dp[index];
+            mData.d = mData.hp->ref<double>(index);
             break;
         default:
             throw std::runtime_error("var::dereference(): Unknown type");
