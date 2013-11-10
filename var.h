@@ -80,7 +80,6 @@ public:
     dataEnum type() const;
     template<class T> T cast();
     bool heap(int iSize = -1) const;
-    var& set(var iVar, int iIndex=-1);
     var pop();
     var& push(var iVar);
     var& insert(var iVar, int iIndex=0);

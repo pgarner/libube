@@ -372,7 +372,6 @@ template<class T>
 T var::cast()
 {
     dereference();
-    //assert(!reference()); // Don't know what to do yet
 
     if (heap())
     {
@@ -417,6 +416,8 @@ T var::cast()
 template<>
 char* var::cast<char*>()
 {
+    dereference();
+
     if (heap())
     {
         if (mData.hp->type() == TYPE_CHAR)
@@ -680,6 +681,13 @@ var var::operator [](var iVar)
 }
 
 
+/*
+ * Array indirection
+ *
+ * The main difference between at() and operator[] is that at() is
+ * const.  That follows from it's being unable to change the array
+ * size.
+ */
 var var::at(int iIndex) const
 {
     if (reference())
@@ -687,7 +695,11 @@ var var::at(int iIndex) const
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)
-        return mData.hp->at(iIndex);
+    {
+        var r(*this);
+        r.mIndex = -iIndex-1;
+        return r;
+    }
     if (iIndex == 0)
         return *this;
     throw std::runtime_error("var::at(): Index out of bounds");
@@ -751,7 +763,7 @@ var& var::resize(int iSize)
                 mData.hp = new varheap(iSize, mType);
                 mType = TYPE_ARRAY;
                 attach();
-                set(tmp, 0);
+                at(0) = tmp;
             }
         }
     }
@@ -813,21 +825,6 @@ var var::typeOf()
 }
 
 
-/**
- * Set the value at iIndex to the value of iVar
- */
-var& var::set(var iVar, int iIndex)
-{
-    if (iIndex >= size())
-        resize(iIndex+1);
-    if (heap())
-        mData.hp->set(iVar, iIndex);
-    else
-        *this = iVar;
-    return *this;
-}
-
-
 var& var::push(var iVar)
 {
     VDEBUG(std::cout << "push: ");
@@ -847,7 +844,7 @@ var& var::push(var iVar)
         
     int last = size();
     resize(last+1);
-    set(iVar, last);
+    at(last) = iVar;
     return *this;
 }
 
@@ -866,17 +863,19 @@ var var::pop()
  */
 var& var::insert(var iVar, int iIndex)
 {
+    if (reference())
+        return deref(*this).insert(iVar, iIndex);
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
+
+    iVar.dereference();
     if (type() == TYPE_VAR)
     {
         // Implies array; insert a single var
         resize(size()+1);
         for (int i=size()-1; i>iIndex; i--)
-        {
-            set(at(i-1), i);
-        }
-        set(iVar, iIndex);
+            at(i) = at(i-1);
+        at(iIndex) = iVar;
     }
     else if (type() == TYPE_PAIR)
     {
@@ -884,19 +883,19 @@ var& var::insert(var iVar, int iIndex)
         resize(size()+1);
         for (int i=size()-1; i>iIndex; i--)
         {
-            mData.hp->set(mData.hp->key(i-1), i, true);
-            mData.hp->set(at(i-1), i);
+            mData.hp->key(i) = mData.hp->key(i-1);
+            at(i) = at(i-1);
         }
-        mData.hp->set(iVar, iIndex, true);
+        mData.hp->key(iIndex) = iVar;
     }
     else
     {
         // It's a fundamental type, insert the whole array
         resize(size()+iVar.size());
         for (int i=size()-1; i>iIndex+iVar.size()-1; i--)
-            set(at(i-iVar.size()), i);
+            at(i) = at(i-iVar.size());
         for (int i=0; i<iVar.size(); i++)
-            set(iVar.at(i), iIndex+i);
+            at(iIndex+i) = iVar[i];
     }
 
     return *this;
@@ -905,14 +904,16 @@ var& var::insert(var iVar, int iIndex)
 
 var var::remove(int iIndex)
 {
+    if (reference())
+        return deref(*this).remove(iIndex);
     assert(iIndex >= 0);
     if (iIndex > size()-1)
         throw std::range_error("remove(): index too large");
-    var r = at(iIndex);
+
+    var r = at(iIndex).copy();
     for (int i=iIndex+1; i<size(); i++)
-        set(at(i), i-1);
+        at(i-1) = at(i);
     resize(size()-1);
-    
     return r;
 }
 

@@ -167,10 +167,6 @@ int main(int argc, char** argv)
     xa[4] += 7;
     cout << "xa is " << xa << endl;
 
-    // set() on an array broadcasts over the array
-    xa.set(2);
-    cout << "xa is " << xa << endl;
-
     // Array of vars just by assigning indeces
     var arr;
     arr[1] = "Hi!";
@@ -186,11 +182,13 @@ int main(int argc, char** argv)
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
 
+    // Multi-dimensional array
     var iarr;
     iarr[1][2] = 3;
     iarr[1][4] = 5;
     cout << "iarr is " << iarr << endl;
 
+    // Multi-dimensional map
     var wmap;
     wmap["one"]["two"] = "three";
     wmap["one"]["four"] = "five";

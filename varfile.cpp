@@ -41,6 +41,10 @@ var& var::read(const char* iFile, const char* iType)
 
 var& var::write(const char* iFile, const char* iType)
 {
+    // Deref
+    if (reference())
+        return deref(*this).write(iFile, iType);
+
     // Open the library
     var lib = "lib";
     lib += iType;
