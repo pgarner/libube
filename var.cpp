@@ -966,11 +966,11 @@ var& var::presize(int iSize)
 
 var var::sum() const
 {
-    var d(*this);
-    d.dereference();
+    if (reference())
+        return deref(*this).sum();
     var sum = 0.0;
-    for (int i=0; i<d.size(); i++)
-        sum += d.at(i);
+    for (int i=0; i<size(); i++)
+        sum += at(i);
     return sum;
 }
 

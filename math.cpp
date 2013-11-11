@@ -12,9 +12,10 @@
 
 #include "var.h"
 #include "varheap.h"
+#include "cblas.h"
 
 
-#define MATH(func) var var::func() \
+#define MATH(func) var var::func() const \
 { \
     var r; \
     switch(mType) \
@@ -138,4 +139,39 @@ void varheap::pow(var iPower)
         default:
             throw std::runtime_error("Unknown type");
         }
+}
+
+
+var var::asum() const
+{
+    if (reference())
+        return deref(*this).asum();
+
+    var asum;
+    if (mType == TYPE_ARRAY)
+        asum = mData.hp->asum();
+    else
+        asum = this->abs();
+    return asum;
+}
+
+
+var varheap::asum()
+{
+    var sum;
+    switch (mType)
+    {
+    case var::TYPE_FLOAT:
+        sum = cblas_sasum(mSize, mData.fp, 1);
+        break;
+    case var::TYPE_DOUBLE:
+        sum = cblas_dasum(mSize, mData.dp, 1);
+        break;
+    default:
+        sum = 0L;
+        for (int i=0; i<mSize; i++)
+            sum += at(i);
+    }
+
+    return sum;
 }

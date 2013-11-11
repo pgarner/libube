@@ -1,5 +1,17 @@
-project(var)
+#
+# Copyright 2013 by Philip N. Garner
+#
+# See the file COPYING for the licence associated with this software.
+#
+# Author(s):
+#   Phil Garner, July 2013
+#
+project(libvar)
 cmake_minimum_required(VERSION 2.8)
+
+# BLAS & LAPACK:  Try for MKL first
+set(ENV{BLA_VENDOR} Intel10_64lp)
+find_package(BLAS REQUIRED)
 
 # add_definitions(-DVARBOSE)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
@@ -19,7 +31,7 @@ set_target_properties(static-lib
   PROPERTIES OUTPUT_NAME   "var"
   PUBLIC_HEADER "${HEADERS}"
   )
-target_link_libraries(static-lib "-ldl")
+target_link_libraries(static-lib "-ldl" "-lpthread" ${BLAS_LIBRARIES})
 
 add_executable(tests tests.cpp)
 target_link_libraries(tests static-lib)

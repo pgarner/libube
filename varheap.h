@@ -68,6 +68,9 @@ public:
     // Maths
     void pow(var iPower);
 
+    // Vector ops
+    var asum();
+
 private:
     
     union dataType {

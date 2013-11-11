@@ -225,5 +225,10 @@ int main(int argc, char** argv)
     cout << t1 << endl;
     cout << t2 << endl;
 
+    // BLAS
+    var bt(4, 1.0f, 1.2, 0.8, -2.0);
+    cout << bt << "  sums to " << bt.sum()  << endl;
+    cout << bt << " asums to " << bt.asum() << endl;
+
     return 0;
 }

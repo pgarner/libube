@@ -102,12 +102,13 @@ public:
     );
 
     // math.cpp
-    var abs();
-    var floor();
+    var abs() const;
+    var floor() const;
     var sin() const;
     var cos() const;
     var sqrt() const;
     var pow(var iPower) const;
+    var asum() const;
 
     // string.cpp
     var& getline(std::istream& iStream);
