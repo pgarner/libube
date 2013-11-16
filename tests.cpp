@@ -231,9 +231,11 @@ int main(int argc, char** argv)
     cout << bt << " asums to " << bt.asum() << endl;
 
     // Stream
-    var vs;
     vstream vstr;
-    vstr << "Hello";
+    float fl = 23e-1f;
+    vstr << "H";
+    cout << vstr.var() << endl;
+    vstr << "ello: " << fl;
     cout << vstr.var() << endl;
 
     return 0;

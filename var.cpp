@@ -422,30 +422,11 @@ char* var::cast<char*>()
     {
         if (mData.hp->type() == TYPE_CHAR)
             return &(*this);
-        else
-            throw std::runtime_error("cast<char*>(): Cannot cast array (yet)");
     }
 
-    switch (mType)
-    {
-    case TYPE_CHAR:
-        sprintf("%c", mData.c);
-        break;
-    case TYPE_INT:
-        sprintf("%d", mData.i);
-        break;
-    case TYPE_LONG:
-        sprintf("%ld", mData.l);
-        break;
-    case TYPE_FLOAT:
-        sprintf("%f", mData.f);
-        break;
-    case TYPE_DOUBLE:
-        sprintf("%f", mData.d);
-        break;
-    default:
-        throw std::runtime_error("cast<char*>(): Unknown type");
-    }
+    vstream vs;
+    vs << *this;
+    *this = vs.var();
 
     return &(*this);
 }
@@ -1151,25 +1132,38 @@ var var::view(int iDim, int iFirst, ...)
 }
 
 
+/**
+ * Basic constructor
+ *
+ * Initialises a var of type char as the buffer
+ */
 varbuf::varbuf()
 {
+    // Type char; ensure it's on the heap
     mVar = "";
     mVar.presize(2);
-    setp(&mVar, &mVar+mVar.size());
+
+    // Set the pointers meaning the buffer has zero size.  This will
+    // cause the ostream machinery to call overflow() on every write
+    setp(&mVar, &mVar);
 }
 
 
+/**
+ * Catch buffer overflows
+ *
+ * In fact, this gets called on every write
+ */
 varbuf::int_type varbuf::overflow(int_type iInt)
 {
-    if (iInt == traits_type::eof())
-        return iInt;
-    mVar.push((char)iInt);
-    setp(&mVar, &mVar);
+    if (iInt != traits_type::eof())
+        mVar.push(iInt);
     return iInt;
 }
 
 
 vstream::vstream()
 {
+    // Tell the base class to use the buffer in the derived class
     rdbuf(&mVarBuf);
 }

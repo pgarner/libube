@@ -160,29 +160,23 @@ class varbuf : public std::streambuf
 {
 public:
     varbuf();
-    var var() { return mVar; };
+    class var var() { return mVar; };
 
 private:
-    // This is called when there are too many characters in the buffer
-    // (thus, a write needs to be performed).
     virtual int_type overflow(int_type iInt);
 
-    // This is called when the buffer needs to be flushed.
-    //virtual int_type sync();
-
-    class var mVar;    
+    class var mVar;    ///< The actual buffer
 };
 
 
 /**
- * A stream that uses a var as the buffer
+ * An ostream that uses a var as the buffer
  */
 class vstream : public std::ostream
 {
 public:
     vstream();
-    var var() { return mVarBuf.var(); };
-    //std::streambuf* rdbuf() { return &mVarBuf; };
+    class var var() { return mVarBuf.var(); };
 
 private:
     class varbuf mVarBuf;
