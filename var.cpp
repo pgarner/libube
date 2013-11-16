@@ -1149,3 +1149,27 @@ var var::view(int iDim, int iFirst, ...)
 
     return v;
 }
+
+
+varbuf::varbuf()
+{
+    mVar = "";
+    mVar.presize(2);
+    setp(&mVar, &mVar+mVar.size());
+}
+
+
+varbuf::int_type varbuf::overflow(int_type iInt)
+{
+    if (iInt == traits_type::eof())
+        return iInt;
+    mVar.push((char)iInt);
+    setp(&mVar, &mVar);
+    return iInt;
+}
+
+
+vstream::vstream()
+{
+    rdbuf(&mVarBuf);
+}

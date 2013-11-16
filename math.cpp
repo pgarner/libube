@@ -12,8 +12,22 @@
 
 #include "var.h"
 #include "varheap.h"
-#include "cblas.h"
 
+
+/*
+ * In some sense it would be best to use cblas.  Netlib defines it,
+ * MKL defines it, but OpenBLAS and the like don't.  Sadly, there
+ * seems to be no standard header for the fortran versions.  MKL has
+ * mkl.h, openblas has f77blas.h.  However, given that the interface
+ * is rather standard, we can just reproduce the ones we use here.
+ * These happen to be mods of OpenBLAS's f77blas.h
+ */
+typedef int blasint;
+extern "C" {
+    // Actually FORTRAN calling convention
+    float  sasum_ (blasint *, float  *, blasint *);
+    double dasum_ (blasint *, double *, blasint *);
+}
 
 #define MATH(func) var var::func() const \
 { \
@@ -159,13 +173,14 @@ var var::asum() const
 var varheap::asum()
 {
     var sum;
+    int inc = 1;
     switch (mType)
     {
     case var::TYPE_FLOAT:
-        sum = cblas_sasum(mSize, mData.fp, 1);
+        sum = sasum_(&mSize, mData.fp, &inc);
         break;
     case var::TYPE_DOUBLE:
-        sum = cblas_dasum(mSize, mData.dp, 1);
+        sum = dasum_(&mSize, mData.dp, &inc);
         break;
     default:
         sum = 0L;

@@ -13,14 +13,8 @@ rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 export CC=clang
 export CXX=clang++
 
-# This is only the cblas header, which defines the interface.  The
-# implementation should be some optimised library like MKL or OpenBLAS
-if [[ ! -e cblas.h ]]
-then
-    wget http://www.netlib.org/blas/blast-forum/cblas.tgz
-    tar zxvf cblas.tgz CBLAS/include/cblas.h
-    ln -s CBLAS/include/cblas.h
-fi
+# Try for MKL; otherwise it'll find OpenBLAS or the like
+export BLA_VENDOR=Intel10_64lp
 
 cmake \
     -D CMAKE_BUILD_TYPE=debug \

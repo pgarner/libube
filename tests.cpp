@@ -230,5 +230,11 @@ int main(int argc, char** argv)
     cout << bt << "  sums to " << bt.sum()  << endl;
     cout << bt << " asums to " << bt.asum() << endl;
 
+    // Stream
+    var vs;
+    vstream vstr;
+    vstr << "Hello";
+    cout << vstr.var() << endl;
+
     return 0;
 }

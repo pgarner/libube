@@ -9,8 +9,7 @@
 project(libvar)
 cmake_minimum_required(VERSION 2.8)
 
-# BLAS & LAPACK:  Try for MKL first
-set(ENV{BLA_VENDOR} Intel10_64lp)
+# BLAS
 find_package(BLAS REQUIRED)
 
 # add_definitions(-DVARBOSE)
@@ -52,3 +51,7 @@ add_library(gnuplot-lib SHARED gnuplot.cpp)
 set_target_properties(gnuplot-lib
   PROPERTIES OUTPUT_NAME   "gnuplot"
   )
+
+# Testing
+enable_testing()
+add_test(Tests tests one two three)
