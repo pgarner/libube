@@ -113,6 +113,7 @@ varheap::varheap(const varheap& iHeap)
     mCapacity = 0;
     mRefCount = 0;
     mType = iHeap.mType;
+    mView = 0;
     resize(iHeap.mSize);
     for (int i=0; i<mSize; i++)
     {
@@ -466,6 +467,8 @@ var& varheap::key(int iIndex)
 
 void varheap::set(var iVar, int iIndex, bool iKey)
 {
+    if (mView)
+        return mView->set(iVar, iIndex, iKey);
     int lo = (iIndex < 0) ? 0 : iIndex;
     int hi = (iIndex < 0) ? mSize : iIndex+1;
     for (int i=lo; i<hi; i++)
