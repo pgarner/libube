@@ -662,6 +662,30 @@ var var::operator [](var iVar)
 }
 
 
+/**
+ * The view indexer
+ *
+ * returns a reference in the same sense as operator [].
+ */
+var var::operator ()(int iFirst, ...)
+{
+    // Can't dereference with a va_list, so first convert to index
+    va_list ap;
+    va_start(ap, iFirst);
+    int dim = size() / 2;
+    int p = iFirst * stride(0);
+    bounds(0, iFirst);
+    for (int i=1; i<dim; i++)
+    {
+        int d = va_arg(ap, int);
+        bounds(i, d);
+        p += d * stride(i);
+    }
+    va_end(ap);
+    return at(p);
+}
+
+
 /*
  * Array indirection
  *
@@ -1108,20 +1132,29 @@ var var::view(int iDim, int iFirst, ...)
     va_start(ap, iFirst);
 
     // The dimension vector must be an array, even if only 1D
-    var v;
-    v.mType = TYPE_ARRAY;
-    v.mData.hp = new varheap(1, &iFirst);
-    v.mIndex = 0;
-    v.attach();
+    var v(2, iFirst, 0);
+
+    // First entry of each pair is the dimension
     for (int i=1; i<iDim; i++)
+    {
         v.push(va_arg(ap, int));
+        v.push(0);
+    }
     va_end(ap);
 
-    int d = v.prod().cast<int>();
+    // The second of each pair is the stride
+    int p = 1;
+    for (int i=iDim-1; i>=0; i--)
+    {
+        v[i*2+1] = p;
+        p *= v.mData.hp->viewRef(i*2);
+    }
+
+    // the p that drops out should be the overall size
     if (!defined())
-        resize(d);
+        resize(p);
     else
-        if (d != size())
+        if (p != size())
             throw std::runtime_error("var::view(): Incompatible dimensions");
 
     // Tell the heap object that it's a view
@@ -1129,6 +1162,29 @@ var var::view(int iDim, int iFirst, ...)
     v.mData.hp->setView(mData.hp);
 
     return v;
+}
+
+
+int var::shape(int iDim) const
+{
+    if (!mData.hp || !mData.hp->view())
+        throw std::runtime_error("var::shape(): Not a view");
+    return mData.hp->viewRef(iDim*2);
+}
+
+
+int var::stride(int iDim) const
+{
+    if (!mData.hp || !mData.hp->view())
+        throw std::runtime_error("var::stride(): Not a view");
+    return mData.hp->viewRef(iDim*2+1);
+}
+
+
+void var::bounds(int iDim, int iIndex) const
+{
+    if (iIndex < 0 || iIndex >= shape(iDim))
+        throw std::runtime_error("var::bounds(): index out of bounds");
 }
 
 

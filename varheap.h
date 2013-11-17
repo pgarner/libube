@@ -46,7 +46,7 @@ public:
     varheap(int iSize, const int* iData);
 
     // Trivial accessors
-    var::dataEnum type() const { return mType; };
+    var::dataEnum type() const { return mView ? mView->type() : mType; };
     int size() const { return mSize; };
     char* ref() const { return mData.cp; };
 
@@ -64,6 +64,8 @@ public:
     void mul(var iVar, int iIndex=-1);
     void div(var iVar, int iIndex=-1);
     void setView(varheap* iVarHeap);
+    bool view() { return mView; };
+    int& viewRef(int iIndex);
 
     // Maths
     void pow(var iPower);

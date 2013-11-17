@@ -224,6 +224,8 @@ int main(int argc, char** argv)
     cout << ts << endl;
     cout << t1 << endl;
     cout << t2 << endl;
+    cout << "t1(1,2): " << t1(1,2) << endl;
+    cout << "t2(1,2,2): " << t2(1,1,2) << endl;
 
     // BLAS
     var bt(4, 1.0f, 1.2, 0.8, -2.0);

@@ -71,6 +71,7 @@ public:
     char* operator &();
     var operator [](int iIndex);
     var operator [](var iVar);
+    var operator ()(int iFirst, ...);
 
     // Methods
     var at(int iIndex) const;
@@ -123,7 +124,10 @@ public:
 
     // Tensors
     var view(int iDim, int iFirst, ...);
-    
+    int shape(int iDim) const;
+    int stride(int iDim) const;
+    void bounds(int iDim, int iIndex) const;
+
 private:
 
     union dataType {
@@ -142,7 +146,7 @@ private:
     dataEnum mType; ///< The data type
 
     // Methods
-    template<class T> T& ref(int iIndex);
+    //template<class T> T& ref(int iIndex);
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf(dataEnum iType);

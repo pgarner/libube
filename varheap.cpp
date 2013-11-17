@@ -29,25 +29,25 @@
  * overloading on return type, so the return type must be specified.
  */
 template<> char& varheap::ref<char>(int iIndex) {
-    return mData.cp[iIndex];
+    return mView ? mView->ref<char>(iIndex) : mData.cp[iIndex];
 }
 template<> int& varheap::ref<int>(int iIndex) {
-    return mData.ip[iIndex];
+    return mView ? mView->ref<int>(iIndex) : mData.ip[iIndex];
 }
 template<> long& varheap::ref<long>(int iIndex) {
-    return mData.lp[iIndex];
+    return mView ? mView->ref<long>(iIndex) : mData.lp[iIndex];
 }
 template<> float& varheap::ref<float>(int iIndex) {
-    return mData.fp[iIndex];
+    return mView ? mView->ref<float>(iIndex) : mData.fp[iIndex];
 }
 template<> double& varheap::ref<double>(int iIndex) {
-    return mData.dp[iIndex];
+    return mView ? mView->ref<double>(iIndex) : mData.dp[iIndex];
 }
 template<> var& varheap::ref<var>(int iIndex) {
-    return mData.vp[iIndex];
+    return mView ? mView->ref<var>(iIndex) : mData.vp[iIndex];
 }
 template<> pair& varheap::ref<pair>(int iIndex) {
-    return mData.pp[iIndex];
+    return mView ? mView->ref<pair>(iIndex) : mData.pp[iIndex];
 }
 
 
@@ -373,12 +373,13 @@ void varheap::formatView(std::ostream& iStream)
     assert(mType == var::TYPE_INT);
 
     // Output shape if it's more than a matrix
-    if (mSize > 2)
+    int nDim = mSize / 2;
+    if (nDim > 2)
     {
-        for (int i=0; i<mSize; i++)
+        for (int i=0; i<nDim; i++)
         {
-            iStream << mData.ip[i];
-            if (i != mSize-1)
+            iStream << mData.ip[i*2];
+            if (i != nDim-1)
                 iStream << "x";
         }
         iStream << " tensor:" << std::endl;
@@ -386,12 +387,12 @@ void varheap::formatView(std::ostream& iStream)
 
     // Calculate how many matrices we have
     int nMats = 1;
-    for (int i=0; i<mSize-2; i++)
-        nMats *= mData.ip[i];
+    for (int i=0; i<nDim-2; i++)
+        nMats *= mData.ip[i*2];
 
     // Format as a sequence of matrices
-    int nRows = mData.ip[mSize-2];
-    int nCols = mData.ip[mSize-1];
+    int nRows = mData.ip[(nDim-2)*2];
+    int nCols = mData.ip[(nDim-1)*2];
     for (int k=0; k<nMats; k++)
     {
         iStream << "{";
@@ -627,4 +628,11 @@ void varheap::setView(varheap* iVarHeap)
         mView->detach();
     mView = iVarHeap;
     mView->attach();
+}
+
+int& varheap::viewRef(int iIndex)
+{
+    if (!mView)
+        std::runtime_error("varheap::viewRef(): Not a view");
+    return mData.ip[iIndex];
 }
