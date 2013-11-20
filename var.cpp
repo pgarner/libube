@@ -375,7 +375,7 @@ T var::cast()
 
     if (heap())
     {
-        if (mType == TYPE_CHAR)
+        if (type() == TYPE_CHAR)
             *this = static_cast<T>(mData.hp->strtold());
         else
             throw std::runtime_error("cast(): Cannot cast array");

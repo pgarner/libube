@@ -107,8 +107,10 @@ int main(int argc, char** argv)
     var str;
     cout << "sprintf: " << str.sprintf("This string is %d %f", 1, 0.1) << endl;
 
-    // Cast to char*
+    // Cast to char* and back
     y.cast<char*>();
+    cout << "y is: " << y << endl;
+    y.cast<float>();
     cout << "y is: " << y << endl;
 
     // Shifting of command line
