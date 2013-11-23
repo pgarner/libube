@@ -711,6 +711,33 @@ var var::at(int iIndex) const
 }
 
 
+/*
+ * Array indirection
+ *
+ * The main difference between at() and operator[] is that at() is
+ * const.  That follows from it's being unable to change the array
+ * size.  As above, but for map type.
+ */
+var var::at(var iVar) const
+{
+    if (reference())
+        return deref(*this).at(iVar);
+    if (!defined())
+        throw std::runtime_error("var::at(): uninitialised");
+    else
+        if (type() != TYPE_PAIR)
+            throw std::runtime_error("operator [var]: Not a map");
+
+    int index = binary(iVar);
+    var r;
+    if ( (index >= size()) || (mData.hp->key(index) != iVar) )
+        return r;
+    r = *this;
+    r.mIndex = -index-1;
+    return r;
+}
+
+
 std::ostream& operator <<(std::ostream& iStream, var iVar)
 {
     iVar.dereference();
@@ -835,6 +862,9 @@ var& var::push(var iVar)
     VDEBUG(std::cout << "push: ");
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
+    while (reference())
+        dereference();
+
     if (!defined())
     {
         // Uninitialised

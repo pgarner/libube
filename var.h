@@ -75,6 +75,7 @@ public:
 
     // Methods
     var at(int iIndex) const;
+    var at(var iVar) const;
     var copy() const;
     bool defined() const;
     int size() const;
