@@ -169,10 +169,15 @@ int main(int argc, char** argv)
     xa[4] += 7;
     cout << "xa is " << xa << endl;
 
+    // Array of vars by pushing
+    var arr1;
+    arr1.push("Hi!");
+    cout << arr1 << endl;
+
     // Array of vars just by assigning indeces
-    var arr;
-    arr[1] = "Hi!";
-    cout << arr << endl;
+    var arr2;
+    arr2[1] = "Hi!";
+    cout << arr2 << endl;
 
     // Array indexed by var
     var vmap;
@@ -183,6 +188,7 @@ int main(int argc, char** argv)
     cout << "vmap[1] is " << vmap[1] << endl;
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
+    cout << "vmap.copy() is " << vmap.copy() << endl;
 
     // Multi-dimensional array
     var iarr;
@@ -243,6 +249,11 @@ int main(int argc, char** argv)
     cout << vstr.var() << endl;
     vstr << "ello: " << fl;
     cout << vstr.var() << endl;
+
+    // gedcom
+    var ged;
+    ged.read("tests.ged", "ged");
+    cout << "Loaded: " << ged << endl;
 
     return 0;
 }

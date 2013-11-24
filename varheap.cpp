@@ -119,7 +119,7 @@ varheap::varheap(const varheap& iHeap)
     {
         set(iHeap.at(i), i);
         if (mType == var::TYPE_PAIR)
-            set(iHeap.at(i), i, true);
+            set(iHeap.at(i, true), i, true);
     }
     mView = iHeap.mView;
     if (mView)

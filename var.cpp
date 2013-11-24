@@ -862,8 +862,8 @@ var& var::push(var iVar)
     VDEBUG(std::cout << "push: ");
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
-    while (reference())
-        dereference();
+    if (reference())
+        return deref(*this).push(iVar);
 
     if (!defined())
     {
@@ -922,6 +922,7 @@ var& var::insert(var iVar, int iIndex)
             at(i) = at(i-1);
         }
         mData.hp->key(iIndex) = iVar;
+        at(iIndex).clear();
     }
     else
     {
@@ -981,6 +982,8 @@ var var::index(var iVar) const
  */
 var& var::clear()
 {
+    if (reference())
+        return deref(*this).clear();
     detach();
     mData.hp = 0;
     mIndex = 0;

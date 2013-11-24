@@ -51,6 +51,10 @@ add_library(gnuplot-lib SHARED gnuplot.cpp)
 set_target_properties(gnuplot-lib
   PROPERTIES OUTPUT_NAME   "gnuplot"
   )
+add_library(ged-lib SHARED gedfile.cpp)
+set_target_properties(ged-lib
+  PROPERTIES OUTPUT_NAME   "ged"
+  )
 
 # Testing
 enable_testing()
