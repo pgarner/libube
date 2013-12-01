@@ -148,7 +148,7 @@ int GEDCOM::readLine()
         std::cout << "Premature end of file" << std::endl;
         
     int level = mField.shift().cast<int>();
-    std::cout << "[" << level << "]" << mField << std::endl;
+    //std::cout << "[" << level << "]" << mField << std::endl;
     return level;
 }
 

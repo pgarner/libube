@@ -51,7 +51,8 @@ public:
     var(double iData);
     var(const char* iData);
     var(int iSize, const char* iData);
-    var(int iSize, char* const* iData);
+    var(int iSize, const char* const* iData);
+    var(const char* const* iData);
     var(int iSize, const int* iData);
     var(int iSize, int iFirst, ...);
     var(int iSize, float iFirst, ...);
@@ -83,6 +84,7 @@ public:
     template<class T> T cast();
     bool heap(int iSize = -1) const;
     var pop();
+    var top() { return at(size() - 1); };
     var& push(var iVar);
     var& insert(var iVar, int iIndex=0);
     var remove(int iIndex);

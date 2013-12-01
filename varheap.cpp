@@ -346,12 +346,12 @@ void varheap::format(std::ostream& iStream)
         iStream << "\"";
         break;
     case var::TYPE_PAIR:
-        iStream << "{";
+        iStream << "{\n";
         for (int i=0; i<mSize; i++)
         {
             iStream << "[" << at(i, true) << "] = " << at(i);
             //if (i != mSize-1)
-                iStream << "; ";
+                iStream << ";\n";
         }
         iStream << "}";
         break;

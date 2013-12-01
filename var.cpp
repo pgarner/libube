@@ -179,7 +179,7 @@ var::var(const char* iData)
     // It's all in the init
 }
 
-var::var(int iSize, char* const* iData)
+var::var(int iSize, const char* const* iData)
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(char**): " << iData[0] << std::endl);
@@ -187,6 +187,18 @@ var::var(int iSize, char* const* iData)
     mType = TYPE_ARRAY;
     mIndex = 0;
     for (int i=0; i<iSize; i++)
+        push(iData[i]);
+}
+
+
+var::var(const char* const* iData)
+{
+    int size = -1;
+    while (iData[++size]) {}
+    mData.hp = 0;
+    mType = TYPE_ARRAY;
+    mIndex = 0;
+    for (int i=0; i<size; i++)
         push(iData[i]);
 }
 
@@ -876,7 +888,7 @@ var& var::push(var iVar)
         if ( (mType != TYPE_ARRAY) && (iVar.mType != mType) )
             throw std::runtime_error("push(): Incompatible types");
     }
-        
+
     int last = size();
     resize(last+1);
     at(last) = iVar;

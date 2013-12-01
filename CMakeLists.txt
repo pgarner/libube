@@ -43,18 +43,31 @@ add_library(txt-lib SHARED txtfile.cpp)
 set_target_properties(txt-lib
   PROPERTIES OUTPUT_NAME   "txt"
   )
+
 add_library(ini-lib SHARED inifile.cpp)
 set_target_properties(ini-lib
   PROPERTIES OUTPUT_NAME   "ini"
   )
+
 add_library(gnuplot-lib SHARED gnuplot.cpp)
 set_target_properties(gnuplot-lib
   PROPERTIES OUTPUT_NAME   "gnuplot"
   )
+
 add_library(ged-lib SHARED gedfile.cpp)
 set_target_properties(ged-lib
   PROPERTIES OUTPUT_NAME   "ged"
   )
+
+find_package(EXPAT)
+if (EXPAT_FOUND)
+  include_directories(${EXPAT_INCLUDE_DIR})
+  add_library(xml-lib SHARED xmlfile.cpp)
+  target_link_libraries(xml-lib ${EXPAT_LIBRARY})
+  set_target_properties(xml-lib
+    PROPERTIES OUTPUT_NAME   "xml"
+    )
+endif (EXPAT_FOUND)
 
 # Testing
 enable_testing()

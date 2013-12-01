@@ -255,5 +255,10 @@ int main(int argc, char** argv)
     ged.read("tests.ged", "ged");
     cout << "Loaded: " << ged << endl;
 
+    // XML
+    var xml;
+    xml.read("tests.xml", "xml");
+    cout << "Loaded: " << xml << endl;
+
     return 0;
 }

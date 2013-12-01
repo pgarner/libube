@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test id="ident">
+  <element1 style="fat" size="small">This is element 1</element1>
+  <element2 style="red" size="large">
+    This is
+    element 2
+  </element2>
+  <element3 />
+</test>
