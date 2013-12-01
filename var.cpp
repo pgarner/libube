@@ -750,38 +750,47 @@ var var::at(var iVar) const
 }
 
 
-std::ostream& operator <<(std::ostream& iStream, var iVar)
+/**
+ * Never indent a basic var, but do pass the current level along to
+ * the array formatter.
+ */
+void var::format(std::ostream& iStream, int iIndent)
 {
-    iVar.dereference();
-    switch (iVar.mType)
+    switch (mType)
     {
     case var::TYPE_ARRAY:
-        if (iVar.mData.hp)
-            iVar.mData.hp->format(iStream);
+        if (mData.hp)
+            mData.hp->format(iStream, iIndent);
         else
             iStream << "nil";
         break;
     case var::TYPE_CHAR:
         iStream << "\'";
-        iStream << iVar.mData.c;
+        iStream << mData.c;
         iStream << "\'";
         break;
     case var::TYPE_INT:
-        iStream << iVar.mData.i;
+        iStream << mData.i;
         break;
     case var::TYPE_LONG:
-        iStream << iVar.mData.l;
+        iStream << mData.l;
         break;
     case var::TYPE_FLOAT:
-        iStream << iVar.mData.f;
+        iStream << mData.f;
         break;
     case var::TYPE_DOUBLE:
-        iStream << iVar.mData.d;
+        iStream << mData.d;
         break;
     default:
-        throw std::runtime_error("<<(): Unknown type");
+        throw std::runtime_error("var::format(): Unknown type");
     }
+}
 
+
+std::ostream& operator <<(std::ostream& iStream, var iVar)
+{
+    iVar.dereference();
+    iVar.format(iStream);
     return iStream;
 }
 

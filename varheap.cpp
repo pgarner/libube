@@ -325,7 +325,7 @@ long double varheap::strtold()
 }
 
 
-void varheap::format(std::ostream& iStream)
+void varheap::format(std::ostream& iStream, int iIndent)
 {
     assert(mData.vp); // Any of the pointers
 
@@ -349,10 +349,29 @@ void varheap::format(std::ostream& iStream)
         iStream << "{\n";
         for (int i=0; i<mSize; i++)
         {
-            iStream << "[" << at(i, true) << "] = " << at(i);
-            //if (i != mSize-1)
-                iStream << ";\n";
+            for (int j=0; j<iIndent+2; j++)
+                iStream << " ";
+            iStream << "[" << at(i, true) << "] = ";
+            at(i).format(iStream, iIndent+2);
+            iStream << ";\n";
         }
+        for (int j=0; j<iIndent; j++)
+            iStream << " ";
+        iStream << "}";
+        break;
+    case var::TYPE_VAR:
+        iStream << "{\n";
+        for (int i=0; i<mSize; i++)
+        {
+            for (int j=0; j<iIndent+2; j++)
+                iStream << " ";
+            at(i).format(iStream, iIndent+2);
+            if (i < mSize-1)
+                iStream << ",";
+            iStream << "\n";
+        }
+        for (int j=0; j<iIndent; j++)
+            iStream << " ";
         iStream << "}";
         break;
     default:

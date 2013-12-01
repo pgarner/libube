@@ -98,6 +98,7 @@ public:
     var& presize(int iSize);
     var sum() const;
     var prod() const;
+    void format(std::ostream& iStream, int iIndent = 0);
 
     // Chums
     friend var& deref(var iVar);
