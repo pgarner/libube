@@ -124,7 +124,7 @@ var Expat::parse(const char* iFile)
 
     var f;
     XML_Status s;
-    while (f.getline(is).defined())
+    while (f.getline(is))
     {
         s = XML_Parse(mParser, &f, f.size(), 0);
         if (!s)
@@ -143,7 +143,7 @@ var Expat::parse(const char* iFile)
 var Expat::element()
 {
     static var elem;
-    if (!elem.defined())
+    if (!elem)
     {
         var nil;
         elem["name"] = nil;
@@ -157,7 +157,7 @@ var Expat::element()
 void Expat::startElementHandler(const XML_Char *iName, const XML_Char **iAtts)
 {
     var elem = element();
-    if (mStack.defined())
+    if (mStack)
         mStack.top()["data"].push(elem);
     else
         mVar = elem;

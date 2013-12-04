@@ -109,7 +109,7 @@ GEDCOM::GEDCOM()
 var GEDCOM::individual()
 {
     static var ind;
-    if (!ind.defined())
+    if (!ind)
     {
         // Build the exemplar
         var nil;
@@ -127,7 +127,7 @@ var GEDCOM::individual()
 var GEDCOM::family()
 {
     static var fam;
-    if (!fam.defined())
+    if (!fam)
     {
         // Build the exemplar
         var nil;
@@ -142,7 +142,7 @@ var GEDCOM::family()
 int GEDCOM::readLine()
 {
     var line;
-    if (line.getline(mInStream).defined())
+    if (line.getline(mInStream))
         mField = line.split(" ");
     else
         std::cout << "Premature end of file" << std::endl;
@@ -164,7 +164,7 @@ var GEDCOM::loadFile(const char* iFileName)
 
 bool GEDCOM::knownToken(var iToken)
 {
-    if (mTokenMap.at(iToken).defined())
+    if (mTokenMap.at(iToken))
         return true;
     std::cout << "Token not in map: " << iToken << std::endl;
     return false;
@@ -353,7 +353,7 @@ int GEDCOM::doFamily(int iLevel, var iFam)
         {
         case HUSB:
             indiv = mField.shift();
-            if (!mIndividualMap.at(indiv).defined())
+            if (!mIndividualMap.at(indiv))
                 std::cout << "Missing: " << indiv << std::endl;
             iFam["HUSB"] = mIndividualMap[indiv];
             break;

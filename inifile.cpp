@@ -23,7 +23,7 @@ void read(const char* iFile, var& oVar)
     oVar.clear();
     var f;
     var section = "";
-    while (f.getline(is).defined())
+    while (f.getline(is))
     {
         f.strip();
         if (f.size() == 0 || f[0] == ';' || f[0] == '#')
@@ -33,7 +33,7 @@ void read(const char* iFile, var& oVar)
         {
             // It's a section line
             var close = f.index(']');
-            if (!close.defined())
+            if (!close)
                 throw std::runtime_error("inifile::read(): can't find ]");
             section = f.copy();
             section.resize(close.cast<int>());

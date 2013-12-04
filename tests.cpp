@@ -37,18 +37,22 @@ int main(int argc, char** argv)
         cout << "It's not a dot" << endl;
 
     // Check that index() finds (or not) an element
-    if (arg.index("-f").defined())
+    if (arg.index("-f"))
         cout << "There's a -f" << endl;
     else
         cout << "There's no -f" << endl;
 
     // Basic numerical tests
     var s, w, x, y, z, dummy;
+    cout << (s ? "true" : "false") << endl;
+    cout << (!s ? "true" : "false") << endl;
     w = 'w';
     x = 2;
     y = 3.14;
     z = y.cos();
     s = "Hello!";
+    cout << (s ? "true" : "false") << endl;
+    cout << (!s ? "true" : "false") << endl;
 
     cout << "Var size is " << sizeof(var) << endl;
     cout << w << endl;
@@ -142,7 +146,7 @@ int main(int argc, char** argv)
     ifstream is("tests.txt", ifstream::in);
     if (is.fail())
         cout << "Open failed" << endl;
-    while (f.getline(is).defined())
+    while (f.getline(is))
     {
         cout << f << endl;
         t.push(f.copy());

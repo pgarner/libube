@@ -22,7 +22,7 @@ void read(const char* iFile, var& oVar)
 
     oVar.clear();
     var f;
-    while (f.getline(is).defined())
+    while (f.getline(is))
         oVar.push(f.copy());
 }
 
