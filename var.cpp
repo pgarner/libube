@@ -1277,3 +1277,31 @@ vstream::vstream()
     // Tell the base class to use the buffer in the derived class
     rdbuf(&mVarBuf);
 }
+
+
+/**
+ * vruntime_error constructor
+ *
+ * This is really just a runtime_error that takes a var as its
+ * argument.  The var is formatted, so you can have arbitrary values
+ * appear in the what() string.
+ *
+ * Two things are wrong here: One is that it should be
+ * namespace::runtime_error.  The other is that what() should do the
+ * formatting, not the constructor.  That is because memory is more
+ * likely to have been cleared by the time what() gets executed.  It's
+ * this way because what() is const, and "operator&" and all the
+ * things returning strings aren't.
+ */
+vruntime_error::vruntime_error(var iVar)
+{
+    vstream vs;
+    vs << iVar;
+    mVar = vs.var();
+    mStr = &mVar;
+}
+
+const char* vruntime_error::what() const noexcept
+{
+    return mStr;
+}

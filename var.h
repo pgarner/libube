@@ -11,6 +11,7 @@
 #define VAR_H
 
 #include <iostream>
+#include <stdexcept>
 
 class varheap;
 
@@ -169,7 +170,7 @@ class varbuf : public std::streambuf
 {
 public:
     varbuf();
-    class var var() { return mVar; };
+    class var var() const { return mVar; };
 
 private:
     virtual int_type overflow(int_type iInt);
@@ -185,10 +186,25 @@ class vstream : public std::ostream
 {
 public:
     vstream();
-    class var var() { return mVarBuf.var(); };
+    class var var() const { return mVarBuf.var(); };
 
 private:
     class varbuf mVarBuf;
+};
+
+
+/**
+ * Exception class
+ */
+class vruntime_error : public std::exception
+{
+public:
+    vruntime_error(var iVar);
+    virtual const char* what() const noexcept;
+
+private:
+    class var mVar;
+    char* mStr;
 };
 
 #endif // VAR_H

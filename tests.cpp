@@ -264,5 +264,13 @@ int main(int argc, char** argv)
     xml.read("tests.xml", "xml");
     cout << "Loaded: " << xml << endl;
 
+    // Exception
+    try {
+        throw vruntime_error(bt);
+    }
+    catch (vruntime_error e) {
+        cout << "Caught: " << e.what() << endl;
+    };
+
     return 0;
 }
