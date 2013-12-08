@@ -75,6 +75,7 @@ public:
     var operator [](var iVar);
     var operator ()(int iFirst, ...);
     explicit operator bool() const { return defined(); };
+    var operator ,(var iVar) { return push(iVar); };
 
     // Methods
     var at(int iIndex) const;

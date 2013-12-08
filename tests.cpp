@@ -272,5 +272,10 @@ int main(int argc, char** argv)
         cout << "Caught: " << e.what() << endl;
     };
 
+    // Init by overloading operator,()
+    var comma;
+    comma = 1.2, 2.0, 4, 5;
+    cout << "Comma is: " << comma << endl;
+
     return 0;
 }
