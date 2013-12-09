@@ -264,6 +264,14 @@ int main(int argc, char** argv)
     xml.read("tests.xml", "xml");
     cout << "Loaded: " << xml << endl;
 
+    // wav
+    var wav;
+    wav.read("tests.wav", "snd");
+    cout << "Loaded wav file:" << endl;
+    cout << " rate:     " << wav["rate"] << endl;
+    cout << " channels: " << wav["channels"] << endl;
+    cout << " size:     " << wav["data"].size() << endl;
+
     // Exception
     try {
         throw vruntime_error(bt);

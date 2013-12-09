@@ -8,6 +8,7 @@
 #
 project(libvar)
 cmake_minimum_required(VERSION 2.8)
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 # BLAS
 find_package(BLAS REQUIRED)
@@ -58,6 +59,16 @@ add_library(ged-lib SHARED gedfile.cpp)
 set_target_properties(ged-lib
   PROPERTIES OUTPUT_NAME   "ged"
   )
+
+find_package(SndFile)
+if (SNDFILE_FOUND)
+  include_directories(${SNDFILE_INCLUDE_DIR})
+  add_library(snd-lib SHARED sndfile.cpp)
+  target_link_libraries(snd-lib ${SNDFILE_LIBRARY})
+  set_target_properties(snd-lib
+    PROPERTIES OUTPUT_NAME   "snd"
+    )
+endif (SNDFILE_FOUND)
 
 find_package(EXPAT)
 if (EXPAT_FOUND)

@@ -356,6 +356,8 @@ bool var::defined() const
 
 int var::size() const
 {
+    if (reference())
+        return deref(*this).size();
     if (mType == TYPE_ARRAY)
         return mData.hp ? mData.hp->size() : 0;
     return 1;
