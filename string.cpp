@@ -56,7 +56,7 @@ var var::split(const char* iStr, int iMax) const
     var r;
     int strLen = std::strlen(iStr);
     var s = *this;
-    const char* source = s.cast<char*>();
+    const char* source = &s;
     const char* p;
     if (iMax != 1)
         while ( (p = std::strstr(source, iStr)) )

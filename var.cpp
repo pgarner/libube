@@ -424,7 +424,9 @@ T var::cast()
 }
 
 
+#if 0
 /**
+ * For now, I don't think this is the right way to do it.
  * Cast to char* is a specialisation
  */
 template<>
@@ -444,7 +446,7 @@ char* var::cast<char*>()
 
     return &(*this);
 }
-
+#endif
 
 var& var::operator +=(var iVar)
 {

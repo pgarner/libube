@@ -266,13 +266,13 @@ int GEDCOM::doIndividual(int iLevel, var iInd)
         switch (mTokenMap[token].cast<int>())
         {
         case NAME:
-            iInd["NAME"] = mField.join(" ").cast<char*>();
+            iInd["NAME"] = mField.join(" ");
             break;
         case TITL:
-            iInd["TITL"] = mField.join(" ").cast<char*>();
+            iInd["TITL"] = mField.join(" ");
             break;
         case SEX:
-            iInd["SEX"] = mField.join(" ").cast<char*>();
+            iInd["SEX"] = mField.join(" ");
             break;
         case BIRT:
         case DEAT:

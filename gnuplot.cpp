@@ -81,7 +81,11 @@ void write(const char* iFile, var iVar)
         case var::TYPE_FLOAT:
         case var::TYPE_DOUBLE:
             for (int j=0; j<str.size(); j++)
-                gp.puts(str.at(j).cast<char*>());
+            {
+                vstream vs;
+                vs << str.at(j);
+                gp.puts(&vs);
+            }
             gp.puts("e");
             break;
         default:

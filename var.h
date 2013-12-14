@@ -188,6 +188,7 @@ class vstream : public std::ostream
 public:
     vstream();
     class var var() const { return mVarBuf.var(); };
+    const char* operator &() { return &(mVarBuf.var()); };
 
 private:
     class varbuf mVarBuf;
