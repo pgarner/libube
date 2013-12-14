@@ -82,4 +82,7 @@ endif (EXPAT_FOUND)
 
 # Testing
 enable_testing()
-add_test(Tests tests one two three)
+add_test(
+  NAME Tests
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
+  )
