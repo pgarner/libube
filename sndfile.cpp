@@ -30,6 +30,7 @@ void read(const char* iFile, var& oVar)
     if (nGot != size)
         throw vruntime_error("sndfile::read: Size fuckup");
     oVar["data"] = data;
+    sf_close(sndFile);
 }
 
 void write(const char* iFile, var iVar)
