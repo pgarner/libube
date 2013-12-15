@@ -6,17 +6,20 @@
 # Author(s):
 #   Phil Garner, July 2013
 #
-project(libvar)
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
-# BLAS
+# Package information
+project(libvar)
+set(VERSION 0.1)
+
+# Package stuff
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(BLAS REQUIRED)
 
 # add_definitions(-DVARBOSE)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
-set(HEADERS var.h)
+set(HEADERS var.h var)
 set(SOURCES
   varfile.cpp
   varheap.cpp
@@ -32,6 +35,7 @@ set_target_properties(static-lib
   PUBLIC_HEADER "${HEADERS}"
   )
 target_link_libraries(static-lib "-ldl" "-lpthread" ${BLAS_LIBRARIES})
+set(INSTALL_TARGETS static-lib)
 
 add_executable(tests tests.cpp)
 target_link_libraries(tests static-lib)
@@ -44,21 +48,25 @@ add_library(txt-lib SHARED txtfile.cpp)
 set_target_properties(txt-lib
   PROPERTIES OUTPUT_NAME   "txt"
   )
+list(APPEND INSTALL_TARGETS txt-lib)
 
 add_library(ini-lib SHARED inifile.cpp)
 set_target_properties(ini-lib
   PROPERTIES OUTPUT_NAME   "ini"
   )
+list(APPEND INSTALL_TARGETS ini-lib)
 
 add_library(gnuplot-lib SHARED gnuplot.cpp)
 set_target_properties(gnuplot-lib
   PROPERTIES OUTPUT_NAME   "gnuplot"
   )
+list(APPEND INSTALL_TARGETS gnuplot-lib)
 
 add_library(ged-lib SHARED gedfile.cpp)
 set_target_properties(ged-lib
   PROPERTIES OUTPUT_NAME   "ged"
   )
+list(APPEND INSTALL_TARGETS ged-lib)
 
 find_package(SndFile)
 if (SNDFILE_FOUND)
@@ -68,6 +76,7 @@ if (SNDFILE_FOUND)
   set_target_properties(snd-lib
     PROPERTIES OUTPUT_NAME   "snd"
     )
+  list(APPEND INSTALL_TARGETS snd-lib)
 endif (SNDFILE_FOUND)
 
 find_package(EXPAT)
@@ -78,6 +87,7 @@ if (EXPAT_FOUND)
   set_target_properties(xml-lib
     PROPERTIES OUTPUT_NAME   "xml"
     )
+  list(APPEND INSTALL_TARGETS xml-lib)
 endif (EXPAT_FOUND)
 
 # Testing
@@ -87,4 +97,22 @@ add_test(
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
   )
 
-#add_subdirectory(txt)
+install(
+  TARGETS ${INSTALL_TARGETS}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib/libvar
+  ARCHIVE DESTINATION lib
+  PUBLIC_HEADER DESTINATION include
+  )
+
+# pkgconfig install lines
+set(prefix ${CMAKE_INSTALL_PREFIX})
+set(exec_prefix "\${prefix}")
+set(libdir "\${exec_prefix}/lib")
+set(includedir "\${prefix}/include")
+configure_file(libvar.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc)
+
+install(
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc
+  DESTINATION lib/pkgconfig
+  )

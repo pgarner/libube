@@ -7,6 +7,10 @@
 # Author(s):
 #   Phil Garner, July 2013
 #
+# This is for a $USER/local install.  Distributions should probably
+# duplicate the necessary bits of this in the build file then call
+# cmake directly.
+#
 rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 
 # I like clang recently as the error messages are nicer than gcc
@@ -26,4 +30,5 @@ fi
 
 cmake \
     -D CMAKE_BUILD_TYPE=debug \
+    -D CMAKE_INSTALL_PREFIX=~/local \
     .
