@@ -209,4 +209,49 @@ private:
     char* mStr;
 };
 
+
+/**
+ * Abstract class for dynamically loaded file handlers.  Defines the
+ * interface that file handlers must implement.
+ */
+class varfile
+{
+public:
+    virtual ~varfile() {};
+    virtual var read(const char* iFile) = 0;
+    virtual void write(const char* iFile, var iVar) = 0;
+};
+
+
+extern "C" {
+    /**
+     * Function with C linkage that must exist in the dynamically
+     * loaded library.  It should return a varfile by calling new on
+     * the derived class within the library.  It is part of the
+     * interface.
+     */
+    void factory(varfile** oFile);
+}
+
+
+/**
+ * Class to dynamically load a file handler
+ */
+class vfile
+{
+public:
+    vfile(const char* iType="txt");
+    ~vfile();
+    var read(const char* iFile) {
+        return mVarFile->read(iFile);
+    };
+    void write(const char* iFile, var iVar) {
+        return mVarFile->write(iFile, iVar);
+    };
+
+private:
+    void* mHandle;     ///< Handle for dynamic library
+    varfile* mVarFile; ///< Pointer to instance of file handler
+};
+
 #endif // VAR_H

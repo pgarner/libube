@@ -11,60 +11,40 @@
 #include <stdexcept>
 #include <dlfcn.h>
 
-
-var& var::read(const char* iFile, const char* iType)
+vfile::vfile(const char* iType)
 {
+    // Initialise
+    mVarFile = 0;
+    mHandle = 0;
+    char *error = dlerror();
+
     // Open the library
     var lib = "lib";
     lib += iType;
     lib += ".so";
-    void* handle = dlopen(&lib, RTLD_LAZY);
-    if (!handle)
-        throw std::runtime_error("var::read(): dlopen failed");
+    mHandle = dlopen(&lib, RTLD_LAZY);
+    if ((error = dlerror()) != NULL)
+        throw std::runtime_error(error);
+    if (!mHandle)
+        throw std::runtime_error("vfile::vfile(): dlopen failed");
 
-    // Find the function
-    char *error;
-    void (*dynamicRead)(const char* iFile, var& oVar);
-    dlerror();
-    *(void **)(&dynamicRead) = dlsym(handle, "read");
+    // Find the factory function
+    void (*fileFactory)(varfile** oFile);
+    *(void **)(&fileFactory) = dlsym(mHandle, "factory");
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
 
-    // Run the dynamically loaded function
-    (*dynamicRead)(iFile, *this);
-
-    // Close the library
-    dlclose(handle);
-    return *this;
+    // Run the dynamically loaded factory function
+    (*fileFactory)(&mVarFile);
+    if (!mVarFile)
+        throw std::runtime_error("vfile::vfile(): factory() failed");
 }
 
 
-var& var::write(const char* iFile, const char* iType)
+vfile::~vfile()
 {
-    // Deref
-    if (reference())
-        return deref(*this).write(iFile, iType);
-
-    // Open the library
-    var lib = "lib";
-    lib += iType;
-    lib += ".so";
-    void* handle = dlopen(&lib, RTLD_LAZY);
-    if (!handle)
-        throw std::runtime_error("var::read(): dlopen failed");
-
-    // Find the function
-    char *error;
-    void (*dynamicWrite)(const char* iFile, var iVar);
-    dlerror();
-    *(void **)(&dynamicWrite) = dlsym(handle, "write");
-    if ((error = dlerror()) != NULL)
-        throw std::runtime_error(error);
-
-    // Run the dynamically loaded function
-    (*dynamicWrite)(iFile, *this);
-
-    // Close the library
-    dlclose(handle);
-    return *this;
+    // Destroy the handler and close the library
+    if (mVarFile)
+        delete mVarFile;
+    dlclose(mHandle);
 }

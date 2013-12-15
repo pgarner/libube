@@ -11,22 +11,32 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "varfile.h"
+class txtfile : public varfile
+{
+public:
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
+};
 
+void factory(varfile** oFile)
+{
+    *oFile = new txtfile;
+}
 
-void read(const char* iFile, var& oVar)
+var txtfile::read(const char* iFile)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("txtfile::read(): Open failed");
 
-    oVar.clear();
+    var o;
     var f;
     while (f.getline(is))
-        oVar.push(f.copy());
+        o.push(f.copy());
+    return o;
 }
 
-void write(const char* iFile, var iVar)
+void txtfile::write(const char* iFile, var iVar)
 {
     std::ofstream os(iFile, std::ofstream::out);
     if (os.fail())

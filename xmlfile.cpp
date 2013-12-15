@@ -12,13 +12,12 @@
 #include <stdexcept>
 
 #include "expat.h"
-#include "varfile.h"
 
 
 /**
  * Class to wrap the expat library and callbacks.
  */
-class Expat
+class Expat : public varfile
 {
 public:
     Expat();
@@ -27,6 +26,8 @@ public:
     void startElementHandler(const XML_Char *iName, const XML_Char **iAtts);
     void endElementHandler(const XML_Char *iName);
     void characterDataHandler(const XML_Char *iStr, int iLen);
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
 
 private:
     var mVar;            ///< Var to populate during parse
@@ -35,6 +36,12 @@ private:
 
     var element();
 };
+
+
+void factory(varfile** oFile)
+{
+    *oFile = new Expat;
+}
 
 
 /**
@@ -186,12 +193,11 @@ void Expat::characterDataHandler(const XML_Char *iStr, int iLen)
 }
 
 
-void read(const char* iFile, var& oVar)
+var Expat::read(const char* iFile)
 {
-    Expat expat;
-    oVar = expat.parse(iFile);
+    return parse(iFile);
 }
 
-void write(const char* iFile, var iVar)
+void Expat::write(const char* iFile, var iVar)
 {
 }

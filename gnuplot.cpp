@@ -11,18 +11,24 @@
 #include <cstdio>
 #include <stdexcept>
 
-#include "varfile.h"
 
-
-class gnuplot
+class gnuplot : public varfile
 {
 public:
     gnuplot();
     ~gnuplot();
     void puts(const char* iStr);
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
 private:
     FILE* mStream;
 };
+
+
+void factory(varfile** oFile)
+{
+    *oFile = new gnuplot;
+}
 
 
 gnuplot::gnuplot()
@@ -48,23 +54,23 @@ void gnuplot::puts(const char* iStr)
 }
 
 
-void read(const char* iFile, var& oVar)
+var gnuplot::read(const char* iFile)
 {
     throw std::runtime_error("gnuplot::read() Read not defined");
+    return var();
 }
 
 
-void write(const char* iFile, var iVar)
+void gnuplot::write(const char* iFile, var iVar)
 {
-    gnuplot gp;
     var str;
     if (iFile)
     {
         // Default to whatever gnuplot's default is, but if a file is
         // supplied then write eps to it.
-        gp.puts("set term post eps");
+        puts("set term post eps");
         str.sprintf("set output \"%s\"", iFile);
-        gp.puts(&str);
+        puts(&str);
     }
 
     // Loop over the input var assuming it's an array of strings
@@ -74,7 +80,7 @@ void write(const char* iFile, var iVar)
         switch (str.type())
         {
         case var::TYPE_CHAR:
-            gp.puts(&str);
+            puts(&str);
             break;
         case var::TYPE_INT:
         case var::TYPE_LONG:
@@ -84,9 +90,9 @@ void write(const char* iFile, var iVar)
             {
                 vstream vs;
                 vs << str.at(j);
-                gp.puts(&vs);
+                puts(&vs);
             }
-            gp.puts("e");
+            puts("e");
             break;
         default:
             throw std::runtime_error("gnuplot::write(): Unknown data type");

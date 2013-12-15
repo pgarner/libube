@@ -11,16 +11,25 @@
 #include <fstream>
 #include <stdexcept>
 
-#include "varfile.h"
+class inifile : public varfile
+{
+public:
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
+};
 
+void factory(varfile** oFile)
+{
+    *oFile = new inifile;
+}
 
-void read(const char* iFile, var& oVar)
+var inifile::read(const char* iFile)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("inifile::read(): Open failed");
 
-    oVar.clear();
+    var oVar;
     var f;
     var section = "";
     while (f.getline(is))
@@ -52,9 +61,10 @@ void read(const char* iFile, var& oVar)
             oVar[section][kv[0]] = kv[1];
         }
     }
+    return oVar;
 }
 
-void write(const char* iFile, var iVar)
+void inifile::write(const char* iFile, var iVar)
 {
     std::ofstream os(iFile, std::ofstream::out);
     if (os.fail())

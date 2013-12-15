@@ -9,16 +9,18 @@
 
 #include <fstream>
 #include <var>
-#include "varfile.h"
+
 
 /**
  * Ad-hoc parser for GEDCOM files.
  */
-class GEDCOM
+class GEDCOM : public varfile
 {
 public:
     GEDCOM();
     var loadFile(const char* iFileName);
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
 
 private:
     var individual();
@@ -69,6 +71,13 @@ private:
     var mIndividualMap;
     var mFamilyMap;
 };
+
+
+void factory(varfile** oFile)
+{
+    *oFile = new GEDCOM;
+}
+
 
 GEDCOM::GEDCOM()
 {
@@ -407,13 +416,12 @@ int GEDCOM::doContinue(int iLevel, var iToken)
 }
 
 
-void read(const char* iFile, var& oVar)
+var GEDCOM::read(const char* iFile)
 {
-    GEDCOM ged;
-    oVar = ged.loadFile(iFile);
+    return loadFile(iFile);
 }
 
 
-void write(const char* iFile, var iVar)
+void GEDCOM::write(const char* iFile, var iVar)
 {
 }

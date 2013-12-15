@@ -10,9 +10,19 @@
 #include <var>
 #include <sndfile.h>
 
-#include "varfile.h"
+class sndfile : public varfile
+{
+public:
+    virtual var read(const char* iFile);
+    virtual void write(const char* iFile, var iVar);
+};
 
-void read(const char* iFile, var& oVar)
+void factory(varfile** oFile)
+{
+    *oFile = new sndfile;
+}
+
+var sndfile::read(const char* iFile)
 {
     SF_INFO sfInfo;
     sfInfo.format = 0;
@@ -20,7 +30,7 @@ void read(const char* iFile, var& oVar)
     if (!sndFile)
         throw vruntime_error("sndfile::read: Failed to open file");
 
-    oVar.clear();
+    var oVar;
     oVar["rate"] = sfInfo.samplerate;
     oVar["channels"] = sfInfo.channels;
     int size = sfInfo.frames * sfInfo.channels;
@@ -31,8 +41,9 @@ void read(const char* iFile, var& oVar)
         throw vruntime_error("sndfile::read: Size fuckup");
     oVar["data"] = data;
     sf_close(sndFile);
+    return oVar;
 }
 
-void write(const char* iFile, var iVar)
+void sndfile::write(const char* iFile, var iVar)
 {
 }

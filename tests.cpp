@@ -205,20 +205,21 @@ int main(int argc, char** argv)
     cout << "ai is: " << ai << endl;
 
     // Read a text file via a dynamic library
-    var txt;
-    txt.read("tests.txt", "txt");
+    vfile txtf("txt");
+    var txt = txtf.read("tests.txt");
     cout << "Loaded: " << txt << endl;
 
     // Read a .ini file via a dynamic library
-    var ini;
-    ini.read("tests.ini", "ini");
+    vfile inif("ini");
+    var ini = inif.read("tests.ini");
     cout << "Loaded: " << ini << endl;
 
     // Plot something with gnuplot
     var gnu;
     gnu.push("plot sin(x), \"-\"");
     gnu.push(ai);
-    gnu.write("tests.eps", "gnuplot");
+    vfile gnuf("gnuplot");
+    gnuf.write("tests.eps", gnu);
 
     // Tensors
     var ts = 0.0f;
@@ -249,18 +250,18 @@ int main(int argc, char** argv)
     cout << vstr.var() << endl;
 
     // gedcom
-    var ged;
-    ged.read("tests.ged", "ged");
+    vfile gedf("ged");
+    var ged = gedf.read("tests.ged");
     cout << "Loaded: " << ged << endl;
 
     // XML
-    var xml;
-    xml.read("tests.xml", "xml");
+    vfile xmlf("xml");
+    var xml = xmlf.read("tests.xml");
     cout << "Loaded: " << xml << endl;
 
     // wav
-    var wav;
-    wav.read("tests.wav", "snd");
+    vfile wavf("snd");
+    var wav = wavf.read("tests.wav");
     cout << "Loaded wav file:" << endl;
     cout << " rate:     " << wav["rate"] << endl;
     cout << " channels: " << wav["channels"] << endl;

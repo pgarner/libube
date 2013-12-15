@@ -83,6 +83,8 @@ endif (EXPAT_FOUND)
 # Testing
 enable_testing()
 add_test(
-  NAME Tests
+  NAME libvar
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
   )
+
+#add_subdirectory(txt)
