@@ -106,11 +106,11 @@ install(
   )
 
 # pkgconfig install lines
-set(prefix ${CMAKE_INSTALL_PREFIX})
-set(exec_prefix "\${prefix}")
-set(libdir "\${exec_prefix}/lib")
-set(includedir "\${prefix}/include")
-configure_file(libvar.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc)
+set(PREFIX ${CMAKE_INSTALL_PREFIX})
+set(EXEC_PREFIX "\${prefix}")
+set(LIBDIR "\${exec_prefix}/lib")
+set(INCLUDEDIR "\${prefix}/include")
+configure_file(libvar.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc @ONLY)
 
 install(
   FILES ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc
