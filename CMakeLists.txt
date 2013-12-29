@@ -75,7 +75,7 @@ find_package(SndFile)
 if (SNDFILE_FOUND)
   include_directories(${SNDFILE_INCLUDE_DIR})
   add_library(snd-lib SHARED sndfile.cpp)
-  target_link_libraries(snd-lib ${SNDFILE_LIBRARY})
+  target_link_libraries(snd-lib ${SNDFILE_LIBRARIES})
   set_target_properties(snd-lib
     PROPERTIES OUTPUT_NAME   "snd"
     )
@@ -86,7 +86,7 @@ find_package(EXPAT)
 if (EXPAT_FOUND)
   include_directories(${EXPAT_INCLUDE_DIR})
   add_library(xml-lib SHARED xmlfile.cpp)
-  target_link_libraries(xml-lib ${EXPAT_LIBRARY})
+  target_link_libraries(xml-lib ${EXPAT_LIBRARIES})
   set_target_properties(xml-lib
     PROPERTIES OUTPUT_NAME   "xml"
     )
