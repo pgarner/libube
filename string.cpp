@@ -11,6 +11,7 @@
 #include <cassert>
 #include <cstring>
 #include <cstdarg>
+#include <boost/regex.hpp>
 
 #include "var.h"
 
@@ -150,4 +151,45 @@ var& var::sprintf(const char* iFormat, ...)
     // Shouldn't get here
     assert(0);
     return *this;
+}
+
+/**
+ * Waiting for std::regex_search(), but currently implemented using
+ * boost.
+ */
+bool var::search(var iRE)
+{
+    if (type() != TYPE_CHAR)
+        throw std::runtime_error("var::search(): Not a string");
+    boost::regex rgx(&iRE);
+    bool r = boost::regex_search(&(*this), rgx);
+    return r;
+}
+
+/**
+ * Waiting for std::regex_match(), but currently implemented using
+ * boost.
+ */
+bool var::match(var iRE)
+{
+    if (type() != TYPE_CHAR)
+        throw std::runtime_error("var::match(): Not a string");
+    boost::regex rgx(&iRE);
+    bool r = boost::regex_match(&(*this), rgx);
+    return r;
+}
+
+/**
+ * Waiting for std::regex_replace(), but currently implemented using
+ * boost.
+ */
+var var::replace(var iRE, var iStr)
+{
+    if (type() != TYPE_CHAR)
+        throw std::runtime_error("var::replace(): Not a string");
+
+    std::string str = &(*this);
+    boost::regex rgx(&iRE);
+    var r = boost::regex_replace(str, rgx, &iStr).c_str();
+    return r;
 }

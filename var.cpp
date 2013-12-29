@@ -706,7 +706,7 @@ var var::operator ()(int iFirst, ...)
  * Array indirection
  *
  * The main difference between at() and operator[] is that at() is
- * const.  That follows from it's being unable to change the array
+ * const.  That follows from its being unable to change the array
  * size.
  */
 var var::at(int iIndex) const

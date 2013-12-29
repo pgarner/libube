@@ -124,6 +124,9 @@ public:
     var join(const char* iStr) const;
     var& strip();
     var& sprintf(const char* iFormat, ...);
+    bool search(var iRE);
+    bool match(var iRE);
+    var replace(var iRE, var iStr);
 
     // Files
     var& read(const char* iFile, const char* iType);

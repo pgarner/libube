@@ -280,5 +280,18 @@ int main(int argc, char** argv)
     comma = 1.2, 2.0, 4, 5;
     cout << "Comma is: " << comma << endl;
 
+    // Regular expressions
+    cout << "Searching ello: " << ss << endl;
+    if (ss.search("ello"))
+        cout << "Matches" << endl;
+    else
+        cout << "Matches not" << endl;
+    cout << "Matching \\S+ell\\S: " << ss << endl;
+    if (ss.search("\\S+ell\\S"))
+        cout << "Matches" << endl;
+    else
+        cout << "Matches not" << endl;
+    var rep = ss.replace("lo", "ls bells");
+    cout << "Replaced to: " << rep << endl;
     return 0;
 }

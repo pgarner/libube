@@ -15,6 +15,7 @@ set(VERSION 0.1)
 # Package stuff
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(BLAS REQUIRED)
+find_package(Boost COMPONENTS regex REQUIRED)
 
 # add_definitions(-DVARBOSE)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
@@ -34,7 +35,9 @@ set_target_properties(static-lib
   PROPERTIES OUTPUT_NAME   "var"
   PUBLIC_HEADER "${HEADERS}"
   )
-target_link_libraries(static-lib "-ldl" "-lpthread" ${BLAS_LIBRARIES})
+target_link_libraries(static-lib
+  "-ldl" "-lpthread" ${BLAS_LIBRARIES} ${Boost_LIBRARIES}
+  )
 set(INSTALL_TARGETS static-lib)
 
 add_executable(tests tests.cpp)
