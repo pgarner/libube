@@ -28,6 +28,9 @@ then
     ln -s arctic_a0001.wav tests.wav
 fi
 
+# Build the static library?
+export USE_STATIC=0
+
 cmake \
     -D CMAKE_BUILD_TYPE=debug \
     -D CMAKE_INSTALL_PREFIX=~/local \

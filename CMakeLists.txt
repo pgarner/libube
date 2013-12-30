@@ -29,83 +29,130 @@ set(SOURCES
   var.cpp
   )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-add_library(static-lib STATIC ${SOURCES})
-set_target_properties(static-lib
-  PROPERTIES OUTPUT_NAME   "var"
+# Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
+set(TARGET_LIBS
+  -ldl
+  ${BLAS_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
+  ${Boost_LIBRARIES}
+  )
+
+# Shared library
+#
+# The main point here is that the shared library can have an RPATH
+# attribute that locates the modules.  Anything linking with this
+# effectively inherits that RPATH, so it needn't do anything special
+# about modules.
+add_library(shared-lib SHARED ${SOURCES})
+set_target_properties(shared-lib
+  PROPERTIES OUTPUT_NAME "var"
   PUBLIC_HEADER "${HEADERS}"
+  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/libvar"
   )
-target_link_libraries(static-lib
-  "-ldl" "-lpthread" ${BLAS_LIBRARIES} ${Boost_LIBRARIES}
+target_link_libraries(shared-lib ${TARGET_LIBS})
+list(APPEND LIBVAR_TARGETS shared-lib)
+
+# Static library
+#
+# The idea behind the static library is that BLAS can run faster when
+# statically linked.  However, if used, the resulting executables will
+# have to set an explicit RPATH to find modules.
+set(USE_STATIC $ENV{USE_STATIC}
+  CACHE BOOLEAN "Whether to build static library"
   )
-set(INSTALL_TARGETS static-lib)
-
-add_executable(tests tests.cpp)
-target_link_libraries(tests static-lib)
-
-add_executable(aspect aspect.cpp)
-target_link_libraries(aspect static-lib)
+if (USE_STATIC)
+  add_library(static-lib STATIC ${SOURCES})
+  set_target_properties(static-lib
+    PROPERTIES OUTPUT_NAME "var"
+    )
+  target_link_libraries(static-lib ${TARGET_LIBS})
+  list(APPEND LIBVAR_TARGETS static-lib)
+endif (USE_STATIC)
 
 # Shared dynamic libraries
-add_library(txt-lib SHARED txtfile.cpp)
+#
+# CMake has a special MODULE designation for these, which is handy,
+# but doesn't distinguish the install location from SHARED.  Hence,
+# different target list so they can be installed to a different
+# directory.
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(txt-lib MODULE txtfile.cpp)
 set_target_properties(txt-lib
-  PROPERTIES OUTPUT_NAME   "txt"
+  PROPERTIES OUTPUT_NAME "txt"
   )
-list(APPEND INSTALL_TARGETS txt-lib)
+list(APPEND MODULE_TARGETS txt-lib)
 
-add_library(ini-lib SHARED inifile.cpp)
+add_library(ini-lib MODULE inifile.cpp)
 set_target_properties(ini-lib
-  PROPERTIES OUTPUT_NAME   "ini"
+  PROPERTIES OUTPUT_NAME "ini"
   )
-list(APPEND INSTALL_TARGETS ini-lib)
+list(APPEND MODULE_TARGETS ini-lib)
 
-add_library(gnuplot-lib SHARED gnuplot.cpp)
+add_library(gnuplot-lib MODULE gnuplot.cpp)
 set_target_properties(gnuplot-lib
-  PROPERTIES OUTPUT_NAME   "gnuplot"
+  PROPERTIES OUTPUT_NAME "gnuplot"
   )
-list(APPEND INSTALL_TARGETS gnuplot-lib)
+list(APPEND MODULE_TARGETS gnuplot-lib)
 
-add_library(ged-lib SHARED gedfile.cpp)
+add_library(ged-lib MODULE gedfile.cpp)
 set_target_properties(ged-lib
-  PROPERTIES OUTPUT_NAME   "ged"
+  PROPERTIES OUTPUT_NAME "ged"
   )
-list(APPEND INSTALL_TARGETS ged-lib)
+list(APPEND MODULE_TARGETS ged-lib)
 
 find_package(SndFile)
 if (SNDFILE_FOUND)
   include_directories(${SNDFILE_INCLUDE_DIR})
-  add_library(snd-lib SHARED sndfile.cpp)
+  add_library(snd-lib MODULE sndfile.cpp)
   target_link_libraries(snd-lib ${SNDFILE_LIBRARIES})
   set_target_properties(snd-lib
-    PROPERTIES OUTPUT_NAME   "snd"
+    PROPERTIES OUTPUT_NAME "snd"
     )
-  list(APPEND INSTALL_TARGETS snd-lib)
+  list(APPEND MODULE_TARGETS snd-lib)
 endif (SNDFILE_FOUND)
 
 find_package(EXPAT)
 if (EXPAT_FOUND)
   include_directories(${EXPAT_INCLUDE_DIR})
-  add_library(xml-lib SHARED xmlfile.cpp)
+  add_library(xml-lib MODULE xmlfile.cpp)
   target_link_libraries(xml-lib ${EXPAT_LIBRARIES})
   set_target_properties(xml-lib
-    PROPERTIES OUTPUT_NAME   "xml"
+    PROPERTIES OUTPUT_NAME "xml"
     )
-  list(APPEND INSTALL_TARGETS xml-lib)
+  list(APPEND MODULE_TARGETS xml-lib)
 endif (EXPAT_FOUND)
 
 # Testing
+#
+# The tests get built here, but they are run from a different cmake
+# file.  This lets us compare output with a reference output rather
+# than just test that something runs.
+add_executable(tests tests.cpp)
+target_link_libraries(tests shared-lib)
+
+add_executable(aspect aspect.cpp)
+target_link_libraries(aspect shared-lib)
+
 enable_testing()
 add_test(
   NAME libvar
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
   )
 
+# Normal install path for the library
 install(
-  TARGETS ${INSTALL_TARGETS}
+  TARGETS ${LIBVAR_TARGETS}
   RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib/libvar
+  LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
   PUBLIC_HEADER DESTINATION include
+  )
+
+# Slightly different location for the modules
+install(
+  TARGETS ${MODULE_TARGETS}
+  LIBRARY DESTINATION lib/libvar
   )
 
 # pkgconfig install lines

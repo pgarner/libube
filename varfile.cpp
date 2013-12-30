@@ -7,9 +7,10 @@
  *   Phil Garner, October 2013
  */
 
-#include <var>
 #include <stdexcept>
 #include <dlfcn.h>
+
+#include "var.h"
 
 vfile::vfile(const char* iType)
 {

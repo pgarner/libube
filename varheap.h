@@ -10,7 +10,7 @@
 #ifndef VARHEAP_H
 #define VARHEAP_H
 
-#include <var>
+#include "var.h"
 
 
 /** Two vars */
