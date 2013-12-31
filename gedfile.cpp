@@ -202,14 +202,14 @@ void GEDCOM::doFile(int iLevel)
                 break;
             case INDI:
                 entity = individual();
+                mIndividualMap[xref] = mVar["Individual"].size();
                 mVar["Individual"].push(entity);
-                mIndividualMap[xref] = entity;
                 doIndividual(readLine(), entity);
                 break;
             case FAM:
                 entity = family();
+                mFamilyMap[xref] = mVar["Family"].size();
                 mVar["Family"].push(entity);
-                mFamilyMap[xref] = entity;
                 doFamily(readLine(), entity);
                 break;
             default:
@@ -364,15 +364,22 @@ int GEDCOM::doFamily(int iLevel, var iFam)
             indiv = mField.shift();
             if (!mIndividualMap.at(indiv))
                 std::cout << "Missing: " << indiv << std::endl;
-            iFam["HUSB"] = mIndividualMap[indiv];
+            else
+                iFam["HUSB"] = mIndividualMap.at(indiv).cast<int>();
             break;
         case WIFE:
             indiv = mField.shift();
-            iFam["WIFE"] = mIndividualMap[indiv];
+            if (!mIndividualMap.at(indiv))
+                std::cout << "Missing: " << indiv << std::endl;
+            else
+                iFam["WIFE"] = mIndividualMap.at(indiv).cast<int>();
             break;
         case CHIL:
             indiv = mField.shift();
-            iFam["CHIL"].push(mIndividualMap[indiv]);
+            if (!mIndividualMap.at(indiv))
+                std::cout << "Missing: " << indiv << std::endl;
+            else
+                iFam["CHIL"].push(mIndividualMap.at(indiv).cast<int>());
             break;
         case DIV:
             std::cout << "Div ?" << std::endl;

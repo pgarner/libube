@@ -185,6 +185,8 @@ bool var::match(var iRE)
  */
 var var::replace(var iRE, var iStr)
 {
+    if (reference())
+        return deref(*this).replace(iRE, iStr);
     if (type() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
 
