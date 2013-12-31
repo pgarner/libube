@@ -882,6 +882,14 @@ var var::typeOf()
 }
 
 
+/**
+ * Push a value onto a stack
+ *
+ * Push is the fundamental of way of building arrays, combined with
+ * the way resize() works.  Pushing something of an array type creates
+ * an array of var; pushing something of a builtin type creates a
+ * dense array of that type.
+ */
 var& var::push(var iVar)
 {
     VDEBUG(std::cout << "push: ");
@@ -893,7 +901,11 @@ var& var::push(var iVar)
     if (!defined())
     {
         // Uninitialised
-        mType = iVar.mType;
+        if (iVar.mType != TYPE_ARRAY)
+        {
+            *this = iVar;
+            return *this;
+        }
     }
     else
     {
@@ -999,6 +1011,17 @@ var var::index(var iVar) const
         if (at(i) == iVar)
             r = i;
     return r;
+}
+
+
+int var::index() const
+{
+    if (!defined())
+        throw std::runtime_error("var::index(): undefined");
+    if (!reference())
+        throw std::runtime_error("var::index(): not a reference");
+    int i = -mIndex-1;
+    return i;
 }
 
 

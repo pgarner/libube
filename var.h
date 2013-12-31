@@ -96,12 +96,15 @@ public:
     var shift() { return remove(0); };
     var sort() const;
     var index(var iVar) const;
+    int index() const;
     var& clear();
     var& resize(int iSize);
     var& presize(int iSize);
     var sum() const;
     var prod() const;
     void format(std::ostream& iStream, int iIndent = 0);
+    bool reference() const;
+    var& dereference();
 
     // Chums
     friend var& deref(var iVar);
@@ -161,8 +164,6 @@ private:
     int detach(varheap* iData=0);
     const char* typeOf(dataEnum iType);
     var typeOf();
-    bool reference() const;
-    var& dereference();
     int binary(var iData) const;
 };
 
