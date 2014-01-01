@@ -9,7 +9,7 @@
 
 # Set up the test to compare reference and output files
 set(CMD ./tests one two three)
-set(REF tests-one-two-three.txt)
+set(REF tests-ref.txt)
 set(OUT tests-out.txt)
 
 # Run the test
