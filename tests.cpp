@@ -42,6 +42,11 @@ int main(int argc, char** argv)
     else
         cout << "There's no -f" << endl;
 
+    // Given command line working, set a flag for valgrind
+    bool vg = true;
+    if (arg.index("-vg"))
+        vg = false;
+
     // Basic numerical tests
     var s, w, x, y, z, dummy;
     cout << (s ? "true" : "false") << endl;
@@ -205,21 +210,30 @@ int main(int argc, char** argv)
     cout << "ai is: " << ai << endl;
 
     // Read a text file via a dynamic library
-    vfile txtf("txt");
-    var txt = txtf.read("tests.txt");
-    cout << "Loaded: " << txt << endl;
+    if (vg)
+    {
+        vfile txtf("txt");
+        var txt = txtf.read("tests.txt");
+        cout << "Loaded: " << txt << endl;
+    }
 
     // Read a .ini file via a dynamic library
-    vfile inif("ini");
-    var ini = inif.read("tests.ini");
-    cout << "Loaded: " << ini << endl;
+    if (vg)
+    {
+        vfile inif("ini");
+        var ini = inif.read("tests.ini");
+        cout << "Loaded: " << ini << endl;
+    }
 
     // Plot something with gnuplot
-    var gnu;
-    gnu.push("plot sin(x), \"-\"");
-    gnu.push(ai);
-    vfile gnuf("gnuplot");
-    gnuf.write("tests.eps", gnu);
+    if (vg)
+    {
+        var gnu;
+        gnu.push("plot sin(x), \"-\"");
+        gnu.push(ai);
+        vfile gnuf("gnuplot");
+        gnuf.write("tests.eps", gnu);
+    }
 
     // Tensors
     var ts = 0.0f;
@@ -238,8 +252,11 @@ int main(int argc, char** argv)
 
     // BLAS
     var bt(4, 1.0f, 1.2, 0.8, -2.0);
-    cout << bt << "  sums to " << bt.sum()  << endl;
-    cout << bt << " asums to " << bt.asum() << endl;
+    if (vg)
+    {
+        cout << bt << "  sums to " << bt.sum()  << endl;
+        cout << bt << " asums to " << bt.asum() << endl;
+    }
 
     // Stream
     vstream vstr;
@@ -250,22 +267,31 @@ int main(int argc, char** argv)
     cout << vstr.var() << endl;
 
     // gedcom
-    vfile gedf("ged");
-    var ged = gedf.read("tests.ged");
-    cout << "Loaded: " << ged << endl;
+    if (vg)
+    {
+        vfile gedf("ged");
+        var ged = gedf.read("tests.ged");
+        cout << "Loaded: " << ged << endl;
+    }
 
     // XML
-    vfile xmlf("xml");
-    var xml = xmlf.read("tests.xml");
-    cout << "Loaded: " << xml << endl;
+    if (vg)
+    {
+        vfile xmlf("xml");
+        var xml = xmlf.read("tests.xml");
+        cout << "Loaded: " << xml << endl;
+    }
 
     // wav
-    vfile wavf("snd");
-    var wav = wavf.read("tests.wav");
-    cout << "Loaded wav file:" << endl;
-    cout << " rate:     " << wav["rate"] << endl;
-    cout << " channels: " << wav["channels"] << endl;
-    cout << " size:     " << wav["data"].size() << endl;
+    if (vg)
+    {
+        vfile wavf("snd");
+        var wav = wavf.read("tests.wav");
+        cout << "Loaded wav file:" << endl;
+        cout << " rate:     " << wav["rate"] << endl;
+        cout << " channels: " << wav["channels"] << endl;
+        cout << " size:     " << wav["data"].size() << endl;
+    }
 
     // Exception
     try {
