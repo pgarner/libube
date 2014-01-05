@@ -59,7 +59,7 @@ var::var()
 var::~var()
 {
     VDEBUG(std::cout << "Dtor: ");
-    VDEBUG(std::cout << typeOf() << "[" << size() << "]");
+    VDEBUG(std::cout << typeOf(mType) << "[" << size() << "]");
     VDEBUG(std::cout << std::endl);
     detach();
 }
@@ -69,9 +69,9 @@ var::~var()
  * Copy constructor.
  *
  * This one gets called when vars get passed as function parameters
- * and the like; also when vars are returned from functions, assuming
- * it's not optimised out.  For operator[] to work, this function
- * cannot dereference.
+ * and the like, but *not* when vars are returned from functions;
+ * that's the move constructor.  Nevertheless, we can't rely on this
+ * being called all the time because of copy elision.
  */
 var::var(const var& iVar)
 {
@@ -115,6 +115,28 @@ var& var::operator =(var iVar)
             detach(tmp);
     }
     return *this;
+}
+
+
+/**
+ * Move constructor
+ *
+ * This takes care of functions returning var.  It cannot dereference.
+ * For move assigment, just assume copy assignment is enough.
+ */
+var::var(var&& iVar)
+{
+    VDEBUG(std::cout << "Move" << std::endl);
+
+    // Move the content to the new var
+    mData = iVar.mData;
+    mIndex = iVar.mIndex;
+    mType = iVar.mType;
+
+    // Set the old one to nil
+    iVar.mData.hp = 0;
+    iVar.mIndex = 0;
+    iVar.mType = TYPE_ARRAY;
 }
 
 
@@ -366,6 +388,8 @@ int var::size() const
 
 var::dataEnum var::type() const
 {
+    if (reference())
+        return deref(*this).type();
     if (mType == TYPE_ARRAY)
     {
         if (mData.hp)
@@ -1127,7 +1151,8 @@ var& var::dereference()
         return *this;
 
     int index = -mIndex-1;
-    if (type() == TYPE_VAR)
+    dataEnum type = mData.hp->type();
+    if (type == TYPE_VAR)
     {
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
@@ -1136,7 +1161,7 @@ var& var::dereference()
         *this = r;
         return r;
     }
-    else if (type() == TYPE_PAIR)
+    else if (type == TYPE_PAIR)
     {
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
@@ -1150,7 +1175,7 @@ var& var::dereference()
         // Normal de-reference
         assert(heap());
         varheap* tmp = mData.hp;
-        mType = type();
+        mType = type;
         mIndex = 0;
         switch (mType)
         {

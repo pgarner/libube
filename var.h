@@ -43,6 +43,7 @@ public:
     ~var();
     var(const var& iVar);
     var& operator =(var iVar);
+    var(var&& iVar);
 
     // Overloaded constructors
     var(char iData);
