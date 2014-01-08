@@ -106,6 +106,7 @@ public:
     void format(std::ostream& iStream, int iIndent = 0);
     bool reference() const;
     var& dereference();
+    var& derefer() const;
 
     // Chums
     friend var& deref(var iVar);
@@ -161,6 +162,7 @@ private:
 
     // Methods
     //template<class T> T& ref(int iIndex);
+    bool operatorneq(var iVar) const;
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf(dataEnum iType);

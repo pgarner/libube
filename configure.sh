@@ -14,8 +14,8 @@
 rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 
 # I like clang recently as the error messages are nicer than gcc
-export CC=clang
-export CXX=clang++
+#export CC=clang
+#export CXX=clang++
 
 # Try for MKL; otherwise it'll find OpenBLAS or the like
 export BLA_VENDOR=Intel10_64lp

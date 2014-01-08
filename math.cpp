@@ -159,7 +159,7 @@ void varheap::pow(var iPower)
 var var::asum() const
 {
     if (reference())
-        return deref(*this).asum();
+        return derefer().asum();
 
     var asum;
     if (mType == TYPE_ARRAY)

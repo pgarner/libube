@@ -278,7 +278,10 @@ bool var::operator ==(var iVar) const
 bool var::operator !=(var iVar) const
 {
     if (reference())
-        return deref(*this).operator !=(iVar);
+        // gcc works will either of these; clang only works with the
+        // function, not the method.
+//        return deref(*this).operator !=(iVar);
+        return derefer().operator !=(iVar);
     iVar.dereference();
     if (mType != iVar.mType)
         return true;
@@ -315,7 +318,7 @@ bool var::operator !=(var iVar) const
 bool var::operator <(var iVar) const
 {
     if (reference())
-        return deref(*this).operator <(iVar);
+        return derefer().operator <(iVar);
     iVar.dereference();
 
     if (mType != iVar.mType)
@@ -357,7 +360,7 @@ var var::copy() const
 {
     // Deref and return if there's no heap
     if (reference())
-        return deref(*this).copy();
+        return derefer().copy();
     if (!heap())
         return *this;
 
@@ -379,7 +382,7 @@ bool var::defined() const
 int var::size() const
 {
     if (reference())
-        return deref(*this).size();
+        return derefer().size();
     if (mType == TYPE_ARRAY)
         return mData.hp ? mData.hp->size() : 0;
     return 1;
@@ -389,7 +392,7 @@ int var::size() const
 var::dataEnum var::type() const
 {
     if (reference())
-        return deref(*this).type();
+        return derefer().type();
     if (mType == TYPE_ARRAY)
     {
         if (mData.hp)
@@ -637,7 +640,7 @@ var var::operator /(var iVar) const
 char* var::operator &()
 {
     if (reference())
-        return deref(*this).operator &();
+        return derefer().operator &();
     if (heap())
         return mData.hp->ref();
     return (char*)&mData;
@@ -657,7 +660,7 @@ char* var::operator &()
 var var::operator [](int iIndex)
 {
     if (reference())
-        return deref(*this).operator [](iIndex);
+        return derefer().operator [](iIndex);
     if (iIndex < 0)
         throw std::runtime_error("operator [int]: Negative index");
     if (iIndex >= size())
@@ -680,7 +683,7 @@ var var::operator [](int iIndex)
 var var::operator [](var iVar)
 {
     if (reference())
-        return deref(*this).operator [](iVar);
+        return derefer().operator [](iVar);
     if (!defined())
     {
         // A kind of constructor
@@ -736,7 +739,7 @@ var var::operator ()(int iFirst, ...)
 var var::at(int iIndex) const
 {
     if (reference())
-        return deref(*this).at(iIndex);
+        return derefer().at(iIndex);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)
@@ -761,7 +764,7 @@ var var::at(int iIndex) const
 var var::at(var iVar) const
 {
     if (reference())
-        return deref(*this).at(iVar);
+        return derefer().at(iVar);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     else
@@ -920,7 +923,7 @@ var& var::push(var iVar)
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
     if (reference())
-        return deref(*this).push(iVar);
+        return derefer().push(iVar);
 
     if (!defined())
     {
@@ -960,7 +963,7 @@ var var::pop()
 var& var::insert(var iVar, int iIndex)
 {
     if (reference())
-        return deref(*this).insert(iVar, iIndex);
+        return derefer().insert(iVar, iIndex);
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
 
@@ -1002,7 +1005,7 @@ var& var::insert(var iVar, int iIndex)
 var var::remove(int iIndex)
 {
     if (reference())
-        return deref(*this).remove(iIndex);
+        return derefer().remove(iIndex);
     assert(iIndex >= 0);
     if (iIndex > size()-1)
         throw std::range_error("remove(): index too large");
@@ -1055,7 +1058,7 @@ int var::index() const
 var& var::clear()
 {
     if (reference())
-        return deref(*this).clear();
+        return derefer().clear();
     detach();
     mData.hp = 0;
     mIndex = 0;
@@ -1077,7 +1080,7 @@ var& var::presize(int iSize)
 var var::sum() const
 {
     if (reference())
-        return deref(*this).sum();
+        return derefer().sum();
     var sum = 0.0;
     for (int i=0; i<size(); i++)
         sum += at(i);
@@ -1135,6 +1138,16 @@ bool var::reference() const
 var& deref(var iVar)
 {
     return iVar.dereference();
+}
+
+/**
+ * deref method.  Should replace the above function, except for a bug
+ * in clang in (our) operator!=().
+ */
+var& var::derefer() const
+{
+    var v = *this;
+    return v.dereference();
 }
 
 
