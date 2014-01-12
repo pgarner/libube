@@ -59,6 +59,8 @@ public:
     var at(int iIndex, bool iKey=false) const;
     var& key(int iIndex);
     void set(var iVar, int iIndex=-1, bool iKey=false);
+    bool neq(varheap* iHeap);
+    bool lt(varheap* iHeap);
     void add(var iVar, int iIndex=-1);
     void sub(var iVar, int iIndex=-1);
     void mul(var iVar, int iIndex=-1);

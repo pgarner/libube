@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <stdexcept>
 
+#include "varheap.h"
 
 class gnuplot : public varfile
 {
@@ -77,7 +78,7 @@ void gnuplot::write(const char* iFile, var iVar)
     for (int i=0; i<iVar.size(); i++)
     {
         str = iVar[i];
-        switch (str.type())
+        switch (str.heap()->type())
         {
         case var::TYPE_CHAR:
             puts(&str);

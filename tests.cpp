@@ -166,10 +166,10 @@ int main(int argc, char** argv)
     int xxa[] = {1,2,3,4,5};
     var xa(5, xxa);
     cout << "xa is " << xa << endl;
-    xa[1] = xa[0];
-    xa[2] += xa[1];
-    xa[3] = 7;
-    xa[4] += 7;
+    xa[1] = xa[0];  // 1,1,3,4,5
+    xa[2] += xa[1]; // 1,1,4,4,5
+    xa[3] = 7;      // 1,1,4,7,5
+    xa[4] += 7;     // 1,1,4,7,12
     cout << "xa is " << xa << endl;
 
     // Array of vars by pushing
@@ -192,6 +192,10 @@ int main(int argc, char** argv)
     cout << "vmap[\"three\"] is " << vmap["three"] << endl;
     cout << "vmap is " << vmap << endl;
     cout << "vmap.copy() is " << vmap.copy() << endl;
+
+    // Modify non-trivial array value
+    vmap["two"] += 10;
+    cout << "modded vmap is " << vmap << endl;
 
     // Multi-dimensional array
     var iarr;

@@ -213,7 +213,7 @@ void GEDCOM::doFile(int iLevel)
                 doFamily(readLine(), entity);
                 break;
             default:
-                std::cout << "File: Unknown tag" << mField << std::endl;
+                std::cout << "File: Unknown tag " << mField << std::endl;
             }
         }
         else
@@ -231,7 +231,7 @@ void GEDCOM::doFile(int iLevel)
             case TRLR:
                 return;
             default:
-                std::cout << "File: Unknown tag" << mField << std::endl;
+                std::cout << "File: Unknown tag " << token << std::endl;
             }
         }
     }

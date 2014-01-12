@@ -522,6 +522,27 @@ void varheap::set(var iVar, int iIndex, bool iKey)
         }
 }
 
+
+bool varheap::neq(varheap* iHeap)
+{
+    for (int i=0; i<mSize; i++)
+        if (at(i) != iHeap->at(i))
+            return true;
+    return false;
+}
+
+
+bool varheap::lt(varheap* iHeap)
+{
+    if ( (mType == var::TYPE_CHAR) && (iHeap->mType == var::TYPE_CHAR) )
+        return (std::strcmp(ref(), iHeap->ref()) < 0);
+    for (int i=0; i<std::min(size(), iHeap->size()); i++)
+        if (at(i) < iHeap->at(i))
+            return true;
+    return false;
+}
+
+
 void varheap::add(var iVar, int iIndex)
 {
     int lo = (iIndex < 0) ? 0 : iIndex;

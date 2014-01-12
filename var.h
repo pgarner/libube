@@ -38,6 +38,9 @@ public:
         TYPE_PAIR
     };
 
+    // Statics
+    static var nil;
+
     // Special member functions
     var();
     ~var();
@@ -58,6 +61,10 @@ public:
     var(int iSize, const int* iData);
     var(int iSize, int iFirst, ...);
     var(int iSize, float iFirst, ...);
+
+    // Data accessor
+    template<class T> T get() const;
+    template<class T> T& get();
 
     // Operators
     bool operator ==(var iVar) const;
@@ -86,7 +93,7 @@ public:
     int size() const;
     dataEnum type() const;
     template<class T> T cast();
-    bool heap(int iSize = -1) const;
+    varheap* heap() const;
     var pop();
     var top() { return at(size() - 1); };
     var& push(var iVar);
@@ -103,10 +110,9 @@ public:
     var& presize(int iSize);
     var sum() const;
     var prod() const;
-    void format(std::ostream& iStream, int iIndent = 0);
+    void format(std::ostream& iStream, int iIndent = 0) const;
     bool reference() const;
     var& dereference();
-    var& derefer() const;
 
     // Chums
     friend var& deref(var iVar);
@@ -161,8 +167,7 @@ private:
     dataEnum mType; ///< The data type
 
     // Methods
-    //template<class T> T& ref(int iIndex);
-    bool operatorneq(var iVar) const;
+    var& varderef(bool& oSuccess);
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf(dataEnum iType);

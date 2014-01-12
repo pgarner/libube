@@ -22,6 +22,16 @@
 # define VDEBUG(a)
 #endif
 
+
+/**
+ * The nil var
+ *
+ * Designed never to be touched, except when something needs to return
+ * a reference to nil, or also to clear things.
+ */
+var var::nil;
+
+
 /*
  * Notes
  *
@@ -106,7 +116,7 @@ var& var::operator =(var iVar)
     {
         // Not a reference.  Record whether the old value was a heap
         // allocation. If so, detach it after attaching the new value.
-        varheap* tmp = heap() ? mData.hp : 0;
+        varheap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
         mData = iVar.mData;
         mIndex = iVar.mIndex;
         mType = iVar.mType;
@@ -133,7 +143,8 @@ var::var(var&& iVar)
     mIndex = iVar.mIndex;
     mType = iVar.mType;
 
-    // Set the old one to nil
+    // Set the old one to nil.  ...although doing that via operator=()
+    // causes trouble
     iVar.mData.hp = 0;
     iVar.mIndex = 0;
     iVar.mType = TYPE_ARRAY;
@@ -262,6 +273,105 @@ var::var(int iSize, float iFirst, ...)
 }
 
 
+/*
+ * Main data accessor
+ */
+template<> char var::get<char>() const {
+    var v(*this); return v.dereference().mData.c;
+}
+template<> int var::get<int>() const {
+    var v(*this); return v.dereference().mData.i;
+}
+template<> long var::get<long>() const {
+    var v(*this); return v.dereference().mData.l;
+}
+template<> float var::get<float>() const {
+    var v(*this); return v.dereference().mData.f;
+}
+template<> double var::get<double>() const {
+    var v(*this); return v.dereference().mData.d;
+}
+
+
+/**
+ * var dereference
+ *
+ * When dereferencing, the result can be two kinds of thing.  One is a
+ * simple reference into an array.  The other is a var that is part of
+ * a var/pair array.  This handles the latter case.  Whacko interface
+ * because it has to return a reference to something that already
+ * exists.
+ */
+var& var::varderef(bool& oSuccess)
+{
+    oSuccess = true;
+    int index = -mIndex-1;
+    dataEnum type = mData.hp->type();
+    if (type == TYPE_VAR)
+    {
+        return mData.hp->ref<var>(index);
+    }
+    if (type == TYPE_PAIR)
+    {
+        return mData.hp->ref<pair>(index).val;
+    }
+    oSuccess = false;
+    return nil;
+}
+
+
+template<> char& var::get<char>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return r ? r.mData.c : mData.hp->ref<char>(-mIndex-1);
+    }
+    return mData.c;
+}
+template<> int& var::get<int>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return r ? r.mData.i : mData.hp->ref<int>(-mIndex-1);
+    }
+    return mData.i;
+}
+template<> long& var::get<long>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return r ? r.mData.l : mData.hp->ref<long>(-mIndex-1);
+    }
+    return mData.l;
+}
+template<> float& var::get<float>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return r ? r.mData.f : mData.hp->ref<float>(-mIndex-1);
+    }
+    return mData.f;
+}
+template<> double& var::get<double>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return r ? r.mData.d : mData.hp->ref<double>(-mIndex-1);
+    }
+    return mData.d;
+}
+
+
 /**
  * Equality operator
  *
@@ -275,37 +385,36 @@ bool var::operator ==(var iVar) const
 }
 
 
+/**
+ * Negation operator
+ *
+ * Easier to code than operator ==(), so the latter calls this.
+ */
 bool var::operator !=(var iVar) const
 {
-    if (reference())
-        // gcc works will either of these; clang only works with the
-        // function, not the method.
-//        return deref(*this).operator !=(iVar);
-        return derefer().operator !=(iVar);
-    iVar.dereference();
-    if (mType != iVar.mType)
+    if (type() != iVar.type())
         return true;
     if (size() != iVar.size())
         return true;
-    if (mType != TYPE_ARRAY)
-        switch (mType)
-        {
-        case TYPE_CHAR:
-            return (mData.c != iVar.mData.c);
-        case TYPE_INT:
-            return (mData.i != iVar.mData.i);
-        case TYPE_LONG:
-            return (mData.l != iVar.mData.l);
-        case TYPE_FLOAT:
-            return (mData.f != iVar.mData.f);
-        case TYPE_DOUBLE:
-            return (mData.d != iVar.mData.d);
-        default:
-            throw std::runtime_error("operator !=(): Unknown type");
-        }
-    for (int i=0; i<size(); i++)
-        if (at(i) != iVar.at(i))
-            return true;
+    switch (type())
+    {
+    case TYPE_ARRAY:
+        return heap()->neq(iVar.heap());
+    case TYPE_CHAR:
+        return (get<char>() != iVar.get<char>());
+    case TYPE_INT:
+        return (get<int>() != iVar.get<int>());
+    case TYPE_LONG:
+        return (get<long>() != iVar.get<long>());
+    case TYPE_FLOAT:
+        return (get<float>() != iVar.get<float>());
+    case TYPE_DOUBLE:
+        return (get<double>() != iVar.get<double>());
+    default:
+        throw std::runtime_error("operator !=(): Unknown type");
+    }
+
+    assert(0);
     return false;
 }
 
@@ -317,35 +426,28 @@ bool var::operator !=(var iVar) const
  */
 bool var::operator <(var iVar) const
 {
-    if (reference())
-        return derefer().operator <(iVar);
-    iVar.dereference();
+    if (type() != iVar.type())
+        return (type() < iVar.type());
 
-    if (mType != iVar.mType)
-        return (mType < iVar.mType);
-    if ( (mType != TYPE_ARRAY) && (iVar.mType != TYPE_ARRAY) )
-        switch (mType)
-        {
-        case TYPE_CHAR:
-            return (mData.c < iVar.mData.c);
-        case TYPE_INT:
-            return (mData.i < iVar.mData.i);
-        case TYPE_LONG:
-            return (mData.l < iVar.mData.l);
-        case TYPE_FLOAT:
-            return (mData.f < iVar.mData.f);
-        case TYPE_DOUBLE:
-            return (mData.d < iVar.mData.d);
-        default:
-            throw std::runtime_error("operator <(): Unknown type");
-        }
+    switch (type())
+    {
+    case TYPE_ARRAY:
+        return heap()->lt(iVar.heap());
+    case TYPE_CHAR:
+        return (get<char>() < iVar.get<char>());
+    case TYPE_INT:
+        return (get<int>() < iVar.get<int>());
+    case TYPE_LONG:
+        return (get<long>() < iVar.get<long>());
+    case TYPE_FLOAT:
+        return (get<float>() < iVar.get<float>());
+    case TYPE_DOUBLE:
+        return (get<double>() < iVar.get<double>());
+    default:
+        throw std::runtime_error("operator <(): Unknown type");
+    }
 
-    if ( heap() && (type() == TYPE_CHAR) &&
-         iVar.heap() && (iVar.type() == TYPE_CHAR) )
-        return (std::strcmp(mData.hp->ref(), iVar.mData.hp->ref()) < 0);
-    for (int i=0; i<std::min(size(), iVar.size()); i++)
-        if (at(i) < iVar.at(i))
-            return true;
+    assert(0);
     return false;
 }
 
@@ -359,14 +461,12 @@ bool var::operator <(var iVar) const
 var var::copy() const
 {
     // Deref and return if there's no heap
-    if (reference())
-        return derefer().copy();
     if (!heap())
         return *this;
 
     // It's a heap
     var r;
-    r.mData.hp = new varheap(*mData.hp);
+    r.mData.hp = new varheap(*heap());
     r.attach();
     return r;
 }
@@ -381,24 +481,17 @@ bool var::defined() const
 
 int var::size() const
 {
-    if (reference())
-        return derefer().size();
-    if (mType == TYPE_ARRAY)
-        return mData.hp ? mData.hp->size() : 0;
+    if (type() == TYPE_ARRAY)
+        return heap() ? heap()->size() : 0;
     return 1;
 }
 
 
 var::dataEnum var::type() const
 {
-    if (reference())
-        return derefer().type();
-    if (mType == TYPE_ARRAY)
-    {
-        if (mData.hp)
-            return mData.hp->type();
-    }
-    return mType;
+    var v (*this);
+    v.dereference();
+    return v.mType;
 }
 
 
@@ -412,35 +505,33 @@ var::dataEnum var::type() const
 template<class T>
 T var::cast()
 {
-    dereference();
-
     if (heap())
     {
-        if (type() == TYPE_CHAR)
-            *this = static_cast<T>(mData.hp->strtold());
+        if (heap()->type() == TYPE_CHAR)
+            *this = static_cast<T>(heap()->strtold());
         else
             throw std::runtime_error("cast(): Cannot cast array");
         // and drop though...
     }
 
     T r;
-    switch (mType)
+    switch (type())
     {
     case TYPE_CHAR:
-        *this = r = static_cast<T>(mData.c);
+        *this = r = static_cast<T>(get<char>());
         return r;
     case TYPE_INT:
-        r = static_cast<T>(mData.i);
+        r = static_cast<T>(get<int>());
         *this = r;
         return r;
     case TYPE_LONG:
-        *this = r = static_cast<T>(mData.l);
+        *this = r = static_cast<T>(get<long>());
         return r;
     case TYPE_FLOAT:
-        *this = r = static_cast<T>(mData.f);
+        *this = r = static_cast<T>(get<float>());
         return r;
     case TYPE_DOUBLE:
-        *this = r = static_cast<T>(mData.d);
+        *this = r = static_cast<T>(get<double>());
         return r;
     default:
         throw std::runtime_error("cast(): Unknown type");
@@ -453,8 +544,11 @@ T var::cast()
 
 #if 0
 /**
- * For now, I don't think this is the right way to do it.
  * Cast to char* is a specialisation
+ *
+ * For now, I don't think this is the right way to do it.  And
+ * actually it implies that cast<>() need not allocate memory so need
+ * not be in place.  Ho hum.
  */
 template<>
 char* var::cast<char*>()
@@ -463,7 +557,7 @@ char* var::cast<char*>()
 
     if (heap())
     {
-        if (mData.hp->type() == TYPE_CHAR)
+        if (heap()->type() == TYPE_CHAR)
             return &(*this);
     }
 
@@ -477,28 +571,28 @@ char* var::cast<char*>()
 
 var& var::operator +=(var iVar)
 {
-    switch (mType)
+    switch (type())
     {
     case TYPE_ARRAY:
-        if (type() == TYPE_CHAR)
+        if (heap() && (heap()->type() == TYPE_CHAR))
             append(iVar);
         else
-            mData.hp->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+            heap()->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
-        mData.c += iVar.cast<char>();
+        get<char>() += iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i += iVar.cast<int>();
+        get<int>() += iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l += iVar.cast<long>();
+        get<long>() += iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f += iVar.cast<float>();
+        get<float>() += iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d += iVar.cast<double>();
+        get<double>() += iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator +=(): Unknown type");
@@ -510,25 +604,25 @@ var& var::operator +=(var iVar)
 
 var& var::operator -=(var iVar)
 {
-    switch (mType)
+    switch (type())
     {
     case TYPE_ARRAY:
-        mData.hp->sub(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        heap()->sub(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
-        mData.c -= iVar.cast<char>();
+        get<char>() -= iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i -= iVar.cast<int>();
+        get<int>() -= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l -= iVar.cast<long>();
+        get<long>() -= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f -= iVar.cast<float>();
+        get<float>() -= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d -= iVar.cast<double>();
+        get<double>() -= iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator -=(): Unknown type");
@@ -540,25 +634,25 @@ var& var::operator -=(var iVar)
 
 var& var::operator *=(var iVar)
 {
-    switch (mType)
+    switch (type())
     {
     case TYPE_ARRAY:
-        mData.hp->mul(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        heap()->mul(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
-        mData.c *= iVar.cast<char>();
+        get<char>() *= iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i *= iVar.cast<int>();
+        get<int>() *= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l *= iVar.cast<long>();
+        get<long>() *= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f *= iVar.cast<float>();
+        get<float>() *= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d *= iVar.cast<double>();
+        get<double>() *= iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator *=(): Unknown type");
@@ -570,25 +664,25 @@ var& var::operator *=(var iVar)
 
 var& var::operator /=(var iVar)
 {
-    switch (mType)
+    switch (type())
     {
     case TYPE_ARRAY:
-        mData.hp->div(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        heap()->div(iVar, (mIndex < 0) ? -mIndex-1 : -1);
         break;
     case TYPE_CHAR:
-        mData.c /= iVar.cast<char>();
+        get<char>() /= iVar.cast<char>();
         break;
     case TYPE_INT:
-        mData.i /= iVar.cast<int>();
+        get<int>() /= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        mData.l /= iVar.cast<long>();
+        get<long>() /= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        mData.f /= iVar.cast<float>();
+        get<float>() /= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        mData.d /= iVar.cast<double>();
+        get<double>() /= iVar.cast<double>();
         break;
     default:
         throw std::runtime_error("operator /=(): Unknown type");
@@ -600,7 +694,6 @@ var& var::operator /=(var iVar)
 
 var var::operator +(var iVar) const
 {
-    iVar.dereference();
     var r = copy();
     r += iVar;
     return r;
@@ -608,7 +701,6 @@ var var::operator +(var iVar) const
 
 var var::operator -(var iVar) const
 {
-    iVar.dereference();
     var r = copy();
     r -= iVar;
     return r;
@@ -616,7 +708,6 @@ var var::operator -(var iVar) const
 
 var var::operator *(var iVar) const
 {
-    iVar.dereference();
     var r = copy();
     r *= iVar;
     return r;
@@ -624,7 +715,6 @@ var var::operator *(var iVar) const
 
 var var::operator /(var iVar) const
 {
-    iVar.dereference();
     var r = copy();
     r /= iVar;
     return r;
@@ -639,11 +729,9 @@ var var::operator /(var iVar) const
  */
 char* var::operator &()
 {
-    if (reference())
-        return derefer().operator &();
     if (heap())
-        return mData.hp->ref();
-    return (char*)&mData;
+        return heap()->ref();
+    return (char*)&get<char>();
 }
 
 
@@ -660,7 +748,7 @@ char* var::operator &()
 var var::operator [](int iIndex)
 {
     if (reference())
-        return derefer().operator [](iIndex);
+        return deref(*this).operator [](iIndex);
     if (iIndex < 0)
         throw std::runtime_error("operator [int]: Negative index");
     if (iIndex >= size())
@@ -683,7 +771,7 @@ var var::operator [](int iIndex)
 var var::operator [](var iVar)
 {
     if (reference())
-        return derefer().operator [](iVar);
+        return deref(*this).operator [](iVar);
     if (!defined())
     {
         // A kind of constructor
@@ -693,11 +781,11 @@ var var::operator [](var iVar)
         attach();
     }
     else
-        if (type() != TYPE_PAIR)
+        if (heap() && (heap()->type() != TYPE_PAIR))
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = binary(iVar);
-    if ( (index >= size()) || (mData.hp->key(index) != iVar) )
+    if ( (index >= size()) || (heap()->key(index) != iVar) )
         insert(iVar, index);
     var r(*this);
     r.mIndex = -index-1;
@@ -739,7 +827,7 @@ var var::operator ()(int iFirst, ...)
 var var::at(int iIndex) const
 {
     if (reference())
-        return derefer().at(iIndex);
+        return deref(*this).at(iIndex);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     if (mType == TYPE_ARRAY)
@@ -764,16 +852,16 @@ var var::at(int iIndex) const
 var var::at(var iVar) const
 {
     if (reference())
-        return derefer().at(iVar);
+        return deref(*this).at(iVar);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     else
-        if (type() != TYPE_PAIR)
+        if (heap() && (heap()->type() != TYPE_PAIR))
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = binary(iVar);
     var r;
-    if ( (index >= size()) || (mData.hp->key(index) != iVar) )
+    if ( (index >= size()) || (heap()->key(index) != iVar) )
         return r;
     r = *this;
     r.mIndex = -index-1;
@@ -785,32 +873,32 @@ var var::at(var iVar) const
  * Never indent a basic var, but do pass the current level along to
  * the array formatter.
  */
-void var::format(std::ostream& iStream, int iIndent)
+void var::format(std::ostream& iStream, int iIndent) const
 {
-    switch (mType)
+    switch (type())
     {
     case var::TYPE_ARRAY:
-        if (mData.hp)
-            mData.hp->format(iStream, iIndent);
+        if (heap())
+            heap()->format(iStream, iIndent);
         else
             iStream << "nil";
         break;
     case var::TYPE_CHAR:
         iStream << "\'";
-        iStream << mData.c;
+        iStream << get<char>();
         iStream << "\'";
         break;
     case var::TYPE_INT:
-        iStream << mData.i;
+        iStream << get<int>();
         break;
     case var::TYPE_LONG:
-        iStream << mData.l;
+        iStream << get<long>();
         break;
     case var::TYPE_FLOAT:
-        iStream << mData.f;
+        iStream << get<float>();
         break;
     case var::TYPE_DOUBLE:
-        iStream << mData.d;
+        iStream << get<double>();
         break;
     default:
         throw std::runtime_error("var::format(): Unknown type");
@@ -820,7 +908,6 @@ void var::format(std::ostream& iStream, int iIndent)
 
 std::ostream& operator <<(std::ostream& iStream, var iVar)
 {
-    iVar.dereference();
     iVar.format(iStream);
     return iStream;
 }
@@ -833,7 +920,8 @@ var& var::resize(int iSize)
     if (!heap())
     {
         // Not allocated
-        if (heap(iSize))
+        if (((mType != TYPE_ARRAY) && (iSize > 1)) ||
+            ((mType == TYPE_ARRAY) && (iSize >= 0)) )
         {
             // Need to allocate
             if (!defined())
@@ -854,7 +942,7 @@ var& var::resize(int iSize)
     else
     {
         // It's allocated already
-        mData.hp->resize(iSize);
+        heap()->resize(iSize);
     }
     return *this;
 }
@@ -862,7 +950,7 @@ var& var::resize(int iSize)
 
 int var::attach()
 {
-    if (heap())
+    if ((mType == TYPE_ARRAY) && mData.hp)
         return mData.hp->attach();
     return 0;
 }
@@ -872,7 +960,7 @@ int var::detach(varheap* iHeap)
 {
     if (iHeap)
         return iHeap->detach();
-    if (heap())
+    if ((mType == TYPE_ARRAY) && mData.hp)
         return mData.hp->detach();
     return 0;
 }
@@ -901,7 +989,7 @@ var var::typeOf()
     if (mType == TYPE_ARRAY)
     {
         var s = "array[";
-        s += typeOf(type());
+        s += typeOf(heap()->type());
         s += "]";
         return s;
     }
@@ -923,12 +1011,12 @@ var& var::push(var iVar)
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
     if (reference())
-        return derefer().push(iVar);
+        return deref(*this).push(iVar);
 
     if (!defined())
     {
         // Uninitialised
-        if (iVar.mType != TYPE_ARRAY)
+        if (iVar.type() != TYPE_ARRAY)
         {
             *this = iVar;
             return *this;
@@ -937,7 +1025,7 @@ var& var::push(var iVar)
     else
     {
         // Already initialised
-        if ( (mType != TYPE_ARRAY) && (iVar.mType != mType) )
+        if ( (type() != TYPE_ARRAY) && (iVar.type() != type()) )
             throw std::runtime_error("push(): Incompatible types");
     }
 
@@ -962,13 +1050,10 @@ var var::pop()
  */
 var& var::insert(var iVar, int iIndex)
 {
-    if (reference())
-        return derefer().insert(iVar, iIndex);
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
 
-    iVar.dereference();
-    if (type() == TYPE_VAR)
+    if (heap() && (heap()->type() == TYPE_VAR))
     {
         // Implies array; insert a single var
         resize(size()+1);
@@ -976,16 +1061,16 @@ var& var::insert(var iVar, int iIndex)
             at(i) = at(i-1);
         at(iIndex) = iVar;
     }
-    else if (type() == TYPE_PAIR)
+    else if (heap() && (heap()->type() == TYPE_PAIR))
     {
         // Implies array; insert a single pair
         resize(size()+1);
         for (int i=size()-1; i>iIndex; i--)
         {
-            mData.hp->key(i) = mData.hp->key(i-1);
+            heap()->key(i) = heap()->key(i-1);
             at(i) = at(i-1);
         }
-        mData.hp->key(iIndex) = iVar;
+        heap()->key(iIndex) = iVar;
         at(iIndex).clear();
     }
     else
@@ -1004,8 +1089,6 @@ var& var::insert(var iVar, int iIndex)
 
 var var::remove(int iIndex)
 {
-    if (reference())
-        return derefer().remove(iIndex);
     assert(iIndex >= 0);
     if (iIndex > size()-1)
         throw std::range_error("remove(): index too large");
@@ -1057,12 +1140,7 @@ int var::index() const
  */
 var& var::clear()
 {
-    if (reference())
-        return derefer().clear();
-    detach();
-    mData.hp = 0;
-    mIndex = 0;
-    mType = TYPE_ARRAY;
+    *this = nil;
     return *this;
 }
 
@@ -1079,8 +1157,6 @@ var& var::presize(int iSize)
 
 var var::sum() const
 {
-    if (reference())
-        return derefer().sum();
     var sum = 0.0;
     for (int i=0; i<size(); i++)
         sum += at(i);
@@ -1091,27 +1167,23 @@ var var::sum() const
 /* Quite likely to be unstable in general */
 var var::prod() const
 {
-    var d(*this);
-    d.dereference();
     var prod = 1.0;
-    for (int i=0; i<d.size(); i++)
-        prod *= d.at(i);
+    for (int i=0; i<size(); i++)
+        prod *= at(i);
     return prod;
 }
 
 
 /**
- * True if this var uses a heap allocation.
+ * Usable both as a boolean (if this var uses a heap allocation) and
+ * as a means to get the pointer.
  */
-bool var::heap(int iSize) const
+varheap* var::heap() const
 {
-    // iSize defaults to -1
-    if (iSize < 0)
-        return ( (mType == TYPE_ARRAY) && mData.hp );
-    if ( ((mType != TYPE_ARRAY) && (iSize > 1)) ||
-         ((mType == TYPE_ARRAY) && (iSize >= 0)) )
-        return true;
-    return false;
+    if (!reference())
+        return ( (mType == TYPE_ARRAY) && mData.hp ) ? mData.hp : 0;
+
+    return deref(*this).heap();
 }
 
 
@@ -1140,16 +1212,6 @@ var& deref(var iVar)
     return iVar.dereference();
 }
 
-/**
- * deref method.  Should replace the above function, except for a bug
- * in clang in (our) operator!=().
- */
-var& var::derefer() const
-{
-    var v = *this;
-    return v.dereference();
-}
-
 
 /**
  * Converts a reference to an actual var in place
@@ -1163,34 +1225,24 @@ var& var::dereference()
     if (!reference())
         return *this;
 
-    int index = -mIndex-1;
-    dataEnum type = mData.hp->type();
-    if (type == TYPE_VAR)
+    bool s;
+    var& r = varderef(s);
+    if (s)
     {
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
         mIndex = 0;
-        var& r = mData.hp->ref<var>(index);
-        *this = r;
-        return r;
-    }
-    else if (type == TYPE_PAIR)
-    {
-        // Set mIndex to not-a-reference, then let operator=() do the
-        // housekeeping
-        mIndex = 0;
-        var& r = mData.hp->ref<pair>(index).val;
         *this = r;
         return r;
     }
     else
     {
         // Normal de-reference
-        assert(heap());
+        assert(mData.hp);
+        int index = -mIndex-1;
+        dataEnum type = mData.hp->type();
         varheap* tmp = mData.hp;
-        mType = type;
-        mIndex = 0;
-        switch (mType)
+        switch (type)
         {
         case TYPE_CHAR:
             mData.c = mData.hp->ref<char>(index);
@@ -1210,6 +1262,8 @@ var& var::dereference()
         default:
             throw std::runtime_error("var::dereference(): Unknown type");
         }
+        mType = type;
+        mIndex = 0;
         detach(tmp);
     }
     return *this;
@@ -1226,11 +1280,12 @@ int var::binary(var iData) const
 
     int lo = 0;
     int hi = size();
-    bool pair = (type() == TYPE_PAIR); // index on key rather than value
+    bool pair =  // index on key rather than value
+        (heap() && (heap()->type() == TYPE_PAIR));
     while (lo != hi)
     {
         int pos = (hi-lo)/2 + lo;
-        var x = pair ? mData.hp->key(pos) : at(pos);
+        var x = pair ? heap()->key(pos) : at(pos);
         if (x < iData)
             lo = pos+1;
         else
@@ -1266,7 +1321,7 @@ var var::view(int iDim, int iFirst, ...)
     for (int i=iDim-1; i>=0; i--)
     {
         v[i*2+1] = p;
-        p *= v.mData.hp->viewRef(i*2);
+        p *= v.heap()->viewRef(i*2);
     }
 
     // the p that drops out should be the overall size
@@ -1278,7 +1333,7 @@ var var::view(int iDim, int iFirst, ...)
 
     // Tell the heap object that it's a view
     assert(mType == TYPE_ARRAY);
-    v.mData.hp->setView(mData.hp);
+    v.heap()->setView(heap());
 
     return v;
 }
@@ -1286,17 +1341,17 @@ var var::view(int iDim, int iFirst, ...)
 
 int var::shape(int iDim) const
 {
-    if (!mData.hp || !mData.hp->view())
+    if (!heap() || !heap()->view())
         throw std::runtime_error("var::shape(): Not a view");
-    return mData.hp->viewRef(iDim*2);
+    return heap()->viewRef(iDim*2);
 }
 
 
 int var::stride(int iDim) const
 {
-    if (!mData.hp || !mData.hp->view())
+    if (!heap() || !heap()->view())
         throw std::runtime_error("var::stride(): Not a view");
-    return mData.hp->viewRef(iDim*2+1);
+    return heap()->viewRef(iDim*2+1);
 }
 
 

@@ -158,12 +158,9 @@ void varheap::pow(var iPower)
 
 var var::asum() const
 {
-    if (reference())
-        return derefer().asum();
-
     var asum;
-    if (mType == TYPE_ARRAY)
-        asum = mData.hp->asum();
+    if (type() == TYPE_ARRAY)
+        asum = heap()->asum();
     else
         asum = this->abs();
     return asum;

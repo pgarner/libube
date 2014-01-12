@@ -14,6 +14,7 @@
 #include <boost/regex.hpp>
 
 #include "var.h"
+#include "varheap.h"
 
 /**
  * Read a line from an istream
@@ -105,7 +106,7 @@ var var::join(const char* iStr) const
 var& var::strip()
 {
     var& deref = dereference();
-    if (type() != TYPE_CHAR)
+    if (heap()->type() != TYPE_CHAR)
         return *this;
 
     char* ptr = &deref;
@@ -159,7 +160,7 @@ var& var::sprintf(const char* iFormat, ...)
  */
 bool var::search(var iRE)
 {
-    if (type() != TYPE_CHAR)
+    if (heap()->type() != TYPE_CHAR)
         throw std::runtime_error("var::search(): Not a string");
     boost::regex rgx(&iRE);
     bool r = boost::regex_search(&(*this), rgx);
@@ -186,8 +187,8 @@ bool var::match(var iRE)
 var var::replace(var iRE, var iStr)
 {
     if (reference())
-        return derefer().replace(iRE, iStr);
-    if (type() != TYPE_CHAR)
+        return deref(*this).replace(iRE, iStr);
+    if (heap()->type() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
 
     std::string str = &(*this);
