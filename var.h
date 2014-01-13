@@ -39,7 +39,7 @@ public:
     };
 
     // Statics
-    static var nil;
+    static const var nil;
 
     // Special member functions
     var();
@@ -61,6 +61,7 @@ public:
     var(int iSize, const int* iData);
     var(int iSize, int iFirst, ...);
     var(int iSize, float iFirst, ...);
+    var(var iVar, int iIndex);
 
     // Data accessor
     template<class T> T get() const;

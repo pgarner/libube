@@ -29,7 +29,7 @@
  * Designed never to be touched, except when something needs to return
  * a reference to nil, or also to clear things.
  */
-var var::nil;
+const var var::nil;
 
 
 /*
@@ -273,6 +273,23 @@ var::var(int iSize, float iFirst, ...)
 }
 
 
+/**
+ * Reference constructor
+ *
+ * Dereferences iVar, constructing and reference to the resulting
+ * array.
+ */
+var::var(var iVar, int iIndex)
+{
+    if (iVar.type() != TYPE_ARRAY)
+        throw std::runtime_error("reference: cannot reference non array");
+    mData.hp = iVar.heap();
+    mIndex = -iIndex-1;
+    mType = iVar.type();
+    attach();
+}
+
+
 /*
  * Main data accessor
  */
@@ -300,7 +317,8 @@ template<> double var::get<double>() const {
  * simple reference into an array.  The other is a var that is part of
  * a var/pair array.  This handles the latter case.  Whacko interface
  * because it has to return a reference to something that already
- * exists.
+ * exists, and some success metric.  ...and I've overloaded &var, so
+ * &var == this won't work :-(
  */
 var& var::varderef(bool& oSuccess)
 {
@@ -316,7 +334,7 @@ var& var::varderef(bool& oSuccess)
         return mData.hp->ref<pair>(index).val;
     }
     oSuccess = false;
-    return nil;
+    return *this;
 }
 
 
@@ -326,7 +344,7 @@ template<> char& var::get<char>()
     {
         bool s;
         var& r = varderef(s);
-        return r ? r.mData.c : mData.hp->ref<char>(-mIndex-1);
+        return s ? r.mData.c : mData.hp->ref<char>(-mIndex-1);
     }
     return mData.c;
 }
@@ -336,7 +354,7 @@ template<> int& var::get<int>()
     {
         bool s;
         var& r = varderef(s);
-        return r ? r.mData.i : mData.hp->ref<int>(-mIndex-1);
+        return s ? r.mData.i : mData.hp->ref<int>(-mIndex-1);
     }
     return mData.i;
 }
@@ -346,7 +364,7 @@ template<> long& var::get<long>()
     {
         bool s;
         var& r = varderef(s);
-        return r ? r.mData.l : mData.hp->ref<long>(-mIndex-1);
+        return s ? r.mData.l : mData.hp->ref<long>(-mIndex-1);
     }
     return mData.l;
 }
@@ -356,7 +374,7 @@ template<> float& var::get<float>()
     {
         bool s;
         var& r = varderef(s);
-        return r ? r.mData.f : mData.hp->ref<float>(-mIndex-1);
+        return s ? r.mData.f : mData.hp->ref<float>(-mIndex-1);
     }
     return mData.f;
 }
@@ -366,7 +384,7 @@ template<> double& var::get<double>()
     {
         bool s;
         var& r = varderef(s);
-        return r ? r.mData.d : mData.hp->ref<double>(-mIndex-1);
+        return s ? r.mData.d : mData.hp->ref<double>(-mIndex-1);
     }
     return mData.d;
 }
@@ -753,9 +771,7 @@ var var::operator [](int iIndex)
         throw std::runtime_error("operator [int]: Negative index");
     if (iIndex >= size())
         resize(iIndex+1);
-    var r(*this);
-    r.mIndex = -iIndex-1;
-    return r;
+    return var(*this, iIndex);
 }
 
 
@@ -775,9 +791,7 @@ var var::operator [](var iVar)
     if (!defined())
     {
         // A kind of constructor
-        mType = TYPE_ARRAY;
         mData.hp = new varheap(0, TYPE_PAIR);
-        mIndex = 0;
         attach();
     }
     else
@@ -787,9 +801,7 @@ var var::operator [](var iVar)
     int index = binary(iVar);
     if ( (index >= size()) || (heap()->key(index) != iVar) )
         insert(iVar, index);
-    var r(*this);
-    r.mIndex = -index-1;
-    return r;
+    return var(*this, index);
 }
 
 
@@ -826,16 +838,10 @@ var var::operator ()(int iFirst, ...)
  */
 var var::at(int iIndex) const
 {
-    if (reference())
-        return deref(*this).at(iIndex);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
-    if (mType == TYPE_ARRAY)
-    {
-        var r(*this);
-        r.mIndex = -iIndex-1;
-        return r;
-    }
+    if (type() == TYPE_ARRAY)
+        return var(*this, iIndex);
     if (iIndex == 0)
         return *this;
     throw std::runtime_error("var::at(): Index out of bounds");
@@ -851,8 +857,6 @@ var var::at(int iIndex) const
  */
 var var::at(var iVar) const
 {
-    if (reference())
-        return deref(*this).at(iVar);
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     else
@@ -860,12 +864,9 @@ var var::at(var iVar) const
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = binary(iVar);
-    var r;
     if ( (index >= size()) || (heap()->key(index) != iVar) )
-        return r;
-    r = *this;
-    r.mIndex = -index-1;
-    return r;
+        return nil;
+    return var(*this, index);
 }
 
 
@@ -920,8 +921,7 @@ var& var::resize(int iSize)
     if (!heap())
     {
         // Not allocated
-        if (((mType != TYPE_ARRAY) && (iSize > 1)) ||
-            ((mType == TYPE_ARRAY) && (iSize >= 0)) )
+        if (((type() != TYPE_ARRAY) && (iSize > 1)) || (type() == TYPE_ARRAY))
         {
             // Need to allocate
             if (!defined())
