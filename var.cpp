@@ -276,8 +276,7 @@ var::var(int iSize, float iFirst, ...)
 /**
  * Reference constructor
  *
- * Dereferences iVar, constructing and reference to the resulting
- * array.
+ * Dereferences iVar, constructing a reference to the resulting array.
  */
 var::var(var iVar, int iIndex)
 {
@@ -749,7 +748,7 @@ char* var::operator &()
 {
     if (heap())
         return heap()->ref();
-    return (char*)&get<char>();
+    return &get<char>();
 }
 
 
@@ -765,13 +764,12 @@ char* var::operator &()
  */
 var var::operator [](int iIndex)
 {
-    if (reference())
-        return deref(*this).operator [](iIndex);
+    var& v = dereference();
     if (iIndex < 0)
         throw std::runtime_error("operator [int]: Negative index");
-    if (iIndex >= size())
-        resize(iIndex+1);
-    return var(*this, iIndex);
+    if (iIndex >= v.size())
+        v.resize(iIndex+1);
+    return var(v, iIndex);
 }
 
 
@@ -786,22 +784,21 @@ var var::operator [](int iIndex)
  */
 var var::operator [](var iVar)
 {
-    if (reference())
-        return deref(*this).operator [](iVar);
-    if (!defined())
+    var& v = dereference();
+    if (!v.defined())
     {
         // A kind of constructor
-        mData.hp = new varheap(0, TYPE_PAIR);
-        attach();
+        v.mData.hp = new varheap(0, TYPE_PAIR);
+        v.attach();
     }
     else
-        if (heap() && (heap()->type() != TYPE_PAIR))
+        if (v.heap() && (v.heap()->type() != TYPE_PAIR))
             throw std::runtime_error("operator [var]: Not a map");
 
-    int index = binary(iVar);
-    if ( (index >= size()) || (heap()->key(index) != iVar) )
-        insert(iVar, index);
-    return var(*this, index);
+    int index = v.binary(iVar);
+    if ( (index >= v.size()) || (v.heap()->key(index) != iVar) )
+        v.insert(iVar, index);
+    return var(v, index);
 }
 
 
@@ -918,31 +915,32 @@ var& var::resize(int iSize)
 {
     VDEBUG(std::cout << "var::resize(" << iSize << ")" << std::endl);
     assert(iSize >= 0);
-    if (!heap())
+    var& v = dereference();
+    if (!v.heap())
     {
         // Not allocated
-        if (((type() != TYPE_ARRAY) && (iSize > 1)) || (type() == TYPE_ARRAY))
+        if (((v.type() != TYPE_ARRAY) && (iSize > 1)) || (v.type() == TYPE_ARRAY))
         {
             // Need to allocate
-            if (!defined())
+            if (!v.defined())
             {
-                mData.hp = new varheap(iSize, mType);
-                attach();
+                v.mData.hp = new varheap(iSize, v.mType);
+                v.attach();
             }
             else
             {
-                var tmp = *this;
-                mData.hp = new varheap(iSize, mType);
-                mType = TYPE_ARRAY;
-                attach();
-                at(0) = tmp;
+                var tmp = v;
+                v.mData.hp = new varheap(iSize, v.mType);
+                v.mType = TYPE_ARRAY;
+                v.attach();
+                v.at(0) = tmp;
             }
         }
     }
     else
     {
         // It's allocated already
-        heap()->resize(iSize);
+        v.heap()->resize(iSize);
     }
     return *this;
 }
@@ -1010,29 +1008,27 @@ var& var::push(var iVar)
     VDEBUG(std::cout << "push: ");
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
-    if (reference())
-        return deref(*this).push(iVar);
-
-    if (!defined())
+    var& v = dereference();
+    if (!v.defined())
     {
         // Uninitialised
         if (iVar.type() != TYPE_ARRAY)
         {
-            *this = iVar;
-            return *this;
+            v = iVar;
+            return v;
         }
     }
     else
     {
         // Already initialised
-        if ( (type() != TYPE_ARRAY) && (iVar.type() != type()) )
+        if ( (v.type() != TYPE_ARRAY) && (iVar.type() != v.type()) )
             throw std::runtime_error("push(): Incompatible types");
     }
 
-    int last = size();
-    resize(last+1);
-    at(last) = iVar;
-    return *this;
+    int last = v.size();
+    v.resize(last+1);
+    v.at(last) = iVar;
+    return v;
 }
 
 
@@ -1180,10 +1176,9 @@ var var::prod() const
  */
 varheap* var::heap() const
 {
-    if (!reference())
-        return ( (mType == TYPE_ARRAY) && mData.hp ) ? mData.hp : 0;
-
-    return deref(*this).heap();
+    var v(*this);
+    v.dereference();
+    return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
 }
 
 
@@ -1196,20 +1191,6 @@ bool var::reference() const
     if ((mIndex < 0) && (mType == TYPE_ARRAY))
         return true;
     return false;
-}
-
-
-/**
- * deref() function
- *
- * Trivially calls the dereference() method, but has the effect of
- * copying the var so the caller can be const.
- *
- * Can't overload the name dereference(); why?
- */
-var& deref(var iVar)
-{
-    return iVar.dereference();
 }
 
 

@@ -105,24 +105,24 @@ var var::join(const char* iStr) const
 
 var& var::strip()
 {
-    var& deref = dereference();
+    var& v = dereference();
     if (heap()->type() != TYPE_CHAR)
         return *this;
 
-    char* ptr = &deref;
+    char* ptr = &v;
     int leading = 0;
-    while ((leading < deref.size()) && (isspace(ptr[leading])))
+    while ((leading < v.size()) && (isspace(ptr[leading])))
         leading++;
     int trailing = 0;
-    while ((trailing < deref.size()) && (isspace(ptr[size()-trailing-1])))
+    while ((trailing < v.size()) && (isspace(ptr[size()-trailing-1])))
         trailing++;
 
-    int newSize = deref.size() - leading - trailing;
+    int newSize = v.size() - leading - trailing;
     if (leading > 0)
         std::memmove(ptr, ptr+leading, newSize);
-    if (newSize != deref.size())
-        deref.resize(newSize);
-    return deref;
+    if (newSize != v.size())
+        v.resize(newSize);
+    return v;
 }
 
 
@@ -186,8 +186,6 @@ bool var::match(var iRE)
  */
 var var::replace(var iRE, var iStr)
 {
-    if (reference())
-        return deref(*this).replace(iRE, iStr);
     if (heap()->type() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
 

@@ -116,7 +116,6 @@ public:
     var& dereference();
 
     // Chums
-    friend var& deref(var iVar);
     friend std::ostream& operator <<(
         std::ostream& iStream, var iVar
     );
