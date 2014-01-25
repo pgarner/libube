@@ -112,8 +112,6 @@ public:
     var sum() const;
     var prod() const;
     void format(std::ostream& iStream, int iIndent = 0) const;
-    bool reference() const;
-    var& dereference();
 
     // Chums
     friend std::ostream& operator <<(
@@ -133,7 +131,7 @@ public:
     var& getline(std::istream& iStream);
     var split(const char* iStr, int iMax=0) const;
     var join(const char* iStr) const;
-    var& strip();
+    var strip();
     var& sprintf(const char* iFormat, ...);
     bool search(var iRE);
     bool match(var iRE);
@@ -168,6 +166,8 @@ private:
 
     // Methods
     var& varderef(bool& oSuccess);
+    bool reference() const;
+    var& dereference();
     int attach();
     int detach(varheap* iData=0);
     const char* typeOf(dataEnum iType);

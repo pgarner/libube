@@ -103,10 +103,10 @@ var var::join(const char* iStr) const
     return r;
 }
 
-var& var::strip()
+var var::strip()
 {
-    var& v = dereference();
-    if (heap()->type() != TYPE_CHAR)
+    var v(*this);
+    if (v.heap()->type() != TYPE_CHAR)
         return *this;
 
     char* ptr = &v;

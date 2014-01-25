@@ -90,6 +90,7 @@ var::var(const var& iVar)
     mIndex = iVar.mIndex;
     mType = iVar.mType;
     attach();
+    dereference();
 }
 
 
@@ -104,13 +105,38 @@ var& var::operator =(var iVar)
 {
     VDEBUG(std::cout << "Copy assignment" << std::endl);
 
-    iVar.dereference();
     if (reference())
     {
         // We are a reference; have to write directly into a typed
         // array.  However, no new storage is allocated, so no need to
         // detach from old storage
-        mData.hp->set(iVar, -mIndex-1);
+        int index = -mIndex-1;
+        switch (mData.hp->type())
+        {
+        case var::TYPE_CHAR:
+            mData.hp->ref<char>(index) = iVar.cast<char>();
+            break;
+        case var::TYPE_INT:
+            mData.hp->ref<int>(index) = iVar.cast<int>();
+            break;
+        case var::TYPE_LONG:
+            mData.hp->ref<long>(index) = iVar.cast<long>();
+            break;
+        case var::TYPE_FLOAT:
+            mData.hp->ref<float>(index) = iVar.cast<float>();
+            break;
+        case var::TYPE_DOUBLE:
+            mData.hp->ref<double>(index) = iVar.cast<double>();
+            break;
+        case var::TYPE_VAR:
+            mData.hp->ref<var>(index) = iVar;
+            break;
+        case var::TYPE_PAIR:
+            mData.hp->ref<pair>(index).val = iVar;
+            break;
+        default:
+            throw std::runtime_error("var::operator =(): Unknown type");
+        }
     }
     else
     {
@@ -123,6 +149,7 @@ var& var::operator =(var iVar)
         attach();
         if (tmp)
             detach(tmp);
+        dereference();
     }
     return *this;
 }
@@ -293,19 +320,19 @@ var::var(var iVar, int iIndex)
  * Main data accessor
  */
 template<> char var::get<char>() const {
-    var v(*this); return v.dereference().mData.c;
+    var v(*this); return v.mData.c;
 }
 template<> int var::get<int>() const {
-    var v(*this); return v.dereference().mData.i;
+    var v(*this); return v.mData.i;
 }
 template<> long var::get<long>() const {
-    var v(*this); return v.dereference().mData.l;
+    var v(*this); return v.mData.l;
 }
 template<> float var::get<float>() const {
-    var v(*this); return v.dereference().mData.f;
+    var v(*this); return v.mData.f;
 }
 template<> double var::get<double>() const {
-    var v(*this); return v.dereference().mData.d;
+    var v(*this); return v.mData.d;
 }
 
 
@@ -492,7 +519,8 @@ var var::copy() const
 bool var::defined() const
 {
     // = not undefined
-    return !( (mType == TYPE_ARRAY) && !mData.hp );
+    var v(*this);
+    return !( (v.mType == TYPE_ARRAY) && !v.mData.hp );
 }
 
 
@@ -507,7 +535,6 @@ int var::size() const
 var::dataEnum var::type() const
 {
     var v (*this);
-    v.dereference();
     return v.mType;
 }
 
@@ -538,8 +565,7 @@ T var::cast()
         *this = r = static_cast<T>(get<char>());
         return r;
     case TYPE_INT:
-        r = static_cast<T>(get<int>());
-        *this = r;
+        *this = r = static_cast<T>(get<int>());
         return r;
     case TYPE_LONG:
         *this = r = static_cast<T>(get<long>());
@@ -785,7 +811,7 @@ var var::operator [](int iIndex)
 var var::operator [](var iVar)
 {
     var& v = dereference();
-    if (!v.defined())
+    if (!v)
     {
         // A kind of constructor
         v.mData.hp = new varheap(0, TYPE_PAIR);
@@ -835,12 +861,13 @@ var var::operator ()(int iFirst, ...)
  */
 var var::at(int iIndex) const
 {
-    if (!defined())
+    var v = *this;
+    if (!v)
         throw std::runtime_error("var::at(): uninitialised");
-    if (type() == TYPE_ARRAY)
-        return var(*this, iIndex);
+    if (v.type() == TYPE_ARRAY)
+        return var(v, iIndex);
     if (iIndex == 0)
-        return *this;
+        return v;
     throw std::runtime_error("var::at(): Index out of bounds");
 }
 
@@ -919,10 +946,11 @@ var& var::resize(int iSize)
     if (!v.heap())
     {
         // Not allocated
-        if (((v.type() != TYPE_ARRAY) && (iSize > 1)) || (v.type() == TYPE_ARRAY))
+        if (((v.type() != TYPE_ARRAY) && (iSize > 1)) ||
+             (v.type() == TYPE_ARRAY))
         {
             // Need to allocate
-            if (!v.defined())
+            if (!v)
             {
                 v.mData.hp = new varheap(iSize, v.mType);
                 v.attach();
@@ -940,7 +968,7 @@ var& var::resize(int iSize)
     else
     {
         // It's allocated already
-        v.heap()->resize(iSize);
+        heap()->resize(iSize);
     }
     return *this;
 }
@@ -998,37 +1026,34 @@ var var::typeOf()
 /**
  * Push a value onto a stack
  *
- * Push is the fundamental of way of building arrays, combined with
- * the way resize() works.  Pushing something of an array type creates
- * an array of var; pushing something of a builtin type creates a
- * dense array of that type.
+ * Push is the fundamental way of building arrays, combined with the
+ * way resize() works.  Pushing something of an array type creates an
+ * array of var; pushing something of a builtin type creates a dense
+ * array of that type.
  */
 var& var::push(var iVar)
 {
     VDEBUG(std::cout << "push: ");
     VDEBUG(std::cout << iVar.typeOf() << " " << typeOf());
     VDEBUG(std::cout << std::endl);
-    var& v = dereference();
-    if (!v.defined())
+    if (!defined())
     {
         // Uninitialised
         if (iVar.type() != TYPE_ARRAY)
         {
-            v = iVar;
-            return v;
+            *this = iVar;
+            return *this;
         }
     }
     else
     {
         // Already initialised
-        if ( (v.type() != TYPE_ARRAY) && (iVar.type() != v.type()) )
+        if ( (type() != TYPE_ARRAY) && (iVar.type() != type()) )
             throw std::runtime_error("push(): Incompatible types");
     }
 
-    int last = v.size();
-    v.resize(last+1);
-    v.at(last) = iVar;
-    return v;
+    (*this)[size()] = iVar;
+    return *this;
 }
 
 
@@ -1177,7 +1202,6 @@ var var::prod() const
 varheap* var::heap() const
 {
     var v(*this);
-    v.dereference();
     return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
 }
 
