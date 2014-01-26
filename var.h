@@ -168,8 +168,8 @@ private:
     var& varderef(bool& oSuccess);
     bool reference() const;
     var& dereference();
-    int attach();
-    int detach(varheap* iData=0);
+    int attach(varheap* iHeap=0);
+    int detach(varheap* iHeap=0);
     const char* typeOf(dataEnum iType);
     var typeOf();
     int binary(var iData) const;

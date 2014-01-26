@@ -228,9 +228,8 @@ var::var(int iSize, const char* iData)
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
     mType = TYPE_ARRAY;
-    mData.hp = new varheap(iSize, iData);
     mIndex = 0;
-    attach();
+    attach(new varheap(iSize, iData));
 }
 
 var::var(const char* iData)
@@ -268,9 +267,8 @@ var::var(int iSize, const int* iData)
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(int*): " << iData << std::endl);
     mType = TYPE_ARRAY;
-    mData.hp = new varheap(iSize, iData);
     mIndex = 0;
-    attach();
+    attach(new varheap(iSize, iData));
 }
 
 
@@ -510,8 +508,7 @@ var var::copy() const
 
     // It's a heap
     var r;
-    r.mData.hp = new varheap(*heap());
-    r.attach();
+    r.attach(new varheap(*heap()));
     return r;
 }
 
@@ -814,8 +811,7 @@ var var::operator [](var iVar)
     if (!v)
     {
         // A kind of constructor
-        v.mData.hp = new varheap(0, TYPE_PAIR);
-        v.attach();
+        v.attach(new varheap(0, TYPE_PAIR));
     }
     else
         if (v.heap() && (v.heap()->type() != TYPE_PAIR))
@@ -952,15 +948,13 @@ var& var::resize(int iSize)
             // Need to allocate
             if (!v)
             {
-                v.mData.hp = new varheap(iSize, v.mType);
-                v.attach();
+                v.attach(new varheap(iSize, v.mType));
             }
             else
             {
                 var tmp = v;
-                v.mData.hp = new varheap(iSize, v.mType);
                 v.mType = TYPE_ARRAY;
-                v.attach();
+                v.attach(new varheap(iSize, tmp.mType));
                 v.at(0) = tmp;
             }
         }
@@ -974,14 +968,27 @@ var& var::resize(int iSize)
 }
 
 
-int var::attach()
+/**
+ * Attaches a var to a varheap.
+ */
+int var::attach(varheap* iHeap)
 {
+    if (iHeap)
+    {
+        mData.hp = iHeap;
+        return mData.hp->attach();
+    }
     if ((mType == TYPE_ARRAY) && mData.hp)
         return mData.hp->attach();
     return 0;
 }
 
 
+/**
+ * Detaches a var from a varheap.  If a varheap is passed as argument,
+ * detaches from that varheap, otherwise detaches from the current one
+ * if it exists.
+ */
 int var::detach(varheap* iHeap)
 {
     if (iHeap)
