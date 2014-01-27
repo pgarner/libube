@@ -223,12 +223,10 @@ var::var(double iData)
     mType = TYPE_DOUBLE;
 }
 
-var::var(int iSize, const char* iData)
+var::var(int iSize, const char* iData) : var()
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
-    mType = TYPE_ARRAY;
-    mIndex = 0;
     attach(new varheap(iSize, iData));
 }
 
@@ -238,65 +236,46 @@ var::var(const char* iData)
     // It's all in the init
 }
 
-var::var(int iSize, const char* const* iData)
+var::var(int iSize, const char* const* iData) : var()
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(char**): " << iData[0] << std::endl);
-    mData.hp = 0;
-    mType = TYPE_ARRAY;
-    mIndex = 0;
     for (int i=0; i<iSize; i++)
         push(iData[i]);
 }
 
 
-var::var(const char* const* iData)
+var::var(const char* const* iData) : var()
 {
     int size = -1;
     while (iData[++size]) {}
-    mData.hp = 0;
-    mType = TYPE_ARRAY;
-    mIndex = 0;
     for (int i=0; i<size; i++)
         push(iData[i]);
 }
 
 
-var::var(int iSize, const int* iData)
+var::var(int iSize, const int* iData) : var()
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(int*): " << iData << std::endl);
-    mType = TYPE_ARRAY;
-    mIndex = 0;
     attach(new varheap(iSize, iData));
 }
 
 
-var::var(int iSize, int iFirst, ...)
+var::var(int iSize, int iInit) : var(iInit)
 {
-    va_list ap;
-    va_start(ap, iFirst);
-    mData.i = iFirst;
-    mIndex = 0;
-    mType = TYPE_INT;
+    resize(iSize);
     for (int i=1; i<iSize; i++)
-        push(va_arg(ap, int));
-    va_end(ap);
+        at(i) = iInit;
 }
 
 
-var::var(int iSize, float iFirst, ...)
+var::var(int iSize, float iInit) : var(iInit)
 {
-    va_list ap;
-    va_start(ap, iFirst);
-    mData.f = iFirst;
-    mIndex = 0;
-    mType = TYPE_FLOAT;
+    resize(iSize);
     for (int i=1; i<iSize; i++)
-        push((float)(va_arg(ap, double)));
-    va_end(ap);
+        at(i) = iInit;
 }
-
 
 /**
  * Reference constructor
@@ -1318,7 +1297,8 @@ var var::view(int iDim, int iFirst, ...)
     va_start(ap, iFirst);
 
     // The dimension vector must be an array, even if only 1D
-    var v(2, iFirst, 0);
+    var v = iFirst;
+    v.push(0);
 
     // First entry of each pair is the dimension
     for (int i=1; i<iDim; i++)

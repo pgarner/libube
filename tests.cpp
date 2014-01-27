@@ -209,8 +209,9 @@ int main(int argc, char** argv)
     wmap["one"]["four"] = "five";
     cout << "wmap is " << wmap << endl;
 
-    // Init from variable argument list
-    var ai(5, 5,4,3,2,1);
+    // Init from comma separated list
+    var ai;
+    ai = 5,4,3,2,1;
     cout << "ai is: " << ai << endl;
 
     // Read a text file via a dynamic library
@@ -255,7 +256,8 @@ int main(int argc, char** argv)
     cout << t1 << endl;
 
     // BLAS
-    var bt(4, 1.0f, 1.2, 0.8, -2.0);
+    var bt;
+    bt = 1.0f, 1.2f, 0.8f, -2.0f;
     if (vg)
     {
         cout << bt << "  sums to " << bt.sum()  << endl;
@@ -323,5 +325,13 @@ int main(int argc, char** argv)
         cout << "Matches not" << endl;
     var rep = ss.replace("lo", "ls bells");
     cout << "Replaced to: " << rep << endl;
+
+    // Arrays with single initialiser
+    var zeros(5, 0.0f);
+    var ones(5, 1.0f);
+    cout << "Zeros: " << zeros << endl;
+    cout << "Ones:  " << ones << endl;
+
+    // Phil, leave this at the end!
     return 0;
 }

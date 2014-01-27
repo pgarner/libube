@@ -59,8 +59,8 @@ public:
     var(int iSize, const char* const* iData);
     var(const char* const* iData);
     var(int iSize, const int* iData);
-    var(int iSize, int iFirst, ...);
-    var(int iSize, float iFirst, ...);
+    var(int iSize, int iInit);
+    var(int iSize, float iInit);
     var(var iVar, int iIndex);
 
     // Data accessor

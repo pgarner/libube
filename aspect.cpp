@@ -28,7 +28,8 @@ int main(int argc, char** argv)
     var arg(argc, argv);
 
     var diag = 10.0;
-    var res(2, 1024.0f, 600.0f);
+    var res;
+    res = 1024.0f, 600.0f;
 
     var aspect = res[0] / res[1];
 
