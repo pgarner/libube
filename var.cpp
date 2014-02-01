@@ -1291,26 +1291,20 @@ int var::binary(var iData) const
  * view is just another array of type int holding the dimensions of
  * the new view.
  */
-var var::view(int iDim, int iFirst, ...)
+var var::view(const std::initializer_list<int> iList)
 {
-    va_list ap;
-    va_start(ap, iFirst);
-
-    // The dimension vector must be an array, even if only 1D
-    var v = iFirst;
-    v.push(0);
+    var v;
 
     // First entry of each pair is the dimension
-    for (int i=1; i<iDim; i++)
+    for (const int* it=begin(iList); it!=end(iList); ++it)
     {
-        v.push(va_arg(ap, int));
+        v.push(*it);
         v.push(0);
     }
-    va_end(ap);
 
     // The second of each pair is the stride
     int p = 1;
-    for (int i=iDim-1; i>=0; i--)
+    for (int i=iList.size()-1; i>=0; i--)
     {
         v[i*2+1] = p;
         p *= v.heap()->viewRef(i*2);

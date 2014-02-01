@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <initializer_list>
 
 class varheap;
 
@@ -142,7 +143,7 @@ public:
     var& write(const char* iFile, const char* iType);
 
     // Tensors
-    var view(int iDim, int iFirst, ...);
+    var view(const std::initializer_list<int> iList);
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;
