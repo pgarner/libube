@@ -543,11 +543,11 @@ bool varheap::lt(varheap* iHeap)
 }
 
 
-void varheap::add(var iVar, int iIndex)
+void varheap::add(var iVar)
 {
-    int lo = (iIndex < 0) ? 0 : iIndex;
-    int hi = (iIndex < 0) ? mSize : iIndex+1;
-    for (int i=lo; i<hi; i++)
+    if (mView)
+        return mView->add(iVar);
+    for (int i=0; i<mSize; i++)
         switch (mType)
         {
         case var::TYPE_CHAR:

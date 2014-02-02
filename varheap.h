@@ -47,7 +47,8 @@ public:
 
     // Trivial accessors
     var::dataEnum type() const { return mView ? mView->type() : mType; };
-    int size() const { return mSize; };
+    int size() const { return mView ? mView->size() : mSize; };
+    int dim() const { return mView ? mSize / 2 : 1; };
     char* ref() const { return mData.cp; };
 
     // Methods
@@ -61,7 +62,7 @@ public:
     void set(var iVar, int iIndex=-1, bool iKey=false);
     bool neq(varheap* iHeap);
     bool lt(varheap* iHeap);
-    void add(var iVar, int iIndex=-1);
+    void add(var iVar);
     void sub(var iVar, int iIndex=-1);
     void mul(var iVar, int iIndex=-1);
     void div(var iVar, int iIndex=-1);

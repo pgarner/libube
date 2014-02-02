@@ -596,7 +596,7 @@ var& var::operator +=(var iVar)
         if (heap() && (heap()->type() == TYPE_CHAR))
             append(iVar);
         else
-            heap()->add(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+            broadcast(iVar, &var::operator +=);
         break;
     case TYPE_CHAR:
         get<char>() += iVar.cast<char>();
@@ -626,7 +626,7 @@ var& var::operator -=(var iVar)
     switch (type())
     {
     case TYPE_ARRAY:
-        heap()->sub(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        broadcast(iVar, &var::operator -=);
         break;
     case TYPE_CHAR:
         get<char>() -= iVar.cast<char>();
@@ -656,7 +656,7 @@ var& var::operator *=(var iVar)
     switch (type())
     {
     case TYPE_ARRAY:
-        heap()->mul(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        broadcast(iVar, &var::operator *=);
         break;
     case TYPE_CHAR:
         get<char>() *= iVar.cast<char>();
@@ -686,7 +686,7 @@ var& var::operator /=(var iVar)
     switch (type())
     {
     case TYPE_ARRAY:
-        heap()->div(iVar, (mIndex < 0) ? -mIndex-1 : -1);
+        broadcast(iVar, &var::operator /=);
         break;
     case TYPE_CHAR:
         get<char>() /= iVar.cast<char>();
@@ -813,10 +813,9 @@ var var::operator ()(int iFirst, ...)
     // Can't dereference with a va_list, so first convert to index
     va_list ap;
     va_start(ap, iFirst);
-    int dim = size() / 2;
     int p = iFirst * stride(0);
     bounds(0, iFirst);
-    for (int i=1; i<dim; i++)
+    for (int i=1; i<dim(); i++)
     {
         int d = va_arg(ap, int);
         bounds(i, d);
@@ -1328,7 +1327,12 @@ var var::view(const std::initializer_list<int> iList)
 int var::shape(int iDim) const
 {
     if (!heap() || !heap()->view())
-        throw std::runtime_error("var::shape(): Not a view");
+    {
+        if (iDim > 0)
+            throw std::runtime_error("var::shape(): dimension too large");
+        else
+            return size();
+    }
     return heap()->viewRef(iDim*2);
 }
 
@@ -1345,6 +1349,15 @@ void var::bounds(int iDim, int iIndex) const
 {
     if (iIndex < 0 || iIndex >= shape(iDim))
         throw std::runtime_error("var::bounds(): index out of bounds");
+}
+
+
+int var::dim() const
+{
+    if (!heap() || !heap()->view())
+        // It's not an array, or it's an array but not a view
+        return 1;
+    return heap()->dim();
 }
 
 

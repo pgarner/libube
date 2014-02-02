@@ -147,6 +147,7 @@ public:
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;
+    int dim() const;
 
 private:
 
@@ -174,6 +175,7 @@ private:
     const char* typeOf(dataEnum iType);
     var typeOf();
     int binary(var iData) const;
+    void broadcast(var iVar, var& (var::*iOperation)(var));
 };
 
 

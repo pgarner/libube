@@ -14,13 +14,48 @@
 #include "varheap.h"
 
 
+/**
+ * Broadcaster
+ *
+ * Broadcasts iVar against *this; i.e., *this is the lvalue and iVar
+ * is the rvalue.  It should only be called from an operation, and
+ * hence *this should be (a reference to) an array.
+ */
+void var::broadcast(var iVar, var& (var::*iOperation)(var))
+{
+    int mDim = dim();
+    int iDim = iVar.dim();
+
+    // Case 1: iVar has size 1
+    if ((iDim == 1) && (iVar.size() == 1))
+    {
+        // This could be parallel!
+        for (int i=0; i<size(); i++)
+            (at(i).*iOperation)(iVar);
+        return;
+    }
+
+    // Case 2: iVar is also an array
+    if (iDim > mDim)
+        throw std::runtime_error("var::broadcast: input dimension too large");
+    for (int i=iDim-1; i>=0; i--)
+    {
+        // The dimensions should match
+        if (shape(i) != iVar.shape(i))
+            throw std::runtime_error("var::broadcast: dimension mismatch");
+    }
+
+    // If it didn't throw, then the arrays are broadcastable
+}
+
+
 /*
  * In some sense it would be best to use cblas.  Netlib defines it,
- * MKL defines it, but OpenBLAS and the like don't.  Sadly, there
- * seems to be no standard header for the fortran versions.  MKL has
- * mkl.h, openblas has f77blas.h.  However, given that the interface
- * is rather standard, we can just reproduce the ones we use here.
- * These happen to be mods of OpenBLAS's f77blas.h
+ * MKL defines it, but OpenBLAS and the like don't necessarily include
+ * it.  Sadly, there seems to be no standard header for the fortran
+ * versions.  MKL has mkl.h, openblas has f77blas.h.  However, given
+ * that the interface is rather standard, we can just reproduce the
+ * ones we use here.  These happen to be mods of OpenBLAS's f77blas.h
  */
 typedef int blasint;
 extern "C" {
