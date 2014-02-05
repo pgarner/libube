@@ -337,6 +337,10 @@ int main(int argc, char** argv)
     cout << "t1: " << t1 << endl;
     t1 *= 1.5;
     cout << "t1: " << t1 << endl;
+    t1 += t1;
+    cout << "t1: " << t1 << endl;
+    t1 -= t1 - 1;
+    cout << "t1: " << t1 << endl;
 
     // Phil, leave this at the end!
     return 0;

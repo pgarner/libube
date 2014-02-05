@@ -62,10 +62,6 @@ public:
     void set(var iVar, int iIndex=-1, bool iKey=false);
     bool neq(varheap* iHeap);
     bool lt(varheap* iHeap);
-    void add(var iVar);
-    void sub(var iVar, int iIndex=-1);
-    void mul(var iVar, int iIndex=-1);
-    void div(var iVar, int iIndex=-1);
     void setView(varheap* iVarHeap);
     bool view() { return mView; };
     int& viewRef(int iIndex);
@@ -74,6 +70,8 @@ public:
     void pow(var iPower);
 
     // Vector ops
+    void add(varheap* iHeap, int iSize);
+    void sub(varheap* iHeap, int iSize);
     var asum();
 
 private:

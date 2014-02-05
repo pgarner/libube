@@ -175,7 +175,12 @@ private:
     const char* typeOf(dataEnum iType);
     var typeOf();
     int binary(var iData) const;
-    void broadcast(var iVar, var& (var::*iOperation)(var));
+    void broadcast(
+        var iVar,
+        var& (var::*iUnaryOp)(var),
+        void (varheap::*iArrayOp)(varheap*, int) = 0
+    );
+    var& add(var&& iVar);
 };
 
 

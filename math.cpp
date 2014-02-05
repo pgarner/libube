@@ -7,46 +7,12 @@
  *   Phil Garner, July 2013
  */
 
+#include <cassert>
 #include <cmath>
 #include <stdexcept>
 
 #include "var.h"
 #include "varheap.h"
-
-
-/**
- * Broadcaster
- *
- * Broadcasts iVar against *this; i.e., *this is the lvalue and iVar
- * is the rvalue.  It should only be called from an operation, and
- * hence *this should be (a reference to) an array.
- */
-void var::broadcast(var iVar, var& (var::*iOperation)(var))
-{
-    int mDim = dim();
-    int iDim = iVar.dim();
-
-    // Case 1: iVar has size 1
-    if ((iDim == 1) && (iVar.size() == 1))
-    {
-        // This could be parallel!
-        for (int i=0; i<size(); i++)
-            (at(i).*iOperation)(iVar);
-        return;
-    }
-
-    // Case 2: iVar is also an array
-    if (iDim > mDim)
-        throw std::runtime_error("var::broadcast: input dimension too large");
-    for (int i=iDim-1; i>=0; i--)
-    {
-        // The dimensions should match
-        if (shape(i) != iVar.shape(i))
-            throw std::runtime_error("var::broadcast: dimension mismatch");
-    }
-
-    // If it didn't throw, then the arrays are broadcastable
-}
 
 
 /*
@@ -62,6 +28,10 @@ extern "C" {
     // Actually FORTRAN calling convention
     float  sasum_ (blasint *, float  *, blasint *);
     double dasum_ (blasint *, double *, blasint *);
+    void   saxpy_ (blasint *, float  *, float  *, blasint *,
+                                        float  *, blasint *);
+    void   daxpy_ (blasint *, double *, double *, blasint *,
+                                        double *, blasint *);
 }
 
 #define MATH(func) var var::func() const \
@@ -83,6 +53,104 @@ extern "C" {
 
 MATH(abs)
 MATH(floor)
+
+/**
+ * Broadcaster
+ *
+ * Broadcasts iVar against *this; i.e., *this is the lvalue and iVar
+ * is the rvalue.  It should only be called from an operation, and
+ * hence *this should be (a reference to) an array.
+ */
+void var::broadcast(
+    var iVar,
+    var& (var::*iUnaryOp)(var),
+    void (varheap::*iArrayOp)(varheap*, int)
+)
+{
+    int mDim = dim();
+    int iDim = iVar.dim();
+
+    // Case 1: iVar has size 1
+    if ((iDim == 1) && (iVar.size() == 1))
+    {
+        // This could be parallel!
+        for (int i=0; i<size(); i++)
+            (at(i).*iUnaryOp)(iVar);
+        return;
+    }
+
+    // Case 2: iVar is also an array
+    if (!iArrayOp)
+        throw std::runtime_error("var::broadcast: not an array operation");
+    if (iDim > mDim)
+        throw std::runtime_error("var::broadcast: input dimension too large");
+    for (int i=iDim-1; i>=0; i--)
+    {
+        // The dimensions should match
+        if (shape(i) != iVar.shape(i))
+            throw std::runtime_error("var::broadcast: dimension mismatch");
+    }
+
+    // If it didn't throw, then the arrays are broadcastable
+    if (iDim == mDim)
+        // Same dimensions
+        (heap()->*iArrayOp)(iVar.heap(), iVar.size());
+}
+
+
+void varheap::add(varheap* iHeap, int iSize)
+{
+    static int one = 1;
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = 1.0f;
+        float* x = &iHeap->ref<float>(0);
+        float* y = &ref<float>(0);
+        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = 1.0;
+        double* x = &iHeap->ref<double>(0);
+        double* y = &ref<double>(0);
+        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::add: Unknown type");
+    }
+}
+
+
+void varheap::sub(varheap* iHeap, int iSize)
+{
+    static int one = 1;
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = -1.0f;
+        float* x = &iHeap->ref<float>(0);
+        float* y = &ref<float>(0);
+        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = -1.0;
+        double* x = &iHeap->ref<double>(0);
+        double* y = &ref<double>(0);
+        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::add: Unknown type");
+    }
+}
+
 
 var var::sin() const
 {

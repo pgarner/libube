@@ -596,7 +596,7 @@ var& var::operator +=(var iVar)
         if (heap() && (heap()->type() == TYPE_CHAR))
             append(iVar);
         else
-            broadcast(iVar, &var::operator +=);
+            broadcast(iVar, &var::operator +=, &varheap::add);
         break;
     case TYPE_CHAR:
         get<char>() += iVar.cast<char>();
@@ -626,7 +626,7 @@ var& var::operator -=(var iVar)
     switch (type())
     {
     case TYPE_ARRAY:
-        broadcast(iVar, &var::operator -=);
+        broadcast(iVar, &var::operator -=, &varheap::sub);
         break;
     case TYPE_CHAR:
         get<char>() -= iVar.cast<char>();

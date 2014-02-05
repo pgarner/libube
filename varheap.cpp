@@ -103,9 +103,8 @@ varheap::~varheap()
  *
  * Like the var version, it is non-recursive; it copies the array, but
  * deeper arrays are not copied.  Just the reference counts are
- * implicitly bumped.
- *
- * Copying a view might not work properly; let's see.
+ * implicitly bumped.  However, if it's a view then the heap of which
+ * it's a view is copied.
  */
 varheap::varheap(const varheap& iHeap)
 {
@@ -121,7 +120,7 @@ varheap::varheap(const varheap& iHeap)
         if (mType == var::TYPE_PAIR)
             set(iHeap.at(i, true), i, true);
     }
-    mView = iHeap.mView;
+    mView = iHeap.mView ? new varheap(*iHeap.mView) : 0;
     if (mView)
         mView->attach();
 }
@@ -543,128 +542,6 @@ bool varheap::lt(varheap* iHeap)
 }
 
 
-void varheap::add(var iVar)
-{
-    if (mView)
-        return mView->add(iVar);
-    for (int i=0; i<mSize; i++)
-        switch (mType)
-        {
-        case var::TYPE_CHAR:
-            mData.cp[i] += iVar.cast<char>();
-            break;
-        case var::TYPE_INT:
-            mData.ip[i] += iVar.cast<int>();
-            break;
-        case var::TYPE_LONG:
-            mData.lp[i] += iVar.cast<long>();
-            break;
-        case var::TYPE_FLOAT:
-            mData.fp[i] += iVar.cast<float>();
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] += iVar.cast<double>();
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] += iVar;
-            break;
-        default:
-            throw std::runtime_error("varheap::add(): Unknown type");
-        }
-}
-
-void varheap::sub(var iVar, int iIndex)
-{
-    int lo = (iIndex < 0) ? 0 : iIndex;
-    int hi = (iIndex < 0) ? mSize : iIndex+1;
-    for (int i=lo; i<hi; i++)
-        switch (mType)
-        {
-        case var::TYPE_CHAR:
-            mData.cp[i] -= iVar.cast<char>();
-            break;
-        case var::TYPE_INT:
-            mData.ip[i] -= iVar.cast<int>();
-            break;
-        case var::TYPE_LONG:
-            mData.lp[i] -= iVar.cast<long>();
-            break;
-        case var::TYPE_FLOAT:
-            mData.fp[i] -= iVar.cast<float>();
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] -= iVar.cast<double>();
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] -= iVar;
-            break;
-        default:
-            throw std::runtime_error("varheap::add(): Unknown type");
-        }
-}
-
-
-void varheap::mul(var iVar, int iIndex)
-{
-    int lo = (iIndex < 0) ? 0 : iIndex;
-    int hi = (iIndex < 0) ? mSize : iIndex+1;
-    for (int i=lo; i<hi; i++)
-        switch (mType)
-        {
-        case var::TYPE_CHAR:
-            mData.cp[i] *= iVar.cast<char>();
-            break;
-        case var::TYPE_INT:
-            mData.ip[i] *= iVar.cast<int>();
-            break;
-        case var::TYPE_LONG:
-            mData.lp[i] *= iVar.cast<long>();
-            break;
-        case var::TYPE_FLOAT:
-            mData.fp[i] *= iVar.cast<float>();
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] *= iVar.cast<double>();
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] *= iVar;
-            break;
-        default:
-            throw std::runtime_error("varheap::mul(): Unknown type");
-        }
-}
-
-
-void varheap::div(var iVar, int iIndex)
-{
-    int lo = (iIndex < 0) ? 0 : iIndex;
-    int hi = (iIndex < 0) ? mSize : iIndex+1;
-    for (int i=lo; i<hi; i++)
-        switch (mType)
-        {
-        case var::TYPE_CHAR:
-            mData.cp[i] /= iVar.cast<char>();
-            break;
-        case var::TYPE_INT:
-            mData.ip[i] /= iVar.cast<int>();
-            break;
-        case var::TYPE_LONG:
-            mData.lp[i] /= iVar.cast<long>();
-            break;
-        case var::TYPE_FLOAT:
-            mData.fp[i] /= iVar.cast<float>();
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] /= iVar.cast<double>();
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] /= iVar;
-            break;
-        default:
-            throw std::runtime_error("varheap::div(): Unknown type");
-        }
-}
-
 void varheap::setView(varheap* iVarHeap)
 {
     if (mView)
@@ -672,6 +549,7 @@ void varheap::setView(varheap* iVarHeap)
     mView = iVarHeap;
     mView->attach();
 }
+
 
 int& varheap::viewRef(int iIndex)
 {
