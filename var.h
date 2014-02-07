@@ -178,9 +178,8 @@ private:
     void broadcast(
         var iVar,
         var& (var::*iUnaryOp)(var),
-        void (varheap::*iArrayOp)(varheap*, int) = 0
+        void (varheap::*iArrayOp)(const varheap*, int) = 0
     );
-    var& add(var&& iVar);
 };
 
 

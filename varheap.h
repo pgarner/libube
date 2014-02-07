@@ -38,7 +38,7 @@ public:
     varheap(const varheap& iHeap);
 
     // Templates
-    template<class T> T& ref(int iIndex);
+    template<class T> T& ref(int iIndex) const;
 
     // Overloaded constructors
     varheap(int iSize, var::dataEnum iType);
@@ -59,7 +59,6 @@ public:
     void format(std::ostream& iStream, int iIndent = 0);
     var at(int iIndex, bool iKey=false) const;
     var& key(int iIndex);
-    void set(var iVar, int iIndex=-1, bool iKey=false);
     bool neq(varheap* iHeap);
     bool lt(varheap* iHeap);
     void setView(varheap* iVarHeap);
@@ -70,8 +69,9 @@ public:
     void pow(var iPower);
 
     // Vector ops
-    void add(varheap* iHeap, int iSize);
-    void sub(varheap* iHeap, int iSize);
+    void copy(const varheap* iHeap, int iSize);
+    void add(const varheap* iHeap, int iSize);
+    void sub(const varheap* iHeap, int iSize);
     var asum();
 
 private:

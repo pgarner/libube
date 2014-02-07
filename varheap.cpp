@@ -28,25 +28,25 @@
  * These can be used to get the actual storage.  C++ doesn't allow
  * overloading on return type, so the return type must be specified.
  */
-template<> char& varheap::ref<char>(int iIndex) {
+template<> char& varheap::ref<char>(int iIndex) const {
     return mView ? mView->ref<char>(iIndex) : mData.cp[iIndex];
 }
-template<> int& varheap::ref<int>(int iIndex) {
+template<> int& varheap::ref<int>(int iIndex) const {
     return mView ? mView->ref<int>(iIndex) : mData.ip[iIndex];
 }
-template<> long& varheap::ref<long>(int iIndex) {
+template<> long& varheap::ref<long>(int iIndex) const {
     return mView ? mView->ref<long>(iIndex) : mData.lp[iIndex];
 }
-template<> float& varheap::ref<float>(int iIndex) {
+template<> float& varheap::ref<float>(int iIndex) const {
     return mView ? mView->ref<float>(iIndex) : mData.fp[iIndex];
 }
-template<> double& varheap::ref<double>(int iIndex) {
+template<> double& varheap::ref<double>(int iIndex) const {
     return mView ? mView->ref<double>(iIndex) : mData.dp[iIndex];
 }
-template<> var& varheap::ref<var>(int iIndex) {
+template<> var& varheap::ref<var>(int iIndex) const {
     return mView ? mView->ref<var>(iIndex) : mData.vp[iIndex];
 }
-template<> pair& varheap::ref<pair>(int iIndex) {
+template<> pair& varheap::ref<pair>(int iIndex) const {
     return mView ? mView->ref<pair>(iIndex) : mData.pp[iIndex];
 }
 
@@ -106,51 +106,34 @@ varheap::~varheap()
  * implicitly bumped.  However, if it's a view then the heap of which
  * it's a view is copied.
  */
-varheap::varheap(const varheap& iHeap)
+varheap::varheap(const varheap& iHeap) : varheap()
 {
-    mSize = 0;
-    mCapacity = 0;
-    mRefCount = 0;
     mType = iHeap.mType;
-    mView = 0;
     resize(iHeap.mSize);
-    for (int i=0; i<mSize; i++)
-    {
-        set(iHeap.at(i), i);
-        if (mType == var::TYPE_PAIR)
-            set(iHeap.at(i, true), i, true);
-    }
+    copy(&iHeap, mSize);
     mView = iHeap.mView ? new varheap(*iHeap.mView) : 0;
     if (mView)
         mView->attach();
 }
 
 
-varheap::varheap(int iSize, var::dataEnum iType)
+varheap::varheap(int iSize, var::dataEnum iType) : varheap()
 {
     VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
-    mSize = 0;
-    mCapacity = 0;
-    mRefCount = 0;
     mType = (iType == var::TYPE_ARRAY) ? var::TYPE_VAR : iType;
-    mView = 0;
     resize(iSize);
 }
 
-varheap::varheap(int iSize, const char* iData)
+varheap::varheap(int iSize, const char* iData) : varheap()
 {
     VDEBUG(std::cout << " Ctor: " << iData << std::endl);
     assert(iSize >= 0);
-    mSize = 0;
-    mCapacity = 0;
-    mRefCount = 0;
     mType = var::TYPE_CHAR;
     resize(iSize);
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
     mData.cp[iSize] = 0;
-    mView = 0;
 }
 
 
@@ -480,45 +463,6 @@ var& varheap::key(int iIndex)
     if ( (iIndex < 0) || (iIndex >= mSize) )
         throw std::range_error("varheap::at(): index out of bounds");
     return mData.pp[iIndex].key;
-}
-
-
-void varheap::set(var iVar, int iIndex, bool iKey)
-{
-    if (mView)
-        return mView->set(iVar, iIndex, iKey);
-    int lo = (iIndex < 0) ? 0 : iIndex;
-    int hi = (iIndex < 0) ? mSize : iIndex+1;
-    for (int i=lo; i<hi; i++)
-        switch (mType)
-        {
-        case var::TYPE_CHAR:
-            mData.cp[i] = iVar.cast<char>();
-            break;
-        case var::TYPE_INT:
-            mData.ip[i] = iVar.cast<int>();
-            break;
-        case var::TYPE_LONG:
-            mData.lp[i] = iVar.cast<long>();
-            break;
-        case var::TYPE_FLOAT:
-            mData.fp[i] = iVar.cast<float>();
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] = iVar.cast<double>();
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] = iVar;
-            break;
-        case var::TYPE_PAIR:
-            if (iKey)
-                mData.pp[i].key = iVar;
-            else
-                mData.pp[i].val = iVar;
-            break;
-        default:
-            throw std::runtime_error("varheap::set(): Unknown type");
-        }
 }
 
 

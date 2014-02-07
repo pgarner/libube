@@ -9,6 +9,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <cstring>
 #include <stdexcept>
 
 #include "var.h"
@@ -26,6 +27,8 @@
 typedef int blasint;
 extern "C" {
     // Actually FORTRAN calling convention
+    void   scopy_ (blasint *, float  *, blasint *, float  *, blasint *);
+    void   dcopy_ (blasint *, double *, blasint *, double *, blasint *);
     float  sasum_ (blasint *, float  *, blasint *);
     double dasum_ (blasint *, double *, blasint *);
     void   saxpy_ (blasint *, float  *, float  *, blasint *,
@@ -64,7 +67,7 @@ MATH(floor)
 void var::broadcast(
     var iVar,
     var& (var::*iUnaryOp)(var),
-    void (varheap::*iArrayOp)(varheap*, int)
+    void (varheap::*iArrayOp)(const varheap*, int)
 )
 {
     int mDim = dim();
@@ -98,7 +101,50 @@ void var::broadcast(
 }
 
 
-void varheap::add(varheap* iHeap, int iSize)
+/**
+ * Copy the data of an array
+ *
+ * Copy does not respect views.  Rather, it can be used to copy the
+ * view data itself (the array of ints).  The copy constructor calls
+ * copy() twice: once for the view and once for the data.  BLAS types
+ * are accelerated with BLAS Xcopy(); the other built-in types use
+ * memcpy().  I don't know whether Xcopy() or memcpy() is faster.
+ */
+void varheap::copy(const varheap* iHeap, int iSize)
+{
+    static int one = 1;
+    switch(mType)
+    {
+    case var::TYPE_CHAR:
+        memcpy(mData.cp, iHeap->mData.cp, mSize*sizeof(char));
+        break;
+    case var::TYPE_INT:
+        memcpy(mData.ip, iHeap->mData.ip, mSize*sizeof(int));
+        break;
+    case var::TYPE_LONG:
+        memcpy(mData.lp, iHeap->mData.lp, mSize*sizeof(long));
+        break;
+    case var::TYPE_FLOAT:
+        scopy_(&iSize, iHeap->mData.fp, &one, mData.fp, &one);
+        break;
+    case var::TYPE_DOUBLE:
+        dcopy_(&iSize, iHeap->mData.dp, &one, mData.dp, &one);
+        break;
+    case var::TYPE_VAR:
+        for (int i=0; i<mSize; i++)
+            mData.vp[i] = iHeap->mData.vp[i];
+        break;
+    case var::TYPE_PAIR:
+        for (int i=0; i<mSize; i++)
+            mData.pp[i] = iHeap->mData.pp[i];
+        break;
+    default:
+        throw std::runtime_error("varheap::copy(): Unknown type");
+    }
+}
+
+
+void varheap::add(const varheap* iHeap, int iSize)
 {
     static int one = 1;
     switch(type())
@@ -125,7 +171,7 @@ void varheap::add(varheap* iHeap, int iSize)
 }
 
 
-void varheap::sub(varheap* iHeap, int iSize)
+void varheap::sub(const varheap* iHeap, int iSize)
 {
     static int one = 1;
     switch(type())
