@@ -20,7 +20,7 @@
  * In some sense it would be best to use cblas.  Netlib defines it,
  * MKL defines it, but OpenBLAS and the like don't necessarily include
  * it.  Sadly, there seems to be no standard header for the fortran
- * versions.  MKL has mkl.h, openblas has f77blas.h.  However, given
+ * versions.  MKL has mkl.h, OpenBLAS has f77blas.h.  However, given
  * that the interface is rather standard, we can just reproduce the
  * ones we use here.  These happen to be mods of OpenBLAS's f77blas.h
  */

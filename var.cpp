@@ -905,6 +905,18 @@ void var::format(std::ostream& iStream, int iIndent) const
 }
 
 
+var var::range(var iLo, var iHi, var iStep)
+{
+    var r;
+    while (iLo < iHi)
+    {
+        r.push(iLo);
+        iLo += iStep;
+    }
+    return r;
+}
+
+
 std::ostream& operator <<(std::ostream& iStream, var iVar)
 {
     iVar.format(iStream);
@@ -1287,14 +1299,17 @@ int var::binary(var iData) const
 
 /**
  * Assuming that *this is an array, returns a view of the array.  A
- * view is just another array of type int holding the dimensions of
+ * view is just another array, of type int, holding the dimensions of
  * the new view.
  */
-var var::view(const std::initializer_list<int> iList)
+var var::view(const std::initializer_list<int> iList, int iOffset)
 {
     var v;
 
-    // First entry of each pair is the dimension
+    // The first entry is the offset
+    v.push(iOffset);
+
+    // First entry of each subsequent pair is the dimension
     for (const int* it=begin(iList); it!=end(iList); ++it)
     {
         v.push(*it);
@@ -1305,22 +1320,30 @@ var var::view(const std::initializer_list<int> iList)
     int p = 1;
     for (int i=iList.size()-1; i>=0; i--)
     {
-        v[i*2+1] = p;
-        p *= v.heap()->viewRef(i*2);
+        v[i*2+2] = p;
+        p *= v.heap()->viewRef(i*2+1);
     }
 
     // the p that drops out should be the overall size
     if (!defined())
         resize(p);
     else
-        if (p != size())
-            throw std::runtime_error("var::view(): Incompatible dimensions");
+        if (p+iOffset > size())
+            throw std::runtime_error("var::view(): Array too small for view");
 
     // Tell the heap object that it's a view
     assert(mType == TYPE_ARRAY);
     v.heap()->setView(heap());
 
     return v;
+}
+
+
+int var::offset() const
+{
+    if (!heap() || !heap()->view())
+        return 0;
+    return heap()->viewRef(0);
 }
 
 
@@ -1333,7 +1356,7 @@ int var::shape(int iDim) const
         else
             return size();
     }
-    return heap()->viewRef(iDim*2);
+    return heap()->viewRef(iDim*2+1);
 }
 
 
@@ -1341,7 +1364,7 @@ int var::stride(int iDim) const
 {
     if (!heap() || !heap()->view())
         throw std::runtime_error("var::stride(): Not a view");
-    return heap()->viewRef(iDim*2+1);
+    return heap()->viewRef(iDim*2+2);
 }
 
 

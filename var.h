@@ -113,6 +113,8 @@ public:
     var sum() const;
     var prod() const;
     void format(std::ostream& iStream, int iIndent = 0) const;
+    static var range(var iHi) { return range(iHi-iHi, iHi); };
+    static var range(var iLo, var iHi, var iStep=1);
 
     // Chums
     friend std::ostream& operator <<(
@@ -143,7 +145,8 @@ public:
     var& write(const char* iFile, const char* iType);
 
     // Tensors
-    var view(const std::initializer_list<int> iList);
+    var view(const std::initializer_list<int> iList, int iOffset=0);
+    int offset() const;
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;

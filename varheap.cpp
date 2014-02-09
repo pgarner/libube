@@ -29,25 +29,25 @@
  * overloading on return type, so the return type must be specified.
  */
 template<> char& varheap::ref<char>(int iIndex) const {
-    return mView ? mView->ref<char>(iIndex) : mData.cp[iIndex];
+    return mView ? mView->ref<char>(iIndex + mData.ip[0]) : mData.cp[iIndex];
 }
 template<> int& varheap::ref<int>(int iIndex) const {
-    return mView ? mView->ref<int>(iIndex) : mData.ip[iIndex];
+    return mView ? mView->ref<int>(iIndex + mData.ip[0]) : mData.ip[iIndex];
 }
 template<> long& varheap::ref<long>(int iIndex) const {
-    return mView ? mView->ref<long>(iIndex) : mData.lp[iIndex];
+    return mView ? mView->ref<long>(iIndex + mData.ip[0]) : mData.lp[iIndex];
 }
 template<> float& varheap::ref<float>(int iIndex) const {
-    return mView ? mView->ref<float>(iIndex) : mData.fp[iIndex];
+    return mView ? mView->ref<float>(iIndex + mData.ip[0]) : mData.fp[iIndex];
 }
 template<> double& varheap::ref<double>(int iIndex) const {
-    return mView ? mView->ref<double>(iIndex) : mData.dp[iIndex];
+    return mView ? mView->ref<double>(iIndex + mData.ip[0]) : mData.dp[iIndex];
 }
 template<> var& varheap::ref<var>(int iIndex) const {
-    return mView ? mView->ref<var>(iIndex) : mData.vp[iIndex];
+    return mView ? mView->ref<var>(iIndex + mData.ip[0]) : mData.vp[iIndex];
 }
 template<> pair& varheap::ref<pair>(int iIndex) const {
-    return mView ? mView->ref<pair>(iIndex) : mData.pp[iIndex];
+    return mView ? mView->ref<pair>(iIndex + mData.ip[0]) : mData.pp[iIndex];
 }
 
 
@@ -375,12 +375,12 @@ void varheap::formatView(std::ostream& iStream)
     assert(mType == var::TYPE_INT);
 
     // Output shape if it's more than a matrix
-    int nDim = mSize / 2;
+    int nDim = (mSize-1) / 2;
     if (nDim > 2)
     {
         for (int i=0; i<nDim; i++)
         {
-            iStream << mData.ip[i*2];
+            iStream << mData.ip[i*2+1];
             if (i != nDim-1)
                 iStream << "x";
         }
@@ -390,11 +390,12 @@ void varheap::formatView(std::ostream& iStream)
     // Calculate how many matrices we have
     int nMats = 1;
     for (int i=0; i<nDim-2; i++)
-        nMats *= mData.ip[i*2];
+        nMats *= mData.ip[i*2+1];
 
     // Format as a sequence of matrices
-    int nRows = mData.ip[(nDim-2)*2];
-    int nCols = mData.ip[(nDim-1)*2];
+    int offset = mData.ip[0];
+    int nRows = mData.ip[(nDim-2)*2+1];
+    int nCols = mData.ip[(nDim-1)*2+1];
     for (int k=0; k<nMats; k++)
     {
         iStream << "{";
@@ -404,7 +405,7 @@ void varheap::formatView(std::ostream& iStream)
                 iStream << " ";
             for (int i=0; i<nCols; i++)
             {
-                iStream << mView->at(k*nRows*nCols + j*nCols + i);
+                iStream << mView->at(k*nRows*nCols + j*nCols + i + offset);
                 if ( (i != nCols-1 ) || (j != nRows-1) )
                     iStream << ", ";
             }
