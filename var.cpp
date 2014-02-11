@@ -1339,11 +1339,20 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
 }
 
 
+int var::dim() const
+{
+    if (!heap() || !heap()->view())
+        // It's not an array, or it's an array but not a view
+        return 1;
+    return heap()->dim();
+}
+
+
 int var::offset() const
 {
     if (!heap() || !heap()->view())
         return 0;
-    return heap()->viewRef(0);
+    return heap()->offset();
 }
 
 
@@ -1356,7 +1365,7 @@ int var::shape(int iDim) const
         else
             return size();
     }
-    return heap()->viewRef(iDim*2+1);
+    return heap()->shape(iDim);
 }
 
 
@@ -1364,7 +1373,7 @@ int var::stride(int iDim) const
 {
     if (!heap() || !heap()->view())
         throw std::runtime_error("var::stride(): Not a view");
-    return heap()->viewRef(iDim*2+2);
+    return heap()->stride(iDim);
 }
 
 
@@ -1372,15 +1381,6 @@ void var::bounds(int iDim, int iIndex) const
 {
     if (iIndex < 0 || iIndex >= shape(iDim))
         throw std::runtime_error("var::bounds(): index out of bounds");
-}
-
-
-int var::dim() const
-{
-    if (!heap() || !heap()->view())
-        // It's not an array, or it's an array but not a view
-        return 1;
-    return heap()->dim();
 }
 
 

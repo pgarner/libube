@@ -146,6 +146,44 @@ varheap::varheap(int iSize, const int* iData)
 }
 
 
+int varheap::shape(int iDim) const
+{
+    if (mView)
+    {
+        int index = iDim*2 + 1;
+        if ((index < 0) || (index >= mSize))
+            throw std::range_error("varheap::shape(): dimension out of bounds");
+        return mData.ip[index];
+    }
+    if (iDim > 0)
+        throw std::range_error("varheap::shape(): not view and dimension > 0");
+    return size();
+}
+
+
+int varheap::stride(int iDim) const
+{
+    if (mView)
+    {
+        int index = iDim*2 + 2;
+        if ((index < 0) || (index >= mSize))
+            throw std::range_error("varheap::stride(): dimension out of bounds");
+        return mData.ip[index];
+    }
+    if (iDim > 0)
+        throw std::range_error("varheap::stride(): not view and dimension > 0");
+    return 1;
+}
+
+
+int varheap::size() const
+{
+    if (mView)
+        return stride(0) * shape(0);
+    return mSize;
+};
+
+
 /**
  * Find the next power of two above a given size.
  */
@@ -375,12 +413,12 @@ void varheap::formatView(std::ostream& iStream)
     assert(mType == var::TYPE_INT);
 
     // Output shape if it's more than a matrix
-    int nDim = (mSize-1) / 2;
+    int nDim = dim();
     if (nDim > 2)
     {
         for (int i=0; i<nDim; i++)
         {
-            iStream << mData.ip[i*2+1];
+            iStream << shape(i);
             if (i != nDim-1)
                 iStream << "x";
         }
@@ -390,12 +428,11 @@ void varheap::formatView(std::ostream& iStream)
     // Calculate how many matrices we have
     int nMats = 1;
     for (int i=0; i<nDim-2; i++)
-        nMats *= mData.ip[i*2+1];
+        nMats *= shape(i);
 
     // Format as a sequence of matrices
-    int offset = mData.ip[0];
-    int nRows = mData.ip[(nDim-2)*2+1];
-    int nCols = mData.ip[(nDim-1)*2+1];
+    int nRows = shape(nDim-2);
+    int nCols = shape(nDim-1);
     for (int k=0; k<nMats; k++)
     {
         iStream << "{";
@@ -405,7 +442,7 @@ void varheap::formatView(std::ostream& iStream)
                 iStream << " ";
             for (int i=0; i<nCols; i++)
             {
-                iStream << mView->at(k*nRows*nCols + j*nCols + i + offset);
+                iStream << mView->at(k*nRows*nCols + j*nCols + i + offset());
                 if ( (i != nCols-1 ) || (j != nRows-1) )
                     iStream << ", ";
             }

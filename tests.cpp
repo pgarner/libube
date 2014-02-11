@@ -342,17 +342,18 @@ int main(int argc, char** argv)
     t1 -= t1 - 1;
     cout << "t1: " << t1 << endl;
 
-    // Sub-views
-    var r15 = var::range(0.1, 15.1);
-    var sv = r15.view({2,5}, 5);
-    cout << "sv: " << sv << endl;
-    cout << "sv(0,0): " << sv(0,0) << endl;
-    //sv += 1;
-    //cout << "r15: " << r15 << endl;
-
     // Because it works
     var cv = var::range('a', 'y').view({2,12});
     cout << "cv:\n" << cv << endl;
+
+    // Sub-views
+    var r12 = var::range(0.1, 12.1);
+    cout << "r12: " << r12 << endl;
+    var sv = r12.view({1,4}, 4);
+    cout << "sv: " << sv << endl;
+    cout << "sv(0,0): " << sv(0,0) << endl;
+    sv += 1;
+    cout << "r12: " << r12 << endl;
 
     // Phil, leave this at the end!
     return 0;

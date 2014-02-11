@@ -47,8 +47,11 @@ public:
 
     // Trivial accessors
     var::dataEnum type() const { return mView ? mView->type() : mType; };
-    int size() const { return mView ? mView->size() : mSize; };
-    int dim() const { return mView ? mSize / 2 : 1; };
+    int size() const;
+    int dim() const { return mView ? (mSize-1) / 2 : 1; };
+    int offset() const { return mView ? mData.ip[0] : 0; };
+    int shape(int iDim) const;
+    int stride(int iDim) const;
     char* ref() const { return mData.cp; };
 
     // Methods
