@@ -295,8 +295,8 @@ int main(int argc, char** argv)
         var wav = wavf.read("tests.wav");
         cout << "Loaded wav file:" << endl;
         cout << " rate:     " << wav["rate"] << endl;
-        cout << " channels: " << wav["channels"] << endl;
-        cout << " size:     " << wav["data"].size() << endl;
+        cout << " frames:   " << wav["data"].shape(0) << endl;
+        cout << " channels: " << wav["data"].shape(1) << endl;
     }
 
     // Exception
@@ -357,6 +357,7 @@ int main(int argc, char** argv)
     var rv;
     rv = -1.0, -2.0, -3.0, -4.0;
     cout << "rv: " << rv << endl;
+    sv.offset(8);
     sv = rv;
     cout << "r12: " << r12 << endl;
 

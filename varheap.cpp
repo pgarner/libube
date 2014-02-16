@@ -146,6 +146,17 @@ varheap::varheap(int iSize, const int* iData)
 }
 
 
+int varheap::offset(int iOffset)
+{
+    if (!view())
+        throw std::runtime_error("varheap::offset(): not a view");
+    if (iOffset + size() > mView->size())
+        throw std::runtime_error("varheap::offset(): offset too large");
+    mData.ip[0] = iOffset;
+    return iOffset;
+}
+
+
 int varheap::shape(int iDim) const
 {
     if (mView)

@@ -147,6 +147,7 @@ public:
     // Tensors
     var view(const std::initializer_list<int> iList, int iOffset=0);
     int offset() const;
+    var& offset(int iOffset);
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;

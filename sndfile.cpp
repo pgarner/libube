@@ -32,14 +32,13 @@ var sndfile::read(const char* iFile)
 
     var oVar;
     oVar["rate"] = sfInfo.samplerate;
-    oVar["channels"] = sfInfo.channels;
     int size = sfInfo.frames * sfInfo.channels;
     var data = 0.0f;
     data.resize(size);
     int nGot = sf_readf_float(sndFile, (float*)&(data), size);
     if (nGot != size)
         throw vruntime_error("sndfile::read: Size fuckup");
-    oVar["data"] = data;
+    oVar["data"] = data.view({(int)sfInfo.frames, sfInfo.channels});
     sf_close(sndFile);
     return oVar;
 }

@@ -1362,6 +1362,15 @@ int var::offset() const
 }
 
 
+var& var::offset(int iOffset)
+{
+    if (!heap() || !heap()->view())
+        throw std::runtime_error("var::offset(): not a view");
+    heap()->offset(iOffset);
+    return *this;
+}
+
+
 int var::shape(int iDim) const
 {
     if (!heap() || !heap()->view())

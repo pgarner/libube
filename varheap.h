@@ -50,6 +50,7 @@ public:
     int size() const;
     int dim() const { return mView ? (mSize-1) / 2 : 1; };
     int offset() const { return mView ? mData.ip[0] : 0; };
+    int offset(int iOffset);
     int shape(int iDim) const;
     int stride(int iDim) const;
     char* ref() const { return mData.cp; };
