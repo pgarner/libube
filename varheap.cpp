@@ -185,6 +185,29 @@ int varheap::size() const
 
 
 /**
+ * Normally, x = y will copy the var such that both x and y point to
+ * the same varheap.  However, if x is a view, we want the data from y
+ * to be copied into the thing of which x is a view.  This checks
+ * whether that copy is possible, i.e., the types and sizes match.
+ */
+bool varheap::copyable(varheap* iHeap)
+{
+    if (!view())
+        return false;
+    if (!iHeap)
+        return false;
+    if (type() != iHeap->type())
+        return false;
+    if (dim() != iHeap->dim())
+        return false;
+    for (int i=0; i<dim(); i++)
+        if (shape(i) != iHeap->shape(i))
+            return false;
+    return true;
+}
+
+
+/**
  * Find the next power of two above a given size.
  */
 int allocSize(int iSize)
@@ -350,13 +373,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
     assert(mData.vp); // Any of the pointers
 
     if (mView)
-    {
-        if (mSize > 1)
-            formatView(iStream);
-        else
-            mView->format(iStream);
-        return;
-    }
+        return formatView(iStream);
 
     switch (mType)
     {
@@ -423,6 +440,20 @@ void varheap::formatView(std::ostream& iStream)
                 iStream << "x";
         }
         iStream << " tensor:" << std::endl;
+    }
+
+    // If it's less than 2D, just print it as with format
+    if (nDim < 2)
+    {
+        iStream << "{";
+        for (int i=0; i<size(); i++)
+        {
+            iStream << mView->at(i + offset());
+            if (i != size()-1 )
+                iStream << ", ";
+        }
+        iStream << "}";
+        return;
     }
 
     // Calculate how many matrices we have

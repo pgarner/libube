@@ -349,10 +349,15 @@ int main(int argc, char** argv)
     // Sub-views
     var r12 = var::range(0.1, 12.1);
     cout << "r12: " << r12 << endl;
-    var sv = r12.view({1,4}, 4);
+    var sv = r12.view({4}, 4);
     cout << "sv: " << sv << endl;
-    cout << "sv(0,0): " << sv(0,0) << endl;
+    cout << "sv(0): " << sv(0) << endl;
     sv += 1;
+    cout << "r12: " << r12 << endl;
+    var rv;
+    rv = -1.0, -2.0, -3.0, -4.0;
+    cout << "rv: " << rv << endl;
+    sv = rv;
     cout << "r12: " << r12 << endl;
 
     // Phil, leave this at the end!

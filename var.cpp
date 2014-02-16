@@ -113,30 +113,36 @@ var& var::operator =(var iVar)
         int index = -mIndex-1;
         switch (mData.hp->type())
         {
-        case var::TYPE_CHAR:
+        case TYPE_CHAR:
             mData.hp->ref<char>(index) = iVar.cast<char>();
             break;
-        case var::TYPE_INT:
+        case TYPE_INT:
             mData.hp->ref<int>(index) = iVar.cast<int>();
             break;
-        case var::TYPE_LONG:
+        case TYPE_LONG:
             mData.hp->ref<long>(index) = iVar.cast<long>();
             break;
-        case var::TYPE_FLOAT:
+        case TYPE_FLOAT:
             mData.hp->ref<float>(index) = iVar.cast<float>();
             break;
-        case var::TYPE_DOUBLE:
+        case TYPE_DOUBLE:
             mData.hp->ref<double>(index) = iVar.cast<double>();
             break;
-        case var::TYPE_VAR:
+        case TYPE_VAR:
             mData.hp->ref<var>(index) = iVar;
             break;
-        case var::TYPE_PAIR:
+        case TYPE_PAIR:
             mData.hp->ref<pair>(index).val = iVar;
             break;
         default:
             throw std::runtime_error("var::operator =(): Unknown type");
         }
+    }
+    else if ((mType == TYPE_ARRAY) &&
+             mData.hp && mData.hp->copyable(iVar.heap()))
+    {
+        // Not a reference, but we are a copyable view.
+        mData.hp->set(iVar.heap(), iVar.size());
     }
     else
     {

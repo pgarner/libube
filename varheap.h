@@ -67,12 +67,14 @@ public:
     void setView(varheap* iVarHeap);
     bool view() { return mView; };
     int& viewRef(int iIndex);
+    bool copyable(varheap* iHeap);
 
     // Maths
     void pow(var iPower);
 
     // Vector ops
     void copy(const varheap* iHeap, int iSize);
+    void set(const varheap* iHeap, int iSize);
     void add(const varheap* iHeap, int iSize);
     void sub(const varheap* iHeap, int iSize);
     var asum();

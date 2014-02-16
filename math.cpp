@@ -147,6 +147,31 @@ void varheap::copy(const varheap* iHeap, int iSize)
 }
 
 
+void varheap::set(const varheap* iHeap, int iSize)
+{
+    static int one = 1;
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        float* x = &iHeap->ref<float>(0);
+        float* y = &ref<float>(0);
+        scopy_(&iSize, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        double* x = &iHeap->ref<double>(0);
+        double* y = &ref<double>(0);
+        dcopy_(&iSize, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::set: Unknown type");
+    }
+}
+
+
 void varheap::add(const varheap* iHeap, int iSize)
 {
     static int one = 1;
