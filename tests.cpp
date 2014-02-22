@@ -332,7 +332,7 @@ int main(int argc, char** argv)
     cout << "Zeros: " << zeros << endl;
     cout << "Ones:  " << ones << endl;
 
-    // Broadcasting
+    // Broadcasting scalars
     t1 += 1;
     cout << "t1: " << t1 << endl;
     t1 *= 1.5;
@@ -360,6 +360,15 @@ int main(int argc, char** argv)
     sv.offset(8);
     sv = rv;
     cout << "r12: " << r12 << endl;
+
+    // Broadcasting tensors
+    var r6 = var::range(6.0).view({3,2});
+    var r2;
+    r2 = 1.0, 2.0;
+    cout << "r2: " << r2 << endl;
+    cout << "r6: " << r6 << endl;
+    r6 += r2;
+    cout << "r6: " << r6 << endl;
 
     // Phil, leave this at the end!
     return 0;

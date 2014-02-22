@@ -142,7 +142,7 @@ var& var::operator =(var iVar)
              mData.hp && mData.hp->copyable(iVar.heap()))
     {
         // Not a reference, but we are a copyable view.
-        mData.hp->set(iVar.heap(), iVar.size());
+        mData.hp->set(iVar.heap(), 0, iVar.size());
     }
     else
     {

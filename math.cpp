@@ -70,13 +70,14 @@ MATH(floor)
 void var::broadcast(
     var iVar,
     var& (var::*iUnaryOp)(var),
-    void (varheap::*iArrayOp)(const varheap*, int)
+    void (varheap::*iArrayOp)(const varheap*, int, int)
 )
 {
     int mDim = dim();
     int iDim = iVar.dim();
 
     // Case 1: iVar has size 1
+    // Call back to the unary operator
     if ((iDim == 1) && (iVar.size() == 1))
     {
         // This could be parallel!
@@ -86,68 +87,26 @@ void var::broadcast(
     }
 
     // Case 2: iVar is also an array
+    // Check that the two arrays are broadcastable
     if (!iArrayOp)
         throw std::runtime_error("var::broadcast: not an array operation");
     if (iDim > mDim)
         throw std::runtime_error("var::broadcast: input dimension too large");
-    for (int i=iDim-1; i>=0; i--)
+    for (int i=0; i>iDim; i++)
     {
         // The dimensions should match
-        if (shape(i) != iVar.shape(i))
+        if (shape(mDim-i) != iVar.shape(iDim-i))
             throw std::runtime_error("var::broadcast: dimension mismatch");
     }
 
     // If it didn't throw, then the arrays are broadcastable
-    if (iDim == mDim)
-        // Same dimensions
-        (heap()->*iArrayOp)(iVar.heap(), iVar.size());
+    // In this case, loop over *this with different offsets
+    for (int i=0; i<size(); i+=iVar.size())
+        (heap()->*iArrayOp)(iVar.heap(), i, iVar.size());
 }
 
 
-/**
- * Copy the data of an array
- *
- * Copy does not respect views.  Rather, it can be used to copy the
- * view data itself (the array of ints).  The copy constructor calls
- * copy() twice: once for the view and once for the data.  BLAS types
- * are accelerated with BLAS Xcopy(); the other built-in types use
- * memcpy().  I don't know whether Xcopy() or memcpy() is faster.
- */
-void varheap::copy(const varheap* iHeap, int iSize)
-{
-    static int one = 1;
-    switch(mType)
-    {
-    case var::TYPE_CHAR:
-        memcpy(mData.cp, iHeap->mData.cp, mSize*sizeof(char));
-        break;
-    case var::TYPE_INT:
-        memcpy(mData.ip, iHeap->mData.ip, mSize*sizeof(int));
-        break;
-    case var::TYPE_LONG:
-        memcpy(mData.lp, iHeap->mData.lp, mSize*sizeof(long));
-        break;
-    case var::TYPE_FLOAT:
-        scopy_(&iSize, iHeap->mData.fp, &one, mData.fp, &one);
-        break;
-    case var::TYPE_DOUBLE:
-        dcopy_(&iSize, iHeap->mData.dp, &one, mData.dp, &one);
-        break;
-    case var::TYPE_VAR:
-        for (int i=0; i<mSize; i++)
-            mData.vp[i] = iHeap->mData.vp[i];
-        break;
-    case var::TYPE_PAIR:
-        for (int i=0; i<mSize; i++)
-            mData.pp[i] = iHeap->mData.pp[i];
-        break;
-    default:
-        throw std::runtime_error("varheap::copy(): Unknown type");
-    }
-}
-
-
-void varheap::set(const varheap* iHeap, int iSize)
+void varheap::set(const varheap* iHeap, int iOffset, int iSize)
 {
     static int one = 1;
     switch(type())
@@ -156,14 +115,14 @@ void varheap::set(const varheap* iHeap, int iSize)
     {
         float* x = &iHeap->ref<float>(0);
         float* y = &ref<float>(0);
-        scopy_(&iSize, x, &one, y, &one);
+        scopy_(&iSize, x, &one, y+iOffset, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         double* x = &iHeap->ref<double>(0);
         double* y = &ref<double>(0);
-        dcopy_(&iSize, x, &one, y, &one);
+        dcopy_(&iSize, x, &one, y+iOffset, &one);
         break;
     }
     default:
@@ -172,7 +131,7 @@ void varheap::set(const varheap* iHeap, int iSize)
 }
 
 
-void varheap::add(const varheap* iHeap, int iSize)
+void varheap::add(const varheap* iHeap, int iOffset, int iSize)
 {
     static int one = 1;
     switch(type())
@@ -182,7 +141,7 @@ void varheap::add(const varheap* iHeap, int iSize)
         static float alpha = 1.0f;
         float* x = &iHeap->ref<float>(0);
         float* y = &ref<float>(0);
-        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        saxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
         break;
     }
     case var::TYPE_DOUBLE:
@@ -190,7 +149,7 @@ void varheap::add(const varheap* iHeap, int iSize)
         static double alpha = 1.0;
         double* x = &iHeap->ref<double>(0);
         double* y = &ref<double>(0);
-        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        daxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
         break;
     }
     default:
@@ -199,7 +158,7 @@ void varheap::add(const varheap* iHeap, int iSize)
 }
 
 
-void varheap::sub(const varheap* iHeap, int iSize)
+void varheap::sub(const varheap* iHeap, int iOffset, int iSize)
 {
     static int one = 1;
     switch(type())
@@ -209,7 +168,7 @@ void varheap::sub(const varheap* iHeap, int iSize)
         static float alpha = -1.0f;
         float* x = &iHeap->ref<float>(0);
         float* y = &ref<float>(0);
-        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        saxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
         break;
     }
     case var::TYPE_DOUBLE:
@@ -217,11 +176,11 @@ void varheap::sub(const varheap* iHeap, int iSize)
         static double alpha = -1.0;
         double* x = &iHeap->ref<double>(0);
         double* y = &ref<double>(0);
-        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        daxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
         break;
     }
     default:
-        throw std::runtime_error("varheap::add: Unknown type");
+        throw std::runtime_error("varheap::sub: Unknown type");
     }
 }
 

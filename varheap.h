@@ -74,10 +74,9 @@ public:
     void pow(var iPower);
 
     // Vector ops
-    void copy(const varheap* iHeap, int iSize);
-    void set(const varheap* iHeap, int iSize);
-    void add(const varheap* iHeap, int iSize);
-    void sub(const varheap* iHeap, int iSize);
+    void set(const varheap* iHeap, int iOffset, int iSize);
+    void add(const varheap* iHeap, int iOffset, int iSize);
+    void sub(const varheap* iHeap, int iOffset, int iSize);
     var asum();
 
 private:
@@ -101,6 +100,7 @@ private:
     varheap* mView; ///< If this is a view, the real storage
 
     // Methods
+    void copy(const varheap* iHeap, int iSize);
     void alloc(int iSize);
     void dealloc(dataType iData);
     void formatView(std::ostream& iStream);

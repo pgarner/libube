@@ -304,6 +304,46 @@ void varheap::resize(int iSize)
 }
 
 
+/**
+ * Copy the data of an array
+ *
+ * Copy does not respect views.  Rather, it can be used to copy the
+ * view data itself (the array of ints).  The copy constructor calls
+ * copy() twice: once for the view and once for the data.
+ */
+void varheap::copy(const varheap* iHeap, int iSize)
+{
+    switch(mType)
+    {
+    case var::TYPE_CHAR:
+        memcpy(mData.cp, iHeap->mData.cp, mSize*sizeof(char));
+        break;
+    case var::TYPE_INT:
+        memcpy(mData.ip, iHeap->mData.ip, mSize*sizeof(int));
+        break;
+    case var::TYPE_LONG:
+        memcpy(mData.lp, iHeap->mData.lp, mSize*sizeof(long));
+        break;
+    case var::TYPE_FLOAT:
+        memcpy(mData.fp, iHeap->mData.fp, mSize*sizeof(float));
+        break;
+    case var::TYPE_DOUBLE:
+        memcpy(mData.dp, iHeap->mData.dp, mSize*sizeof(double));
+        break;
+    case var::TYPE_VAR:
+        for (int i=0; i<mSize; i++)
+            mData.vp[i] = iHeap->mData.vp[i];
+        break;
+    case var::TYPE_PAIR:
+        for (int i=0; i<mSize; i++)
+            mData.pp[i] = iHeap->mData.pp[i];
+        break;
+    default:
+        throw std::runtime_error("varheap::copy(): Unknown type");
+    }
+}
+
+
 void varheap::alloc(int iSize)
 {
     assert(iSize >= 0);
