@@ -22,20 +22,51 @@
  * it.  Sadly, there seems to be no standard header for the fortran
  * versions.  MKL has mkl.h, OpenBLAS has f77blas.h.  However, given
  * that the interface is rather standard, we can just reproduce the
- * ones we use here.  These happen to be mods of OpenBLAS's f77blas.h
+ * ones we use here.
  */
-typedef int blasint;
 extern "C" {
     // Actually FORTRAN calling convention
-    void   scopy_ (blasint *, float  *, blasint *, float  *, blasint *);
-    void   dcopy_ (blasint *, double *, blasint *, double *, blasint *);
-    float  sasum_ (blasint *, float  *, blasint *);
-    double dasum_ (blasint *, double *, blasint *);
-    void   saxpy_ (blasint *, float  *, float  *, blasint *,
-                                        float  *, blasint *);
-    void   daxpy_ (blasint *, double *, double *, blasint *,
-                                        double *, blasint *);
+    void   scopy_ (int *, float  *, int *, float  *, int *);
+    void   dcopy_ (int *, double *, int *, double *, int *);
+    float  sasum_ (int *, float  *, int *);
+    double dasum_ (int *, double *, int *);
+    void   saxpy_ (int *, float  *, float  *, int *, float  *, int *);
+    void   daxpy_ (int *, double *, double *, int *, double *, int *);
+    void   sscal_ (int *,  float  *, float  *, int *);
+    void   dscal_ (int *,  double *, double *, int *);
+    void   sgemm_ (
+        char *, char *, int *, int *, int *, float *,
+        float  *, int *, float  *, int *, float  *, float  *, int *
+    );
+    void   dgemm_ (
+        char *, char *, int *, int *, int *, double *,
+        double *, int *, double *, int *, double *, double *, int *
+    );
 }
+
+
+/**
+ * Operations
+ *
+ * There are three different cases:
+ *
+ * 1. We want the operation to happen in place, e.g., x += 1
+ *
+ * 2. We want the operation to allocate new storage, e.g., y = x + 1
+ *
+ * 3. We want the result in existing storage, e.g., y[0] = x + 1 This
+ * would also happen in case 2 if y were a view.
+ *
+ * Going into existing storage via operator=() can be wasteful if it's
+ * a view, i.e., there is a temporary.  The solution seems to be to
+ * define all vector operations to take the target storage as an
+ * argument.  If it's not defined we have case 1, if it's defined
+ * ahead we have case 2, and in general we have case 3.  All are
+ * methods, but case 2 can be a (static) function.
+ *
+ * That said, for some BLAS operations, the natural operation is to
+ * overwrite.  In this case, the BLAS wrapper can allocate or not.
+ */
 
 #define MATH(func) var var::func() const \
 { \
@@ -54,11 +85,13 @@ extern "C" {
     return r; \
 }
 
+
 MATH(abs)
 MATH(sqrt)
 MATH(cos)
 MATH(sin)
 MATH(floor)
+
 
 /**
  * Broadcaster
@@ -80,9 +113,13 @@ void var::broadcast(
     // Call back to the unary operator
     if ((iDim == 1) && (iVar.size() == 1))
     {
-        // This could be parallel!
-        for (int i=0; i<size(); i++)
-            (at(i).*iUnaryOp)(iVar);
+        // Scaling is a special case
+        if (iUnaryOp == (&var::operator *=))
+            heap()->scal(size(), 0, iVar);
+        else
+            // This could be parallel!
+            for (int i=0; i<size(); i++)
+                (at(i).*iUnaryOp)(iVar);
         return;
     }
 
@@ -183,6 +220,68 @@ void varheap::sub(const varheap* iHeap, int iOffset, int iSize)
         throw std::runtime_error("varheap::sub: Unknown type");
     }
 }
+
+
+void varheap::scal(int iSize, int iOffset, var iVar)
+{
+    static int one = 1;
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        float alpha = iVar.cast<float>();
+        float* x = &ref<float>(0);
+        sscal_(&iSize, &alpha, x+iOffset, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        double alpha = iVar.cast<double>();
+        double* x = &ref<double>(0);
+        dscal_(&iSize, &alpha, x+iOffset, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::scal: Unknown type");
+    }
+}
+
+
+void varheap::mul(
+    int iM, int iN, int iK, int iOffset,
+    const varheap* iHeapA, int iOffsetA, varheap* iHeapB
+)
+{
+    // Swap B and A as they're transposed in FORTRAN world
+    static char trans = 'T';
+    int* m = &iN;
+    int* n = &iM;
+    int* k = &iK;
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = 1.0f;
+        float* a = &iHeapB->ref<float>(0);
+        float* b = &iHeapA->ref<float>(0) + iOffsetA;
+        float* c = &ref<float>(0) + iOffset;
+        sgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = 1.0;
+        double* a = &iHeapB->ref<double>(0);
+        double* b = &iHeapA->ref<double>(0) + iOffsetA;
+        double* c = &ref<double>(0) + iOffset;
+        dgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::mul: Unknown type");
+    }
+}
+
 
 var var::pow(var iPower) const
 {
