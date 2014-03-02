@@ -268,34 +268,14 @@ var::var(int iSize, const int* iData) : var()
 }
 
 
-var::var(int iSize, int iInit) : var(iInit)
+var::var(int iSize, var iVar)
 {
+    if (iVar.type() == TYPE_ARRAY)
+        throw std::runtime_error("initialise ctor: cannot init from array");
+    *this = iVar;
     resize(iSize);
     for (int i=1; i<iSize; i++)
-        at(i) = iInit;
-}
-
-
-var::var(int iSize, float iInit) : var(iInit)
-{
-    resize(iSize);
-    for (int i=1; i<iSize; i++)
-        at(i) = iInit;
-}
-
-/**
- * Reference constructor
- *
- * Dereferences iVar, constructing a reference to the resulting array.
- */
-var::var(var iVar, int iIndex)
-{
-    if (iVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("reference: cannot reference non array");
-    mData.hp = iVar.heap();
-    mIndex = -iIndex-1;
-    mType = iVar.type();
-    attach();
+        at(i) = iVar;
 }
 
 
@@ -777,7 +757,7 @@ var var::operator [](int iIndex)
         throw std::runtime_error("operator [int]: Negative index");
     if (iIndex >= v.size())
         v.resize(iIndex+1);
-    return var(v, iIndex);
+    return v.reference(iIndex);
 }
 
 
@@ -805,7 +785,7 @@ var var::operator [](var iVar)
     int index = v.binary(iVar);
     if ( (index >= v.size()) || (v.heap()->key(index) != iVar) )
         v.insert(iVar, index);
-    return var(v, index);
+    return v.reference(index);
 }
 
 
@@ -845,7 +825,7 @@ var var::at(int iIndex) const
     if (!v)
         throw std::runtime_error("var::at(): uninitialised");
     if (v.type() == TYPE_ARRAY)
-        return var(v, iIndex);
+        return v.reference(iIndex);
     if (iIndex == 0)
         return v;
     throw std::runtime_error("var::at(): Index out of bounds");
@@ -870,7 +850,7 @@ var var::at(var iVar) const
     int index = binary(iVar);
     if ( (index >= size()) || (heap()->key(index) != iVar) )
         return nil;
-    return var(*this, index);
+    return reference(index);
 }
 
 
@@ -1218,6 +1198,21 @@ bool var::reference() const
     if ((mIndex < 0) && (mType == TYPE_ARRAY))
         return true;
     return false;
+}
+
+
+/**
+ * Reference constructor
+ *
+ * Dereferences iVar, constructing a reference to the resulting array.
+ */
+var var::reference(int iIndex) const
+{
+    if (type() != TYPE_ARRAY)
+        throw std::runtime_error("var::reference: cannot reference non array");
+    var v(*this);
+    v.mIndex = -iIndex-1;
+    return v;
 }
 
 

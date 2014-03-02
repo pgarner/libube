@@ -60,9 +60,7 @@ public:
     var(int iSize, const char* const* iData);
     var(const char* const* iData);
     var(int iSize, const int* iData);
-    var(int iSize, int iInit);
-    var(int iSize, float iInit);
-    var(var iVar, int iIndex);
+    var(int iSize, var iVar);
 
     // Data accessor
     template<class T> T get() const;
@@ -173,6 +171,7 @@ private:
     // Methods
     var& varderef(bool& oSuccess);
     bool reference() const;
+    var reference(int iIndex) const;
     var& dereference();
     int attach(varheap* iHeap=0);
     int detach(varheap* iHeap=0);
