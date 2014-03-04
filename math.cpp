@@ -34,6 +34,20 @@ extern "C" {
     void   daxpy_ (int *, double *, double *, int *, double *, int *);
     void   sscal_ (int *,  float  *, float  *, int *);
     void   dscal_ (int *,  double *, double *, int *);
+    void   stbmv_ (
+        char *, char *, char *, int *, int *, float  *, int *, float  *, int *
+    );
+    void   dtbmv_ (
+        char *, char *, char *, int *, int *, double *, int *, double *, int *
+    );
+    //void   ssbmv_ (
+    //    char *, int *, int *, float  *, float  *, int *,
+    //    float  *, int *, float  *, float  *, int *
+    //);
+    //void   dsbmv_ (
+    //    char *, int *, int *, double *, double *, int *,
+    //    double *, int *, double *, double *, int *
+    //);
     void   sgemm_ (
         char *, char *, int *, int *, int *, float *,
         float  *, int *, float  *, int *, float  *, float  *, int *
@@ -218,6 +232,49 @@ void varheap::sub(const varheap* iHeap, int iOffset, int iSize)
     }
     default:
         throw std::runtime_error("varheap::sub: Unknown type");
+    }
+}
+
+
+void varheap::mul(const varheap* iHeap, int iOffset, int iSize)
+{
+    // Elementwise multiplication is actually multiplication by a
+    // diagonal matrix.  In BLAS speak, a diagonal matrix is a band
+    // matrix with no superdiagonals.  In this sense, we want xsbmv()
+    // (symmetric band), but that puts the result in a new location.
+    // Rather, xtbmv() (triangular band) overwrites the current
+    // location.
+    static int zero = 0;
+    static int one = 1;
+    static char uplo = 'U';
+    static char trans = 'T';
+    static char diag = 'N';
+    switch(type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        //static float alpha = 1.0f;
+        //static float beta = 0.0f;
+        float* A = &iHeap->ref<float>(0);
+        float* x = &ref<float>(0);
+        //ssbmv_(&uplo, &iSize, &zero,
+        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
+        stbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x+iOffset, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        //static double alpha = 1.0;
+        //static double beta = 0.0;
+        double* A = &iHeap->ref<double>(0);
+        double* x = &ref<double>(0);
+        //dsbmv_(&uplo, &iSize, &zero,
+        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
+        dtbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x+iOffset, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("varheap::mul: Unknown type");
     }
 }
 

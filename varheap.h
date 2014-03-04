@@ -77,6 +77,7 @@ public:
     void set(const varheap* iHeap, int iOffset, int iSize);
     void add(const varheap* iHeap, int iOffset, int iSize);
     void sub(const varheap* iHeap, int iOffset, int iSize);
+    void mul(const varheap* iHeap, int iOffset, int iSize);
     void scal(int iSize, int iOffset, var iVar);
     void mul(
         int iM, int iN, int iK, int iOffset,

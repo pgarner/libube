@@ -369,6 +369,8 @@ int main(int argc, char** argv)
     cout << "r6: " << r6 << endl;
     r6 += r2;
     cout << "r6: " << r6 << endl;
+    r6 *= r2;
+    cout << "r6: " << r6 << endl;
 
     // Phil, leave this at the end!
     return 0;

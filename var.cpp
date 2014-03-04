@@ -642,7 +642,7 @@ var& var::operator *=(var iVar)
     switch (type())
     {
     case TYPE_ARRAY:
-        broadcast(iVar, &var::operator *=);
+        broadcast(iVar, &var::operator *=, &varheap::mul);
         break;
     case TYPE_CHAR:
         get<char>() *= iVar.cast<char>();
