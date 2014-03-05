@@ -380,22 +380,12 @@ template<> double& var::get<double>()
 
 
 /**
- * Equality operator
- *
- * It turns out that the negation is easier to code; i.e., there are
- * lots of not equal cases where you just want to bail out as soon as
- * you know it's not equal.
- */
-bool var::operator ==(var iVar) const
-{
-    return !(*this != iVar);
-}
-
-
-/**
  * Negation operator
  *
- * Easier to code than operator ==(), so the latter calls this.
+ * It turns out that the negation is easier to code than the equality;
+ * i.e., there are lots of not equal cases where you just want to bail
+ * out as soon as you know it's not equal.  So the equality operator
+ * calls "not this".
  */
 bool var::operator !=(var iVar) const
 {
@@ -891,10 +881,37 @@ void var::format(std::ostream& iStream, int iIndent) const
 }
 
 
-var var::range(var iLo, var iHi, var iStep)
+/**
+ * Generate a range of indeces.  Does pretty much what python's
+ * range() does, in that the higher value is not included, and it
+ * starts at 0 if the lower value is omitted.  To start at 1 and
+ * include the higher value, use range().
+ */
+var var::irange(var iLo, var iHi, var iStep)
 {
     var r;
     while (iLo < iHi)
+    {
+        r.push(iLo);
+        iLo += iStep;
+    }
+    return r;
+}
+
+
+/**
+ * Generate a range.  This one includes both the high and low
+ * extremes, and the low extreme defaults to 1, so range(4) gives
+ * {1,2,3,4} as you might expect.  This is not what python does for
+ * the same argument; if you want that then use irange() which gives
+ * {0,1,2,3}.  Note that in python, range() is more of a loop iterator
+ * so you tend to want {0,1,2,3}; in C++, loops use the traditional
+ * for (i=0; i<N, i++) syntax, so irange() is less useful.
+ */
+var var::range(var iLo, var iHi, var iStep)
+{
+    var r;
+    while (iLo <= iHi)
     {
         r.push(iLo);
         iLo += iStep;

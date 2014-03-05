@@ -343,11 +343,11 @@ int main(int argc, char** argv)
     cout << "t1: " << t1 << endl;
 
     // Because it works
-    var cv = var::range('a', 'y').view({2,12});
+    var cv = var::range('a', 'z').view({2,13});
     cout << "cv:\n" << cv << endl;
 
     // Sub-views
-    var r12 = var::range(0.1, 12.1);
+    var r12 = var::irange(0.1, 12.1);
     cout << "r12: " << r12 << endl;
     var sv = r12.view({4}, 4);
     cout << "sv: " << sv << endl;
@@ -362,7 +362,7 @@ int main(int argc, char** argv)
     cout << "r12: " << r12 << endl;
 
     // Broadcasting tensors
-    var r6 = var::range(6.0).view({3,2});
+    var r6 = var::irange(6.0).view({3,2});
     var r2;
     r2 = 1.0, 2.0;
     cout << "r2: " << r2 << endl;

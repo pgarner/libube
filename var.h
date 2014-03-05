@@ -67,9 +67,12 @@ public:
     template<class T> T& get();
 
     // Operators
-    bool operator ==(var iVar) const;
     bool operator !=(var iVar) const;
     bool operator <(var iVar) const;
+    bool operator ==(var iVar) const { return !(*this != iVar); };
+    bool operator >(var iVar) const { return iVar < *this; };
+    bool operator <=(var iVar) const { return !(*this > iVar); };
+    bool operator >=(var iVar) const { return !(*this < iVar); };
     var& operator +=(var iVar);
     var& operator -=(var iVar);
     var& operator *=(var iVar);
@@ -111,8 +114,10 @@ public:
     var sum() const;
     var prod() const;
     void format(std::ostream& iStream, int iIndent = 0) const;
-    static var range(var iHi) { return range(iHi-iHi, iHi); };
+    static var range(var iHi) { return range(iHi-iHi+1, iHi); };
     static var range(var iLo, var iHi, var iStep=1);
+    static var irange(var iHi) { return irange(iHi-iHi, iHi); };
+    static var irange(var iLo, var iHi, var iStep=1);
 
     // Chums
     friend std::ostream& operator <<(
