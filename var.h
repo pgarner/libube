@@ -151,6 +151,7 @@ public:
     var view(const std::initializer_list<int> iList, int iOffset=0);
     int offset() const;
     var& offset(int iOffset);
+    var& advance(int iAdvance) { return offset(offset() + iAdvance); };
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;

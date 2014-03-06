@@ -268,7 +268,7 @@ var::var(int iSize, const int* iData) : var()
 }
 
 
-var::var(int iSize, var iVar)
+var::var(int iSize, var iVar) : var()
 {
     if (iVar.type() == TYPE_ARRAY)
         throw std::runtime_error("initialise ctor: cannot init from array");
