@@ -1324,8 +1324,9 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
 {
     var v;
 
-    // The first entry is the offset
-    v.push(iOffset);
+    // The first entry is the offset; remember to add on the current
+    // offset which could be non-zero if we are already a view
+    v.push(iOffset+offset());
 
     // First entry of each subsequent pair is the dimension
     for (const int* it=begin(iList); it!=end(iList); ++it)
@@ -1349,7 +1350,7 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
         if (p+iOffset > size())
             throw std::runtime_error("var::view(): Array too small for view");
 
-    // Tell the heap object that it's a view
+    // Tell the new heap object that it's a view of this
     assert(mType == TYPE_ARRAY);
     v.heap()->setView(heap());
 

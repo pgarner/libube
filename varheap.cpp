@@ -610,7 +610,7 @@ void varheap::setView(varheap* iVarHeap)
 {
     if (mView)
         mView->detach();
-    mView = iVarHeap;
+    mView = iVarHeap->mView ? iVarHeap->mView : iVarHeap;
     mView->attach();
 }
 

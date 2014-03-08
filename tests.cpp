@@ -372,6 +372,12 @@ int main(int argc, char** argv)
     r6 *= r2;
     cout << "r6: " << r6 << endl;
 
+    // View of a view
+    var r3 = r6.view({2}, 0);
+    var r4 = sv.view({2}, 0);
+    cout << "r3: " << r3 << endl;
+    cout << "r4: " << r4 << endl;
+
     // Phil, leave this at the end!
     return 0;
 }
