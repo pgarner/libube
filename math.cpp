@@ -166,16 +166,16 @@ void varheap::set(const varheap* iHeap, int iOffset, int iSize)
     {
     case var::TYPE_FLOAT:
     {
-        float* x = &iHeap->ref<float>(0);
-        float* y = &ref<float>(0);
-        scopy_(&iSize, x, &one, y+iOffset, &one);
+        float* x = iHeap->ptr<float>();
+        float* y = ptr<float>(iOffset);
+        scopy_(&iSize, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
-        double* x = &iHeap->ref<double>(0);
-        double* y = &ref<double>(0);
-        dcopy_(&iSize, x, &one, y+iOffset, &one);
+        double* x = iHeap->ptr<double>();
+        double* y = ptr<double>(iOffset);
+        dcopy_(&iSize, x, &one, y, &one);
         break;
     }
     default:
@@ -192,17 +192,17 @@ void varheap::add(const varheap* iHeap, int iOffset, int iSize)
     case var::TYPE_FLOAT:
     {
         static float alpha = 1.0f;
-        float* x = &iHeap->ref<float>(0);
-        float* y = &ref<float>(0);
-        saxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
+        float* x = iHeap->ptr<float>();
+        float* y = ptr<float>(iOffset);
+        saxpy_(&iSize, &alpha, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         static double alpha = 1.0;
-        double* x = &iHeap->ref<double>(0);
-        double* y = &ref<double>(0);
-        daxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
+        double* x = iHeap->ptr<double>();
+        double* y = ptr<double>(iOffset);
+        daxpy_(&iSize, &alpha, x, &one, y, &one);
         break;
     }
     default:
@@ -219,17 +219,17 @@ void varheap::sub(const varheap* iHeap, int iOffset, int iSize)
     case var::TYPE_FLOAT:
     {
         static float alpha = -1.0f;
-        float* x = &iHeap->ref<float>(0);
-        float* y = &ref<float>(0);
-        saxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
+        float* x = iHeap->ptr<float>();
+        float* y = ptr<float>(iOffset);
+        saxpy_(&iSize, &alpha, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         static double alpha = -1.0;
-        double* x = &iHeap->ref<double>(0);
-        double* y = &ref<double>(0);
-        daxpy_(&iSize, &alpha, x, &one, y+iOffset, &one);
+        double* x = iHeap->ptr<double>();
+        double* y = ptr<double>(iOffset);
+        daxpy_(&iSize, &alpha, x, &one, y, &one);
         break;
     }
     default:
@@ -257,22 +257,22 @@ void varheap::mul(const varheap* iHeap, int iOffset, int iSize)
     {
         //static float alpha = 1.0f;
         //static float beta = 0.0f;
-        float* A = &iHeap->ref<float>(0);
-        float* x = &ref<float>(0);
+        float* A = iHeap->ptr<float>();
+        float* x = ptr<float>(iOffset);
         //ssbmv_(&uplo, &iSize, &zero,
         //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        stbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x+iOffset, &one);
+        stbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         //static double alpha = 1.0;
         //static double beta = 0.0;
-        double* A = &iHeap->ref<double>(0);
-        double* x = &ref<double>(0);
+        double* A = iHeap->ptr<double>();
+        double* x = ptr<double>(iOffset);
         //dsbmv_(&uplo, &iSize, &zero,
         //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        dtbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x+iOffset, &one);
+        dtbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x, &one);
         break;
     }
     default:
@@ -289,15 +289,15 @@ void varheap::scal(int iSize, int iOffset, var iVar)
     case var::TYPE_FLOAT:
     {
         float alpha = iVar.cast<float>();
-        float* x = &ref<float>(0);
-        sscal_(&iSize, &alpha, x+iOffset, &one);
+        float* x = ptr<float>(iOffset);
+        sscal_(&iSize, &alpha, x, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         double alpha = iVar.cast<double>();
-        double* x = &ref<double>(0);
-        dscal_(&iSize, &alpha, x+iOffset, &one);
+        double* x = ptr<double>(iOffset);
+        dscal_(&iSize, &alpha, x, &one);
         break;
     }
     default:
@@ -321,18 +321,18 @@ void varheap::mul(
     case var::TYPE_FLOAT:
     {
         static float alpha = 1.0f;
-        float* a = &iHeapB->ref<float>(0);
-        float* b = &iHeapA->ref<float>(0) + iOffsetA;
-        float* c = &ref<float>(0) + iOffset;
+        float* a = iHeapB->ptr<float>();
+        float* b = iHeapA->ptr<float>(iOffsetA);
+        float* c = ptr<float>(iOffset);
         sgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         static double alpha = 1.0;
-        double* a = &iHeapB->ref<double>(0);
-        double* b = &iHeapA->ref<double>(0) + iOffsetA;
-        double* c = &ref<double>(0) + iOffset;
+        double* a = iHeapB->ptr<double>();
+        double* b = iHeapA->ptr<double>(iOffsetA);
+        double* c = ptr<double>(iOffset);
         dgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;
     }

@@ -114,25 +114,25 @@ var& var::operator =(var iVar)
         switch (mData.hp->type())
         {
         case TYPE_CHAR:
-            mData.hp->ref<char>(index) = iVar.cast<char>();
+            *mData.hp->ptr<char>(index) = iVar.cast<char>();
             break;
         case TYPE_INT:
-            mData.hp->ref<int>(index) = iVar.cast<int>();
+            *mData.hp->ptr<int>(index) = iVar.cast<int>();
             break;
         case TYPE_LONG:
-            mData.hp->ref<long>(index) = iVar.cast<long>();
+            *mData.hp->ptr<long>(index) = iVar.cast<long>();
             break;
         case TYPE_FLOAT:
-            mData.hp->ref<float>(index) = iVar.cast<float>();
+            *mData.hp->ptr<float>(index) = iVar.cast<float>();
             break;
         case TYPE_DOUBLE:
-            mData.hp->ref<double>(index) = iVar.cast<double>();
+            *mData.hp->ptr<double>(index) = iVar.cast<double>();
             break;
         case TYPE_VAR:
-            mData.hp->ref<var>(index) = iVar;
+            *mData.hp->ptr<var>(index) = iVar;
             break;
         case TYPE_PAIR:
-            mData.hp->ref<pair>(index).val = iVar;
+            mData.hp->ptr<pair>(index)->val = iVar;
             break;
         default:
             throw std::runtime_error("var::operator =(): Unknown type");
@@ -316,11 +316,11 @@ var& var::varderef(bool& oSuccess)
     dataEnum type = mData.hp->type();
     if (type == TYPE_VAR)
     {
-        return mData.hp->ref<var>(index);
+        return *mData.hp->ptr<var>(index);
     }
     if (type == TYPE_PAIR)
     {
-        return mData.hp->ref<pair>(index).val;
+        return mData.hp->ptr<pair>(index)->val;
     }
     oSuccess = false;
     return *this;
@@ -333,7 +333,7 @@ template<> char& var::get<char>()
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.c : mData.hp->ref<char>(-mIndex-1);
+        return s ? r.mData.c : *mData.hp->ptr<char>(-mIndex-1);
     }
     return mData.c;
 }
@@ -343,7 +343,7 @@ template<> int& var::get<int>()
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.i : mData.hp->ref<int>(-mIndex-1);
+        return s ? r.mData.i : *mData.hp->ptr<int>(-mIndex-1);
     }
     return mData.i;
 }
@@ -353,7 +353,7 @@ template<> long& var::get<long>()
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.l : mData.hp->ref<long>(-mIndex-1);
+        return s ? r.mData.l : *mData.hp->ptr<long>(-mIndex-1);
     }
     return mData.l;
 }
@@ -363,7 +363,7 @@ template<> float& var::get<float>()
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.f : mData.hp->ref<float>(-mIndex-1);
+        return s ? r.mData.f : *mData.hp->ptr<float>(-mIndex-1);
     }
     return mData.f;
 }
@@ -373,7 +373,7 @@ template<> double& var::get<double>()
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.d : mData.hp->ref<double>(-mIndex-1);
+        return s ? r.mData.d : *mData.hp->ptr<double>(-mIndex-1);
     }
     return mData.d;
 }
@@ -725,7 +725,7 @@ var var::operator /(var iVar) const
 char* var::operator &()
 {
     if (heap())
-        return heap()->ref();
+        return heap()->ptr<char>();
     return &get<char>();
 }
 
@@ -1265,19 +1265,19 @@ var& var::dereference()
         switch (type)
         {
         case TYPE_CHAR:
-            mData.c = mData.hp->ref<char>(index);
+            mData.c = *mData.hp->ptr<char>(index);
             break;
         case TYPE_INT:
-            mData.i = mData.hp->ref<int>(index);
+            mData.i = *mData.hp->ptr<int>(index);
             break;
         case TYPE_LONG:
-            mData.l = mData.hp->ref<long>(index);
+            mData.l = *mData.hp->ptr<long>(index);
             break;
         case TYPE_FLOAT:
-            mData.f = mData.hp->ref<float>(index);
+            mData.f = *mData.hp->ptr<float>(index);
             break;
         case TYPE_DOUBLE:
-            mData.d = mData.hp->ref<double>(index);
+            mData.d = *mData.hp->ptr<double>(index);
             break;
         default:
             throw std::runtime_error("var::dereference(): Unknown type");

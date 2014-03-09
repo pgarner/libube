@@ -28,26 +28,26 @@
  * These can be used to get the actual storage.  C++ doesn't allow
  * overloading on return type, so the return type must be specified.
  */
-template<> char& varheap::ref<char>(int iIndex) const {
-    return mView ? mView->ref<char>(iIndex + mData.ip[0]) : mData.cp[iIndex];
+template<> char* varheap::ptr<char>(int iIndex) const {
+    return mView ? mView->ptr<char>(iIndex + mData.ip[0]) : mData.cp + iIndex;
 }
-template<> int& varheap::ref<int>(int iIndex) const {
-    return mView ? mView->ref<int>(iIndex + mData.ip[0]) : mData.ip[iIndex];
+template<> int* varheap::ptr<int>(int iIndex) const {
+    return mView ? mView->ptr<int>(iIndex + mData.ip[0]) : mData.ip + iIndex;
 }
-template<> long& varheap::ref<long>(int iIndex) const {
-    return mView ? mView->ref<long>(iIndex + mData.ip[0]) : mData.lp[iIndex];
+template<> long* varheap::ptr<long>(int iIndex) const {
+    return mView ? mView->ptr<long>(iIndex + mData.ip[0]) : mData.lp + iIndex;
 }
-template<> float& varheap::ref<float>(int iIndex) const {
-    return mView ? mView->ref<float>(iIndex + mData.ip[0]) : mData.fp[iIndex];
+template<> float* varheap::ptr<float>(int iIndex) const {
+    return mView ? mView->ptr<float>(iIndex + mData.ip[0]) : mData.fp + iIndex;
 }
-template<> double& varheap::ref<double>(int iIndex) const {
-    return mView ? mView->ref<double>(iIndex + mData.ip[0]) : mData.dp[iIndex];
+template<> double* varheap::ptr<double>(int iIndex) const {
+    return mView ? mView->ptr<double>(iIndex + mData.ip[0]) : mData.dp + iIndex;
 }
-template<> var& varheap::ref<var>(int iIndex) const {
-    return mView ? mView->ref<var>(iIndex + mData.ip[0]) : mData.vp[iIndex];
+template<> var* varheap::ptr<var>(int iIndex) const {
+    return mView ? mView->ptr<var>(iIndex + mData.ip[0]) : mData.vp + iIndex;
 }
-template<> pair& varheap::ref<pair>(int iIndex) const {
-    return mView ? mView->ref<pair>(iIndex + mData.ip[0]) : mData.pp[iIndex];
+template<> pair* varheap::ptr<pair>(int iIndex) const {
+    return mView ? mView->ptr<pair>(iIndex + mData.ip[0]) : mData.pp + iIndex;
 }
 
 
@@ -598,7 +598,7 @@ bool varheap::neq(varheap* iHeap)
 bool varheap::lt(varheap* iHeap)
 {
     if ( (mType == var::TYPE_CHAR) && (iHeap->mType == var::TYPE_CHAR) )
-        return (std::strcmp(ref(), iHeap->ref()) < 0);
+        return (std::strcmp(ptr<char>(), iHeap->ptr<char>()) < 0);
     for (int i=0; i<std::min(size(), iHeap->size()); i++)
         if (at(i) < iHeap->at(i))
             return true;

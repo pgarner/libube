@@ -38,7 +38,7 @@ public:
     varheap(const varheap& iHeap);
 
     // Templates
-    template<class T> T& ref(int iIndex) const;
+    template<class T> T* ptr(int iIndex=0) const;
 
     // Overloaded constructors
     varheap(int iSize, var::dataEnum iType);
@@ -53,7 +53,6 @@ public:
     int offset(int iOffset);
     int shape(int iDim) const;
     int stride(int iDim) const;
-    char* ref() const { return mData.cp; };
 
     // Methods
     int attach();
