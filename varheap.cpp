@@ -426,7 +426,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
     if (mView)
         return formatView(iStream);
 
-    switch (mType)
+    switch (type())
     {
     case var::TYPE_CHAR:
         iStream << "\"";

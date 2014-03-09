@@ -156,6 +156,7 @@ public:
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;
     int dim() const;
+    var typeOf();
 
 private:
 
@@ -182,7 +183,6 @@ private:
     int attach(varheap* iHeap=0);
     int detach(varheap* iHeap=0);
     const char* typeOf(dataEnum iType);
-    var typeOf();
     int binary(var iData) const;
     void broadcast(
         var iVar,

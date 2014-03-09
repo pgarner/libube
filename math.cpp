@@ -143,6 +143,8 @@ void var::broadcast(
         throw std::runtime_error("var::broadcast: not an array operation");
     if (iDim > mDim)
         throw std::runtime_error("var::broadcast: input dimension too large");
+    if (heap()->type() != iVar.heap()->type())
+        throw std::runtime_error("var::broadcast: types must match (for now)");
     for (int i=0; i>iDim; i++)
     {
         // The dimensions should match
