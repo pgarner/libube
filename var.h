@@ -14,6 +14,11 @@
 #include <stdexcept>
 #include <initializer_list>
 
+#include <complex>
+typedef std::complex<float> cfloat;
+typedef std::complex<double> cdouble;
+
+
 class varheap;
 
 /**
@@ -35,6 +40,8 @@ public:
         TYPE_LONG,
         TYPE_FLOAT,
         TYPE_DOUBLE,
+        TYPE_CFLOAT,
+        TYPE_CDOUBLE,
         TYPE_VAR,
         TYPE_PAIR
     };
@@ -55,6 +62,8 @@ public:
     var(long iData);
     var(float iData);
     var(double iData);
+    var(cfloat iData);
+    var(cdouble iData);
     var(const char* iData);
     var(int iSize, const char* iData);
     var(int iSize, const char* const* iData);
@@ -161,11 +170,13 @@ public:
 private:
 
     union dataType {
+        dataType() {}; // Because of cfloat
         char c;
         int i;
         long l;
         float f;
         double d;
+        cfloat cf;
         varheap* hp;
     };
 

@@ -43,6 +43,14 @@ template<> float* varheap::ptr<float>(int iIndex) const {
 template<> double* varheap::ptr<double>(int iIndex) const {
     return mView ? mView->ptr<double>(iIndex + mData.ip[0]) : mData.dp + iIndex;
 }
+template<> cfloat* varheap::ptr<cfloat>(int iIndex) const {
+    return mView
+        ? mView->ptr<cfloat>(iIndex + mData.ip[0]) : mData.cfp + iIndex;
+}
+template<> cdouble* varheap::ptr<cdouble>(int iIndex) const {
+    return mView
+        ? mView->ptr<cdouble>(iIndex + mData.ip[0]) : mData.cdp + iIndex;
+}
 template<> var* varheap::ptr<var>(int iIndex) const {
     return mView ? mView->ptr<var>(iIndex + mData.ip[0]) : mData.vp + iIndex;
 }
@@ -143,6 +151,14 @@ varheap::varheap(int iSize, const int* iData)
     VDEBUG(std::cout << " Ctor(int*): " << iData << std::endl);
     for (int i=0; i<iSize; i++)
         mData.ip[i] = iData[i];
+}
+
+
+varheap::varheap(int iSize, const cdouble* iData)
+    : varheap(iSize, var::TYPE_CDOUBLE)
+{
+    for (int i=0; i<iSize; i++)
+        mData.cdp[i] = iData[i];
 }
 
 
@@ -364,6 +380,12 @@ void varheap::alloc(int iSize)
     case var::TYPE_DOUBLE:
         mData.dp = new double[iSize];
         break;
+    case var::TYPE_CFLOAT:
+        mData.cfp = new cfloat[iSize];
+        break;
+    case var::TYPE_CDOUBLE:
+        mData.cdp = new cdouble[iSize];
+        break;
     case var::TYPE_VAR:
         mData.vp = new var[iSize];
         break;
@@ -393,6 +415,12 @@ void varheap::dealloc(dataType iData)
         break;
     case var::TYPE_DOUBLE:
         delete [] iData.dp;
+        break;
+    case var::TYPE_CFLOAT:
+        delete [] iData.cfp;
+        break;
+    case var::TYPE_CDOUBLE:
+        delete [] iData.cdp;
         break;
     case var::TYPE_VAR:
         delete [] iData.vp;
@@ -461,6 +489,27 @@ void varheap::format(std::ostream& iStream, int iIndent)
         for (int j=0; j<iIndent; j++)
             iStream << " ";
         iStream << "}";
+        break;
+    case var::TYPE_CDOUBLE:
+        // Don't call at(); it will just create more arrays & loop
+        if (size() == 1)
+            iStream << *ptr<cdouble>(0);
+        else
+        {
+            iStream << "{\n";
+            for (int i=0; i<mSize; i++)
+            {
+                for (int j=0; j<iIndent+2; j++)
+                    iStream << " ";
+                iStream << *ptr<cdouble>(i);
+                if (i < mSize-1)
+                    iStream << ",";
+                iStream << "\n";
+            }
+            for (int j=0; j<iIndent; j++)
+                iStream << " ";
+            iStream << "}";
+        }
         break;
     default:
         iStream << "{";
@@ -560,6 +609,12 @@ var varheap::at(int iIndex, bool iKey) const
         break;
     case var::TYPE_DOUBLE:
         r = mData.dp[iIndex];
+        break;
+    case var::TYPE_CFLOAT:
+        r = mData.cfp[iIndex];
+        break;
+    case var::TYPE_CDOUBLE:
+        r = mData.cdp[iIndex];
         break;
     case var::TYPE_VAR:
         r = mData.vp[iIndex];

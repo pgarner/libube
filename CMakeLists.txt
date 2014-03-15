@@ -22,11 +22,11 @@ set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
 set(HEADERS var.h var)
 set(SOURCES
-  varfile.cpp
+  var.cpp
   varheap.cpp
+  varfile.cpp
   math.cpp
   string.cpp
-  var.cpp
   )
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES

@@ -128,6 +128,12 @@ var& var::operator =(var iVar)
         case TYPE_DOUBLE:
             *mData.hp->ptr<double>(index) = iVar.cast<double>();
             break;
+        case TYPE_CFLOAT:
+            *mData.hp->ptr<cfloat>(index) = iVar.cast<cfloat>();
+            break;
+        case TYPE_CDOUBLE:
+            *mData.hp->ptr<cdouble>(index) = iVar.cast<cdouble>();
+            break;
         case TYPE_VAR:
             *mData.hp->ptr<var>(index) = iVar;
             break;
@@ -229,6 +235,19 @@ var::var(double iData)
     mType = TYPE_DOUBLE;
 }
 
+var::var(cfloat iData)
+{
+    mData.cf = iData;
+    mIndex = 0;
+    mType = TYPE_CFLOAT;
+}
+
+var::var(cdouble iData) : var()
+{
+    // cdouble is always heap-only storage
+    attach(new varheap(1, &iData));
+}
+
 var::var(int iSize, const char* iData) : var()
 {
     assert(iSize >= 0);
@@ -296,6 +315,12 @@ template<> float var::get<float>() const {
 }
 template<> double var::get<double>() const {
     var v(*this); return v.mData.d;
+}
+template<> cfloat var::get<cfloat>() const {
+    var v(*this); return v.mData.cf;
+}
+template<> cdouble var::get<cdouble>() const {
+    throw std::runtime_error("var::get<cdouble>: Why?");
 }
 
 
@@ -377,6 +402,27 @@ template<> double& var::get<double>()
     }
     return mData.d;
 }
+template<> cfloat& var::get<cfloat>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.cf : *mData.hp->ptr<cfloat>(-mIndex-1);
+    }
+    return mData.cf;
+}
+template<> cdouble& var::get<cdouble>()
+{
+    if (reference())
+    {
+        bool s;
+        varderef(s);
+        assert(!s);
+        return *mData.hp->ptr<cdouble>(-mIndex-1);
+    }
+    assert(0);
+}
 
 
 /**
@@ -407,6 +453,10 @@ bool var::operator !=(var iVar) const
         return (get<float>() != iVar.get<float>());
     case TYPE_DOUBLE:
         return (get<double>() != iVar.get<double>());
+    case TYPE_CFLOAT:
+        return (get<cfloat>() != iVar.get<cfloat>());
+    case TYPE_CDOUBLE:
+        return (get<cdouble>() != iVar.get<cdouble>());
     default:
         throw std::runtime_error("operator !=(): Unknown type");
     }
@@ -440,6 +490,10 @@ bool var::operator <(var iVar) const
         return (get<float>() < iVar.get<float>());
     case TYPE_DOUBLE:
         return (get<double>() < iVar.get<double>());
+    case TYPE_CFLOAT:
+        return (std::abs(get<cfloat>()) < std::abs(iVar.get<cfloat>()));
+    case TYPE_CDOUBLE:
+        return (std::abs(get<cdouble>()) < std::abs(iVar.get<cdouble>()));
     default:
         throw std::runtime_error("operator <(): Unknown type");
     }
@@ -589,6 +643,12 @@ var& var::operator +=(var iVar)
     case TYPE_DOUBLE:
         get<double>() += iVar.cast<double>();
         break;
+    case TYPE_CFLOAT:
+        get<cfloat>() += iVar.cast<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        get<cdouble>() += iVar.cast<cdouble>();
+        break;
     default:
         throw std::runtime_error("operator +=(): Unknown type");
     }
@@ -618,6 +678,12 @@ var& var::operator -=(var iVar)
         break;
     case TYPE_DOUBLE:
         get<double>() -= iVar.cast<double>();
+        break;
+    case TYPE_CFLOAT:
+        get<cfloat>() -= iVar.cast<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        get<cdouble>() -= iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator -=(): Unknown type");
@@ -649,6 +715,12 @@ var& var::operator *=(var iVar)
     case TYPE_DOUBLE:
         get<double>() *= iVar.cast<double>();
         break;
+    case TYPE_CFLOAT:
+        get<cfloat>() *= iVar.cast<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        get<cdouble>() *= iVar.cast<cdouble>();
+        break;
     default:
         throw std::runtime_error("operator *=(): Unknown type");
     }
@@ -678,6 +750,12 @@ var& var::operator /=(var iVar)
         break;
     case TYPE_DOUBLE:
         get<double>() /= iVar.cast<double>();
+        break;
+    case TYPE_CFLOAT:
+        get<cfloat>() /= iVar.cast<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        get<cdouble>() /= iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator /=(): Unknown type");
@@ -875,6 +953,13 @@ void var::format(std::ostream& iStream, int iIndent) const
     case var::TYPE_DOUBLE:
         iStream << get<double>();
         break;
+    case var::TYPE_CFLOAT:
+        iStream << get<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        //iStream << get<cdouble>();
+        throw std::runtime_error("var::format(): cdouble should be array");
+        break;
     default:
         throw std::runtime_error("var::format(): Unknown type");
     }
@@ -1002,6 +1087,8 @@ const char* var::typeOf(dataEnum iType)
     case TYPE_LONG: return "long";
     case TYPE_FLOAT: return "float";
     case TYPE_DOUBLE: return "double";
+    case TYPE_CFLOAT: return "cfloat";
+    case TYPE_CDOUBLE: return "cdouble";
     case TYPE_VAR: return "var";
     case TYPE_PAIR: return "pair";
     default:
@@ -1262,6 +1349,8 @@ var& var::dereference()
         int index = -mIndex-1;
         dataEnum type = mData.hp->type();
         varheap* tmp = mData.hp;
+        mType = type;
+        mIndex = 0;
         switch (type)
         {
         case TYPE_CHAR:
@@ -1279,11 +1368,15 @@ var& var::dereference()
         case TYPE_DOUBLE:
             mData.d = *mData.hp->ptr<double>(index);
             break;
+        case TYPE_CFLOAT:
+            mData.cf = *mData.hp->ptr<cfloat>(index) ;
+            break;
+        case TYPE_CDOUBLE:
+            attach(new varheap(1, mData.hp->ptr<cdouble>(index)));
+            break;
         default:
             throw std::runtime_error("var::dereference(): Unknown type");
         }
-        mType = type;
-        mIndex = 0;
         detach(tmp);
     }
     return *this;

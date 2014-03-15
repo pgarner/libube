@@ -378,6 +378,14 @@ int main(int argc, char** argv)
     cout << "r3: " << r3 << endl;
     cout << "r4: " << r4 << endl;
 
+    // Complex
+    var fc = complex<float>(0.5, 0.7);
+    cout << "fc: " << fc << endl;
+    var dc = complex<double>(0.2, 0.8);
+    //var dd = complex<double>(1.0, 1.2);
+    //dc += dd;
+    cout << "dc: " << dc << endl;
+
     // Phil, leave this at the end!
     return 0;
 }

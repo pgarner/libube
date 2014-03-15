@@ -44,6 +44,7 @@ public:
     varheap(int iSize, var::dataEnum iType);
     varheap(int iSize, const char* iData);
     varheap(int iSize, const int* iData);
+    varheap(int iSize, const cdouble* iData);
 
     // Trivial accessors
     var::dataEnum type() const { return mView ? mView->type() : mType; };
@@ -92,6 +93,8 @@ private:
         long* lp;
         float* fp;
         double* dp;
+        cfloat* cfp;
+        cdouble* cdp;
         var* vp;
         pair* pp;
     };

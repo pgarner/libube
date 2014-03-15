@@ -125,7 +125,7 @@ void var::broadcast(
 
     // Case 1: iVar has size 1
     // Call back to the unary operator
-    if ((iDim == 1) && (iVar.size() == 1))
+    if ((iDim == 1) && (iVar.size() == 1) && (type() != TYPE_CDOUBLE))
     {
         // Scaling is a special case
         if (iUnaryOp == (&var::operator *=))
