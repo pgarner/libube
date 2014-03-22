@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     var aspect = res[0] / res[1];
 
     //var r = res[0]*res[0] + res[1]*res[1];
-    var r = res.copy().pow(2).sum().sqrt();
+    var r = var::pow(res, 2).sum().sqrt();
     cout << "r: " << r << endl;
     var x = res[0] / r * diag;
     var y = res[1] / r * diag;

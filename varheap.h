@@ -35,7 +35,7 @@ public:
     // Special member functions
     varheap();
     ~varheap();
-    varheap(const varheap& iHeap);
+    varheap(const varheap& iHeap, bool iAllocOnly=false);
 
     // Templates
     template<class T> T* ptr(int iIndex=0) const;

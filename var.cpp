@@ -31,6 +31,134 @@
  */
 const var var::nil;
 
+/*
+ * The standard functors
+ */
+Tan var::tan;
+Pow var::pow;
+
+/*
+ * Main data accessor
+ */
+template<> char var::get<char>() const {
+    var v(*this); return v.mData.c;
+}
+template<> int var::get<int>() const {
+    var v(*this); return v.mData.i;
+}
+template<> long var::get<long>() const {
+    var v(*this); return v.mData.l;
+}
+template<> float var::get<float>() const {
+    var v(*this); return v.mData.f;
+}
+template<> double var::get<double>() const {
+    var v(*this); return v.mData.d;
+}
+template<> cfloat var::get<cfloat>() const {
+    var v(*this); return v.mData.cf;
+}
+template<> cdouble var::get<cdouble>() const {
+    var v(*this); return *v.mData.hp->ptr<cdouble>(0);
+}
+
+
+template<> char& var::get<char>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.c : *mData.hp->ptr<char>(-mIndex-1);
+    }
+    return mData.c;
+}
+template<> int& var::get<int>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.i : *mData.hp->ptr<int>(-mIndex-1);
+    }
+    return mData.i;
+}
+template<> long& var::get<long>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.l : *mData.hp->ptr<long>(-mIndex-1);
+    }
+    return mData.l;
+}
+template<> float& var::get<float>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.f : *mData.hp->ptr<float>(-mIndex-1);
+    }
+    return mData.f;
+}
+template<> double& var::get<double>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.d : *mData.hp->ptr<double>(-mIndex-1);
+    }
+    return mData.d;
+}
+template<> cfloat& var::get<cfloat>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        return s ? r.mData.cf : *mData.hp->ptr<cfloat>(-mIndex-1);
+    }
+    return mData.cf;
+}
+template<> cdouble& var::get<cdouble>()
+{
+    if (reference())
+    {
+        bool s;
+        var& r = varderef(s);
+        assert(!s);
+        return s
+            ? *r.mData.hp->ptr<cdouble>(0) : *mData.hp->ptr<cdouble>(-mIndex-1);
+    }
+    return *mData.hp->ptr<cdouble>(0);
+}
+
+
+template<> char var::cast<char>() const {
+    return castChar(*this).get<char>();
+}
+template<> int var::cast<int>() const {
+    return castInt(*this).get<int>();
+}
+template<> long var::cast<long>() const {
+    return castLong(*this).get<long>();
+}
+template<> float var::cast<float>() const {
+    return castFloat(*this).get<float>();
+}
+template<> double var::cast<double>() const {
+    return castDouble(*this).get<double>();
+}
+template<> cfloat var::cast<cfloat>() const {
+    return castCFloat(*this).get<cfloat>();
+}
+template<> cdouble var::cast<cdouble>() const {
+    return castCDouble(*this).get<cdouble>();
+}
+
 
 /*
  * Notes
@@ -49,6 +177,7 @@ const var var::nil;
  * (negative) index.  Hence, operator[] must allocate the "Blue" entry
  * before returning.
  */
+
 
 /**
  * Default constructor.  Should be all zero.
@@ -298,32 +427,6 @@ var::var(int iSize, var iVar) : var()
 }
 
 
-/*
- * Main data accessor
- */
-template<> char var::get<char>() const {
-    var v(*this); return v.mData.c;
-}
-template<> int var::get<int>() const {
-    var v(*this); return v.mData.i;
-}
-template<> long var::get<long>() const {
-    var v(*this); return v.mData.l;
-}
-template<> float var::get<float>() const {
-    var v(*this); return v.mData.f;
-}
-template<> double var::get<double>() const {
-    var v(*this); return v.mData.d;
-}
-template<> cfloat var::get<cfloat>() const {
-    var v(*this); return v.mData.cf;
-}
-template<> cdouble var::get<cdouble>() const {
-    throw std::runtime_error("var::get<cdouble>: Why?");
-}
-
-
 /**
  * var dereference
  *
@@ -349,79 +452,6 @@ var& var::varderef(bool& oSuccess)
     }
     oSuccess = false;
     return *this;
-}
-
-
-template<> char& var::get<char>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.c : *mData.hp->ptr<char>(-mIndex-1);
-    }
-    return mData.c;
-}
-template<> int& var::get<int>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.i : *mData.hp->ptr<int>(-mIndex-1);
-    }
-    return mData.i;
-}
-template<> long& var::get<long>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.l : *mData.hp->ptr<long>(-mIndex-1);
-    }
-    return mData.l;
-}
-template<> float& var::get<float>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.f : *mData.hp->ptr<float>(-mIndex-1);
-    }
-    return mData.f;
-}
-template<> double& var::get<double>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.d : *mData.hp->ptr<double>(-mIndex-1);
-    }
-    return mData.d;
-}
-template<> cfloat& var::get<cfloat>()
-{
-    if (reference())
-    {
-        bool s;
-        var& r = varderef(s);
-        return s ? r.mData.cf : *mData.hp->ptr<cfloat>(-mIndex-1);
-    }
-    return mData.cf;
-}
-template<> cdouble& var::get<cdouble>()
-{
-    if (reference())
-    {
-        bool s;
-        varderef(s);
-        assert(!s);
-        return *mData.hp->ptr<cdouble>(-mIndex-1);
-    }
-    assert(0);
 }
 
 
@@ -509,7 +539,7 @@ bool var::operator <(var iVar) const
  * It's shallow in that a new array is created, but if that array
  * itself points to other arrays, they are not duplicated.
  */
-var var::copy() const
+var var::copy(bool iAllocOnly) const
 {
     // Deref and return if there's no heap
     if (!heap())
@@ -517,7 +547,7 @@ var var::copy() const
 
     // It's a heap
     var r;
-    r.attach(new varheap(*heap()));
+    r.attach(new varheap(*heap(), iAllocOnly));
     return r;
 }
 
@@ -545,78 +575,84 @@ var::dataEnum var::type() const
 }
 
 
-/**
- * Cast to given type
- *
- * It may or may not be a cast, depending on the actual storage.
- * Return type is always the target of the cast, but it happens in
- * place because the cast may have to allocate memory.
- */
-template<class T>
-T var::cast()
+template <class T>
+bool Cast<T>::sameType(var iVar) const
 {
-    if (heap())
+    const T t = 0;
+    static var v = t;
+    if (v.type() == iVar.type())
+        return true;
+    return false;
+}
+
+template <class T>
+var Cast<T>::operator ()(var iVar) const
+{
+    // Return immediately if no cast is required
+    if (sameType(iVar))
+        return iVar;
+
+    // Allocate storage and pass it to the other operator
+    var r = iVar.copy(true);
+    return operator()(iVar, r);
+}
+
+template <class T>
+var Cast<T>::operator ()(var iVar, var oVar) const
+{
+    // Return immediately if no cast is required
+    if (sameType(iVar))
+        return iVar;
+
+    // Strings get converted
+    if (iVar.heap() && (iVar.heap()->type() == var::TYPE_CHAR))
     {
-        if (heap()->type() == TYPE_CHAR)
-            *this = static_cast<T>(heap()->strtold());
-        else
-            throw std::runtime_error("cast(): Cannot cast array");
-        // and drop though...
+        oVar = static_cast<T>(iVar.heap()->strtold());
+        return oVar;
     }
 
-    T r;
-    switch (type())
+    // Everything else gets cast<>ed
+    switch (iVar.type())
     {
-    case TYPE_CHAR:
-        *this = r = static_cast<T>(get<char>());
-        return r;
-    case TYPE_INT:
-        *this = r = static_cast<T>(get<int>());
-        return r;
-    case TYPE_LONG:
-        *this = r = static_cast<T>(get<long>());
-        return r;
-    case TYPE_FLOAT:
-        *this = r = static_cast<T>(get<float>());
-        return r;
-    case TYPE_DOUBLE:
-        *this = r = static_cast<T>(get<double>());
-        return r;
+    case var::TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case var::TYPE_CHAR:
+        oVar = static_cast<T>(iVar.get<char>());
+        break;
+    case var::TYPE_INT:
+        oVar = static_cast<T>(iVar.get<int>());
+        break;
+    case var::TYPE_LONG:
+        oVar = static_cast<T>(iVar.get<long>());
+        break;
+    case var::TYPE_FLOAT:
+        oVar = static_cast<T>(iVar.get<float>());
+        break;
+    case var::TYPE_DOUBLE:
+        oVar = static_cast<T>(iVar.get<double>());
+        break;
+    case var::TYPE_CFLOAT:
+        oVar = static_cast<T>(iVar.get<cfloat>().real());
+        break;
+    case var::TYPE_CDOUBLE:
+        oVar = static_cast<T>(iVar.get<cdouble>().real());
+        break;
     default:
-        throw std::runtime_error("cast(): Unknown type");
+        throw std::runtime_error("Cast::operator(): Unknown type");
     }
 
-    // Should not get here
-    return r;
+    return oVar;
 }
 
+Cast<char> var::castChar;
+Cast<int> var::castInt;
+Cast<long> var::castLong;
+Cast<float> var::castFloat;
+Cast<double> var::castDouble;
+Cast<cfloat> var::castCFloat;
+Cast<cdouble> var::castCDouble;
 
-#if 0
-/**
- * Cast to char* is a specialisation
- *
- * For now, I don't think this is the right way to do it.  And
- * actually it implies that cast<>() need not allocate memory so need
- * not be in place.  Ho hum.
- */
-template<>
-char* var::cast<char*>()
-{
-    dereference();
-
-    if (heap())
-    {
-        if (heap()->type() == TYPE_CHAR)
-            return &(*this);
-    }
-
-    vstream vs;
-    vs << *this;
-    *this = vs.var();
-
-    return &(*this);
-}
-#endif
 
 var& var::operator +=(var iVar)
 {
@@ -1372,6 +1408,7 @@ var& var::dereference()
             mData.cf = *mData.hp->ptr<cfloat>(index) ;
             break;
         case TYPE_CDOUBLE:
+            mType = TYPE_ARRAY;
             attach(new varheap(1, mData.hp->ptr<cdouble>(index)));
             break;
         default:

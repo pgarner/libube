@@ -114,14 +114,15 @@ varheap::~varheap()
  * implicitly bumped.  However, if it's a view then the heap of which
  * it's a view is copied.
  */
-varheap::varheap(const varheap& iHeap) : varheap()
+varheap::varheap(const varheap& iHeap, bool iAllocOnly) : varheap()
 {
     mType = iHeap.mType;
     resize(iHeap.mSize);
-    copy(&iHeap, mSize);
-    mView = iHeap.mView ? new varheap(*iHeap.mView) : 0;
+    mView = iHeap.mView ? new varheap(*iHeap.mView, iAllocOnly) : 0;
     if (mView)
         mView->attach();
+    if (mView || !iAllocOnly)
+        copy(&iHeap, mSize);
 }
 
 

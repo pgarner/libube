@@ -15,7 +15,6 @@
 #include "var.h"
 #include "varheap.h"
 
-
 /*
  * In some sense it would be best to use cblas.  Netlib defines it,
  * MKL defines it, but OpenBLAS and the like don't necessarily include
@@ -81,6 +80,181 @@ extern "C" {
  * That said, for some BLAS operations, the natural operation is to
  * overwrite.  In this case, the BLAS wrapper can allocate or not.
  */
+
+
+/**
+ * Report var type, but treating TYPE_CDOUBLE as a type rather than an
+ * array.
+ *
+ * This avoids an infinite loop where arrays are always broadcasted,
+ * and broadcasting calls the original unary operator again.
+ *
+ * Really should be in a base class, but that entails defining
+ * var::dataEnum before class var
+ */
+var::dataEnum type(var iVar)
+{
+    var::dataEnum type = iVar.type();
+    if ((type == var::TYPE_ARRAY) &&
+        (iVar.heap()->type() == var::TYPE_CDOUBLE))
+        type = var::TYPE_CDOUBLE;
+    return type;
+}
+
+
+void UnaryFunctor::arrayOp(const varheap*, int, int) const
+{
+    throw std::runtime_error("UnaryFunctor: not an array operation");
+};
+
+
+void BinaryFunctor::arrayOp(const varheap*, const varheap*, int, int) const
+{
+    throw std::runtime_error("BinaryFunctor: not an array operation");
+};
+
+
+/**
+ * Unary broadcaster
+ *
+ * Broadcasts the operation against iVar.
+ */
+void UnaryFunctor::broadcast(var iVar, var oVar) const
+{
+    int iDim = iVar.dim();
+
+    // Case 1: Operation is dimensionless
+    // Call back to the unary operator
+    if (mDim == 0)
+    {
+        // This could be parallel!
+        for (int i=0; i<iVar.size(); i++)
+            oVar.at(i) = operator ()(iVar.at(i));
+        return;
+    }
+
+    // Case 2: array operation (mDim is at least 1)
+    // Check that the array is broadcastable
+    if (mDim > iDim)
+        throw std::runtime_error("var::broadcast: op dimension too large");
+
+    // If it didn't throw, then the array is broadcastable
+    // In this case, loop over iVar with different offsets
+    int s = iVar.stride(iDim-mDim);
+    std::cout << "Striding: " << s << std::endl;
+    for (int i=0; i<iVar.size(); i+=s)
+        arrayOp(iVar.heap(), i, iVar.size());
+}
+
+
+/**
+ * Binary broadcaster
+ *
+ * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
+ * is the rvalue.
+ */
+void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
+{
+    int dim1 = iVar1.dim();
+    int dim2 = iVar2.dim();
+
+    // Case 1: iVar2 has size 1
+    // Call back to the unary operator
+    if ((dim2 == 1) && (iVar2.size() == 1))
+    {
+        // This could be parallel!
+        for (int i=0; i<iVar1.size(); i++)
+            oVar.at(i) = operator ()(iVar1.at(i), iVar2);
+        return;
+    }
+
+    // Case 2: iVar2 is also an array
+    // Check that the two arrays are broadcastable
+    if (dim2 > dim1)
+        throw std::runtime_error("var::broadcast: input dimension too large");
+    if (iVar1.heap()->type() != iVar2.heap()->type())
+        throw std::runtime_error("var::broadcast: types must match (for now)");
+    for (int i=0; i>dim2; i++)
+    {
+        // The dimensions should match
+        if (iVar1.shape(dim1-i) != iVar2.shape(dim2-i))
+            throw std::runtime_error("var::broadcast: dimension mismatch");
+    }
+
+    // If it didn't throw, then the arrays are broadcastable
+    // In this case, loop over iVar1 with different offsets
+    for (int i=0; i<iVar1.size(); i+=iVar2.size())
+        arrayOp(iVar1.heap(), iVar2.heap(), i, iVar2.size());
+}
+
+
+var Tan::operator ()(var iVar) const
+{
+    var r = iVar.copy(true);
+    return operator()(iVar, r);
+}
+
+
+var Tan::operator ()(var iVar, var oVar) const
+{
+    switch (type(iVar))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case var::TYPE_FLOAT:
+        oVar = std::tan(iVar.get<float>());
+        break;
+    case var::TYPE_DOUBLE:
+        oVar = std::tan(iVar.get<double>());
+        break;
+    case var::TYPE_CFLOAT:
+        oVar = std::tan(iVar.get<cfloat>());
+        break;
+    case var::TYPE_CDOUBLE:
+        oVar = std::tan(iVar.get<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("Tan::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+var Pow::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var Pow::operator ()(var iVar1, var iVar2, var oVar) const
+{
+    switch(type(iVar1))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_FLOAT:
+        oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
+        break;
+    case var::TYPE_DOUBLE:
+        oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
+        break;
+    case var::TYPE_CFLOAT:
+        oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
+        break;
+    case var::TYPE_CDOUBLE:
+        oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("Pow::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
 
 #define MATH(func) var var::func() const \
 { \
@@ -339,53 +513,6 @@ void varheap::mul(
     default:
         throw std::runtime_error("varheap::mul: Unknown type");
     }
-}
-
-
-var var::pow(var iPower) const
-{
-    var r;
-
-    switch(mType)
-    {
-    case TYPE_ARRAY:
-        r = *this;
-        if (mData.hp)
-            mData.hp->pow(iPower);
-        else
-            throw std::runtime_error("var::pow(): undefined");
-        break;
-    case TYPE_FLOAT:
-        r = std::pow(mData.f, iPower.cast<float>());
-        break;
-    case TYPE_DOUBLE:
-        r = std::pow(mData.d, iPower.cast<double>());
-        break;
-    default:
-        throw std::runtime_error("Unknown type");
-    }
-
-    return r;
-}
-
-
-void varheap::pow(var iPower)
-{
-    for (int i=0; i<mSize; i++)
-        switch (mType)
-        {
-        case var::TYPE_FLOAT:
-            mData.fp[i] = std::pow(mData.fp[i], iPower.cast<float>());
-            break;
-        case var::TYPE_DOUBLE:
-            mData.dp[i] = std::pow(mData.dp[i], iPower.cast<double>());
-            break;
-        case var::TYPE_VAR:
-            mData.vp[i] = mData.vp[i].pow(iPower);
-            break;
-        default:
-            throw std::runtime_error("Unknown type");
-        }
 }
 
 

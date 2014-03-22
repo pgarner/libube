@@ -18,8 +18,82 @@
 typedef std::complex<float> cfloat;
 typedef std::complex<double> cdouble;
 
-
 class varheap;
+class var;
+
+
+/**
+ * Unary functor
+ *
+ * A unary functor just acts on itself.
+ */
+class UnaryFunctor
+{
+public:
+    UnaryFunctor() { mDim = 0; };
+    virtual ~UnaryFunctor() {};
+    virtual var operator ()(var iVar) const = 0;
+    virtual var operator ()(var iVar, var oVar) const = 0;
+protected:
+    int mDim;
+    void broadcast(var iVar1, var oVar) const;
+    virtual void arrayOp(const varheap* iHeap, int iOffset, int iSize) const;
+};
+
+
+/**
+ * Binary functor
+ *
+ * A binary functor is a functor of two variables.
+ */
+class BinaryFunctor
+{
+public:
+    virtual ~BinaryFunctor() {};
+    virtual var operator ()(var iVar1, var iVar2) const = 0;
+    virtual var operator ()(var iVar1, var iVar2, var oVar) const = 0;
+protected:
+    void broadcast(var iVar1, var iVar2, var oVar) const;
+    virtual void arrayOp(
+        const varheap* iHeap1, const varheap* iHeap2, int iOffset, int iSize
+    ) const;
+};
+
+
+/**
+ * Casting functor
+ */
+template <class T>
+class Cast : public UnaryFunctor
+{
+public:
+    bool sameType(var iVar) const;
+    var operator ()(var iVar) const;
+    var operator ()(var iVar, var oVar) const;
+};
+
+
+/**
+ * Tan functor (exemplar unary functor)
+ */
+class Tan : public UnaryFunctor
+{
+public:
+    var operator ()(var iVar) const;
+    var operator ()(var iVar, var oVar) const;
+};
+
+
+/**
+ * Pow functor (exemplar binary functor)
+ */
+class Pow : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var operator ()(var iVar1, var iVar2, var oVar) const;
+};
+
 
 /**
  * Class with runtime type determination.
@@ -48,6 +122,20 @@ public:
 
     // Statics
     static const var nil;
+
+    // Functors
+    static Tan tan;
+    static Pow pow;
+
+    // Casting functors
+    static Cast<char> castChar;
+    static Cast<int> castInt;
+    static Cast<long> castLong;
+    static Cast<float> castFloat;
+    static Cast<double> castDouble;
+    static Cast<cfloat> castCFloat;
+    static Cast<cdouble> castCDouble;
+
 
     // Special member functions
     var();
@@ -98,13 +186,13 @@ public:
     var operator ,(var iVar) { return push(iVar); };
 
     // Methods
+    template<class T> T cast() const;
     var at(int iIndex) const;
     var at(var iVar) const;
-    var copy() const;
+    var copy(bool iAllocOnly=false) const;
     bool defined() const;
     int size() const;
     dataEnum type() const;
-    template<class T> T cast();
     varheap* heap() const;
     var pop();
     var top() { return at(size() - 1); };
@@ -139,7 +227,6 @@ public:
     var sin() const;
     var cos() const;
     var sqrt() const;
-    var pow(var iPower) const;
     var asum() const;
 
     // string.cpp
@@ -292,5 +379,6 @@ private:
     void* mHandle;     ///< Handle for dynamic library
     varfile* mVarFile; ///< Pointer to instance of file handler
 };
+
 
 #endif // VAR_H
