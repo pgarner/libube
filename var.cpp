@@ -63,67 +63,67 @@ template<> cdouble var::get<cdouble>() const {
 }
 
 
-template<> char& var::get<char>()
+template<> char* var::ptr<char>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.c : *mData.hp->ptr<char>(-mIndex-1);
+        return s ? &r.mData.c : mData.hp->ptr<char>(-mIndex-1);
     }
-    return mData.c;
+    return heap() ? heap()->ptr<char>() : &mData.c;
 }
-template<> int& var::get<int>()
+template<> int* var::ptr<int>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.i : *mData.hp->ptr<int>(-mIndex-1);
+        return s ? &r.mData.i : mData.hp->ptr<int>(-mIndex-1);
     }
-    return mData.i;
+    return heap() ? heap()->ptr<int>() : &mData.i;
 }
-template<> long& var::get<long>()
+template<> long* var::ptr<long>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.l : *mData.hp->ptr<long>(-mIndex-1);
+        return s ? &r.mData.l : mData.hp->ptr<long>(-mIndex-1);
     }
-    return mData.l;
+    return heap() ? heap()->ptr<long>() : &mData.l;
 }
-template<> float& var::get<float>()
+template<> float* var::ptr<float>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.f : *mData.hp->ptr<float>(-mIndex-1);
+        return s ? &r.mData.f : mData.hp->ptr<float>(-mIndex-1);
     }
-    return mData.f;
+    return heap() ? heap()->ptr<float>() : &mData.f;
 }
-template<> double& var::get<double>()
+template<> double* var::ptr<double>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.d : *mData.hp->ptr<double>(-mIndex-1);
+        return s ? &r.mData.d : mData.hp->ptr<double>(-mIndex-1);
     }
-    return mData.d;
+    return heap() ? heap()->ptr<double>() : &mData.d;
 }
-template<> cfloat& var::get<cfloat>()
+template<> cfloat* var::ptr<cfloat>()
 {
     if (reference())
     {
         bool s;
         var& r = varderef(s);
-        return s ? r.mData.cf : *mData.hp->ptr<cfloat>(-mIndex-1);
+        return s ? &r.mData.cf : mData.hp->ptr<cfloat>(-mIndex-1);
     }
-    return mData.cf;
+    return heap() ? heap()->ptr<cfloat>() : &mData.cf;
 }
-template<> cdouble& var::get<cdouble>()
+template<> cdouble* var::ptr<cdouble>()
 {
     if (reference())
     {
@@ -131,9 +131,9 @@ template<> cdouble& var::get<cdouble>()
         var& r = varderef(s);
         assert(!s);
         return s
-            ? *r.mData.hp->ptr<cdouble>(0) : *mData.hp->ptr<cdouble>(-mIndex-1);
+            ? r.mData.hp->ptr<cdouble>(0) : mData.hp->ptr<cdouble>(-mIndex-1);
     }
-    return *mData.hp->ptr<cdouble>(0);
+    return mData.hp->ptr<cdouble>(0);
 }
 
 
@@ -665,25 +665,25 @@ var& var::operator +=(var iVar)
             broadcast(iVar, &var::operator +=, &varheap::add);
         break;
     case TYPE_CHAR:
-        get<char>() += iVar.cast<char>();
+        *ptr<char>() += iVar.cast<char>();
         break;
     case TYPE_INT:
-        get<int>() += iVar.cast<int>();
+        *ptr<int>() += iVar.cast<int>();
         break;
     case TYPE_LONG:
-        get<long>() += iVar.cast<long>();
+        *ptr<long>() += iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        get<float>() += iVar.cast<float>();
+        *ptr<float>() += iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        get<double>() += iVar.cast<double>();
+        *ptr<double>() += iVar.cast<double>();
         break;
     case TYPE_CFLOAT:
-        get<cfloat>() += iVar.cast<cfloat>();
+        *ptr<cfloat>() += iVar.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        get<cdouble>() += iVar.cast<cdouble>();
+        *ptr<cdouble>() += iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator +=(): Unknown type");
@@ -701,25 +701,25 @@ var& var::operator -=(var iVar)
         broadcast(iVar, &var::operator -=, &varheap::sub);
         break;
     case TYPE_CHAR:
-        get<char>() -= iVar.cast<char>();
+        *ptr<char>() -= iVar.cast<char>();
         break;
     case TYPE_INT:
-        get<int>() -= iVar.cast<int>();
+        *ptr<int>() -= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        get<long>() -= iVar.cast<long>();
+        *ptr<long>() -= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        get<float>() -= iVar.cast<float>();
+        *ptr<float>() -= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        get<double>() -= iVar.cast<double>();
+        *ptr<double>() -= iVar.cast<double>();
         break;
     case TYPE_CFLOAT:
-        get<cfloat>() -= iVar.cast<cfloat>();
+        *ptr<cfloat>() -= iVar.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        get<cdouble>() -= iVar.cast<cdouble>();
+        *ptr<cdouble>() -= iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator -=(): Unknown type");
@@ -737,25 +737,25 @@ var& var::operator *=(var iVar)
         broadcast(iVar, &var::operator *=, &varheap::mul);
         break;
     case TYPE_CHAR:
-        get<char>() *= iVar.cast<char>();
+        *ptr<char>() *= iVar.cast<char>();
         break;
     case TYPE_INT:
-        get<int>() *= iVar.cast<int>();
+        *ptr<int>() *= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        get<long>() *= iVar.cast<long>();
+        *ptr<long>() *= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        get<float>() *= iVar.cast<float>();
+        *ptr<float>() *= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        get<double>() *= iVar.cast<double>();
+        *ptr<double>() *= iVar.cast<double>();
         break;
     case TYPE_CFLOAT:
-        get<cfloat>() *= iVar.cast<cfloat>();
+        *ptr<cfloat>() *= iVar.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        get<cdouble>() *= iVar.cast<cdouble>();
+        *ptr<cdouble>() *= iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator *=(): Unknown type");
@@ -773,25 +773,25 @@ var& var::operator /=(var iVar)
         broadcast(iVar, &var::operator /=);
         break;
     case TYPE_CHAR:
-        get<char>() /= iVar.cast<char>();
+        *ptr<char>() /= iVar.cast<char>();
         break;
     case TYPE_INT:
-        get<int>() /= iVar.cast<int>();
+        *ptr<int>() /= iVar.cast<int>();
         break;
     case TYPE_LONG:
-        get<long>() /= iVar.cast<long>();
+        *ptr<long>() /= iVar.cast<long>();
         break;
     case TYPE_FLOAT:
-        get<float>() /= iVar.cast<float>();
+        *ptr<float>() /= iVar.cast<float>();
         break;
     case TYPE_DOUBLE:
-        get<double>() /= iVar.cast<double>();
+        *ptr<double>() /= iVar.cast<double>();
         break;
     case TYPE_CFLOAT:
-        get<cfloat>() /= iVar.cast<cfloat>();
+        *ptr<cfloat>() /= iVar.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        get<cdouble>() /= iVar.cast<cdouble>();
+        *ptr<cdouble>() /= iVar.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("operator /=(): Unknown type");
@@ -838,9 +838,7 @@ var var::operator /(var iVar) const
  */
 char* var::operator &()
 {
-    if (heap())
-        return heap()->ptr<char>();
-    return &get<char>();
+    return ptr<char>();
 }
 
 

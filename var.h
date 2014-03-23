@@ -161,7 +161,7 @@ public:
 
     // Data accessor
     template<class T> T get() const;
-    template<class T> T& get();
+    template<class T> T* ptr();
 
     // Operators
     bool operator !=(var iVar) const;
