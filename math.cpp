@@ -16,6 +16,14 @@
 #include "varheap.h"
 
 /*
+ * The standard functors
+ */
+Tan var::tan;
+Pow var::pow;
+Add var::add;
+Sub var::sub;
+
+/*
  * In some sense it would be best to use cblas.  Netlib defines it,
  * MKL defines it, but OpenBLAS and the like don't necessarily include
  * it.  Sadly, there seems to be no standard header for the fortran
@@ -102,16 +110,16 @@ var::dataEnum type(var iVar)
 }
 
 
-void UnaryFunctor::arrayOp(const varheap*, int, int) const
+void UnaryFunctor::arrayOp(var iVar, int iOffset) const
 {
     throw std::runtime_error("UnaryFunctor: not an array operation");
-};
+}
 
 
-void BinaryFunctor::arrayOp(const varheap*, const varheap*, int, int) const
+void BinaryFunctor::arrayOp(var iVar1, var iVar2, int iOffset) const
 {
     throw std::runtime_error("BinaryFunctor: not an array operation");
-};
+}
 
 
 /**
@@ -143,7 +151,7 @@ void UnaryFunctor::broadcast(var iVar, var oVar) const
     int s = iVar.stride(iDim-mDim);
     std::cout << "Striding: " << s << std::endl;
     for (int i=0; i<iVar.size(); i+=s)
-        arrayOp(iVar.heap(), i, iVar.size());
+        arrayOp(iVar, i);
 }
 
 
@@ -184,7 +192,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
     for (int i=0; i<iVar1.size(); i+=iVar2.size())
-        arrayOp(iVar1.heap(), iVar2.heap(), i, iVar2.size());
+        arrayOp(iVar1, iVar2, i);
 }
 
 
@@ -195,7 +203,7 @@ var Tan::operator ()(var iVar) const
 }
 
 
-var Tan::operator ()(var iVar, var oVar) const
+var& Tan::operator ()(const var& iVar, var& oVar) const
 {
     switch (type(iVar))
     {
@@ -229,7 +237,7 @@ var Pow::operator ()(var iVar1, var iVar2) const
 }
 
 
-var Pow::operator ()(var iVar1, var iVar2, var oVar) const
+var& Pow::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 {
     switch(type(iVar1))
     {
@@ -253,6 +261,297 @@ var Pow::operator ()(var iVar1, var iVar2, var oVar) const
     }
 
     return oVar;
+}
+
+
+var Add::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var& Add::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
+{
+    switch(type(iVar1))
+    {
+    case var::TYPE_ARRAY:
+        //if (iVar1.heap()->type() == var::TYPE_CHAR)
+        //    oVar.append(iVar2); // Bug! Assumes oVar == iVar1
+        //else
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_CHAR:
+        *oVar.ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
+        break;
+    case var::TYPE_INT:
+        *oVar.ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
+        break;
+    case var::TYPE_LONG:
+        *oVar.ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Add::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void Add::arrayOp(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar2.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = 1.0f;
+        float* x = iVar2.ptr<float>();
+        float* y = iVar1.ptr<float>()+iOffset;
+        saxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = 1.0;
+        double* x = iVar2.ptr<double>();
+        double* y = iVar1.ptr<double>()+iOffset;
+        daxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Add::arrayOp: Unknown type");
+    }
+}
+
+
+var Sub::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var& Sub::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
+{
+    switch(type(iVar1))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_CHAR:
+        *oVar.ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
+        break;
+    case var::TYPE_INT:
+        *oVar.ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
+        break;
+    case var::TYPE_LONG:
+        *oVar.ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Sub::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void Sub::arrayOp(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar2.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = -1.0f;
+        float* x = iVar2.ptr<float>();
+        float* y = iVar1.ptr<float>()+iOffset;
+        saxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = -1.0;
+        double* x = iVar2.ptr<double>();
+        double* y = iVar1.ptr<double>()+iOffset;
+        daxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Sub::arrayOp: Unknown type");
+    }
+}
+
+
+var Mul::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var& Mul::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
+{
+    switch(type(iVar1))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_CHAR:
+        *oVar.ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
+        break;
+    case var::TYPE_INT:
+        *oVar.ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
+        break;
+    case var::TYPE_LONG:
+        *oVar.ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Mul::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void Mul::arrayOp(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar2.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = -1.0f;
+        float* x = iVar2.ptr<float>();
+        float* y = iVar1.ptr<float>()+iOffset;
+        saxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = -1.0;
+        double* x = iVar2.ptr<double>();
+        double* y = iVar1.ptr<double>()+iOffset;
+        daxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Mul::arrayOp: Unknown type");
+    }
+}
+
+
+var Div::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var& Div::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
+{
+    switch(type(iVar1))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_CHAR:
+        *oVar.ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
+        break;
+    case var::TYPE_INT:
+        *oVar.ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
+        break;
+    case var::TYPE_LONG:
+        *oVar.ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Div::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void Div::arrayOp(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar2.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        static float alpha = -1.0f;
+        float* x = iVar2.ptr<float>();
+        float* y = iVar1.ptr<float>()+iOffset;
+        saxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        static double alpha = -1.0;
+        double* x = iVar2.ptr<double>();
+        double* y = iVar1.ptr<double>()+iOffset;
+        daxpy_(&size, &alpha, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Div::arrayOp: Unknown type");
+    }
 }
 
 
@@ -291,7 +590,7 @@ MATH(floor)
 void var::broadcast(
     var iVar,
     var& (var::*iUnaryOp)(var),
-    void (varheap::*iArrayOp)(const varheap*, int, int)
+    void (varheap::*iArrayOp)(var, int)
 )
 {
     int mDim = dim();
@@ -329,27 +628,32 @@ void var::broadcast(
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over *this with different offsets
     for (int i=0; i<size(); i+=iVar.size())
-        (heap()->*iArrayOp)(iVar.heap(), i, iVar.size());
+        (heap()->*iArrayOp)(iVar, i);
 }
 
 
-void varheap::set(const varheap* iHeap, int iOffset, int iSize)
+/*
+ * Right now, operator =() calls this.  But it's not clear it's
+ * actually necessary given the var::copy() methods.
+ */
+void varheap::set(var iVar, int iOffset)
 {
     static int one = 1;
+    int size = iVar.size();
     switch(type())
     {
     case var::TYPE_FLOAT:
     {
-        float* x = iHeap->ptr<float>();
+        float* x = iVar.ptr<float>();
         float* y = ptr<float>(iOffset);
-        scopy_(&iSize, x, &one, y, &one);
+        scopy_(&size, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
-        double* x = iHeap->ptr<double>();
+        double* x = iVar.ptr<double>();
         double* y = ptr<double>(iOffset);
-        dcopy_(&iSize, x, &one, y, &one);
+        dcopy_(&size, x, &one, y, &one);
         break;
     }
     default:
@@ -357,26 +661,27 @@ void varheap::set(const varheap* iHeap, int iOffset, int iSize)
     }
 }
 
-
-void varheap::add(const varheap* iHeap, int iOffset, int iSize)
+#if 0
+void varheap::add(var iVar, int iOffset)
 {
     static int one = 1;
+    int size = iVar.size();
     switch(type())
     {
     case var::TYPE_FLOAT:
     {
         static float alpha = 1.0f;
-        float* x = iHeap->ptr<float>();
+        float* x = iVar.ptr<float>();
         float* y = ptr<float>(iOffset);
-        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         static double alpha = 1.0;
-        double* x = iHeap->ptr<double>();
+        double* x = iVar.ptr<double>();
         double* y = ptr<double>(iOffset);
-        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        daxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
     default:
@@ -384,35 +689,36 @@ void varheap::add(const varheap* iHeap, int iOffset, int iSize)
     }
 }
 
-
-void varheap::sub(const varheap* iHeap, int iOffset, int iSize)
+void varheap::sub(var iVar, int iOffset)
 {
     static int one = 1;
+    int size = iVar.size();
     switch(type())
     {
     case var::TYPE_FLOAT:
     {
         static float alpha = -1.0f;
-        float* x = iHeap->ptr<float>();
+        float* x = iVar.ptr<float>();
         float* y = ptr<float>(iOffset);
-        saxpy_(&iSize, &alpha, x, &one, y, &one);
+        saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         static double alpha = -1.0;
-        double* x = iHeap->ptr<double>();
+        double* x = iVar.ptr<double>();
         double* y = ptr<double>(iOffset);
-        daxpy_(&iSize, &alpha, x, &one, y, &one);
+        daxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
     default:
         throw std::runtime_error("varheap::sub: Unknown type");
     }
 }
+#endif
 
 
-void varheap::mul(const varheap* iHeap, int iOffset, int iSize)
+void varheap::mul(var iVar, int iOffset)
 {
     // Elementwise multiplication is actually multiplication by a
     // diagonal matrix.  In BLAS speak, a diagonal matrix is a band
@@ -425,28 +731,29 @@ void varheap::mul(const varheap* iHeap, int iOffset, int iSize)
     static char uplo = 'U';
     static char trans = 'T';
     static char diag = 'N';
+    int size = iVar.size();
     switch(type())
     {
     case var::TYPE_FLOAT:
     {
         //static float alpha = 1.0f;
         //static float beta = 0.0f;
-        float* A = iHeap->ptr<float>();
+        float* A = iVar.ptr<float>();
         float* x = ptr<float>(iOffset);
-        //ssbmv_(&uplo, &iSize, &zero,
+        //ssbmv_(&uplo, &size, &zero,
         //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        stbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x, &one);
+        stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
         //static double alpha = 1.0;
         //static double beta = 0.0;
-        double* A = iHeap->ptr<double>();
+        double* A = iVar.ptr<double>();
         double* x = ptr<double>(iOffset);
-        //dsbmv_(&uplo, &iSize, &zero,
+        //dsbmv_(&uplo, &size, &zero,
         //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        dtbmv_(&uplo, &trans, &diag, &iSize, &zero, A, &one, x, &one);
+        dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
         break;
     }
     default:
@@ -482,7 +789,7 @@ void varheap::scal(int iSize, int iOffset, var iVar)
 
 void varheap::mul(
     int iM, int iN, int iK, int iOffset,
-    const varheap* iHeapA, int iOffsetA, varheap* iHeapB
+    var iVarA, int iOffsetA, varheap* iHeapB
 )
 {
     // Swap B and A as they're transposed in FORTRAN world
@@ -496,7 +803,7 @@ void varheap::mul(
     {
         static float alpha = 1.0f;
         float* a = iHeapB->ptr<float>();
-        float* b = iHeapA->ptr<float>(iOffsetA);
+        float* b = iVarA.ptr<float>()+iOffsetA;
         float* c = ptr<float>(iOffset);
         sgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;
@@ -505,7 +812,7 @@ void varheap::mul(
     {
         static double alpha = 1.0;
         double* a = iHeapB->ptr<double>();
-        double* b = iHeapA->ptr<double>(iOffsetA);
+        double* b = iVarA.ptr<double>()+iOffsetA;
         double* c = ptr<double>(iOffset);
         dgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;

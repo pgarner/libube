@@ -33,11 +33,11 @@ public:
     UnaryFunctor() { mDim = 0; };
     virtual ~UnaryFunctor() {};
     virtual var operator ()(var iVar) const = 0;
-    virtual var operator ()(var iVar, var oVar) const = 0;
+    virtual var& operator ()(const var& iVar, var& oVar) const = 0;
 protected:
     int mDim;
     void broadcast(var iVar1, var oVar) const;
-    virtual void arrayOp(const varheap* iHeap, int iOffset, int iSize) const;
+    virtual void arrayOp(var iVar, int iOffset) const;
 };
 
 
@@ -51,12 +51,11 @@ class BinaryFunctor
 public:
     virtual ~BinaryFunctor() {};
     virtual var operator ()(var iVar1, var iVar2) const = 0;
-    virtual var operator ()(var iVar1, var iVar2, var oVar) const = 0;
+    virtual var& operator ()(const var& iVar1, const var& iVar2, var& oVar)
+        const = 0;
 protected:
     void broadcast(var iVar1, var iVar2, var oVar) const;
-    virtual void arrayOp(
-        const varheap* iHeap1, const varheap* iHeap2, int iOffset, int iSize
-    ) const;
+    virtual void arrayOp(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -69,7 +68,7 @@ class Cast : public UnaryFunctor
 public:
     bool sameType(var iVar) const;
     var operator ()(var iVar) const;
-    var operator ()(var iVar, var oVar) const;
+    var& operator ()(const var& iVar, var& oVar) const;
 };
 
 
@@ -80,18 +79,70 @@ class Tan : public UnaryFunctor
 {
 public:
     var operator ()(var iVar) const;
-    var operator ()(var iVar, var oVar) const;
+    var& operator ()(const var& iVar, var& oVar) const;
 };
 
 
 /**
- * Pow functor (exemplar binary functor)
+ * Power functor (exemplar binary functor)
  */
 class Pow : public BinaryFunctor
 {
 public:
     var operator ()(var iVar1, var iVar2) const;
-    var operator ()(var iVar1, var iVar2, var oVar) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+};
+
+
+/**
+ * Addition functor
+ */
+class Add : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+protected:
+    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+};
+
+
+/**
+ * Subtraction functor
+ */
+class Sub : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+protected:
+    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+};
+
+
+/**
+ * Multiplication functor
+ */
+class Mul : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+protected:
+    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+};
+
+
+/**
+ * Division functor
+ */
+class Div : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+protected:
+    void arrayOp(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -126,6 +177,10 @@ public:
     // Functors
     static Tan tan;
     static Pow pow;
+    static Add add;
+    static Sub sub;
+    static Mul mul;
+    static Div div;
 
     // Casting functors
     static Cast<char> castChar;
@@ -170,12 +225,12 @@ public:
     bool operator >(var iVar) const { return iVar < *this; };
     bool operator <=(var iVar) const { return !(*this > iVar); };
     bool operator >=(var iVar) const { return !(*this < iVar); };
-    var& operator +=(var iVar);
-    var& operator -=(var iVar);
+    var& operator +=(var iVar) { return add(*this, iVar, *this); };
+    var& operator -=(var iVar) { return sub(*this, iVar, *this); };
     var& operator *=(var iVar);
     var& operator /=(var iVar);
-    var operator +(var iVar) const;
-    var operator -(var iVar) const;
+    var operator +(var iVar) const { return add(*this, iVar); };
+    var operator -(var iVar) const { return sub(*this, iVar); };
     var operator *(var iVar) const;
     var operator /(var iVar) const;
     char* operator &();
@@ -285,7 +340,7 @@ private:
     void broadcast(
         var iVar,
         var& (var::*iUnaryOp)(var),
-        void (varheap::*iArrayOp)(const varheap*, int, int) = 0
+        void (varheap::*iArrayOp)(var, int) = 0
     );
 };
 

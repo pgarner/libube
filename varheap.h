@@ -74,14 +74,14 @@ public:
     void pow(var iPower);
 
     // Vector ops
-    void set(const varheap* iHeap, int iOffset, int iSize);
-    void add(const varheap* iHeap, int iOffset, int iSize);
-    void sub(const varheap* iHeap, int iOffset, int iSize);
-    void mul(const varheap* iHeap, int iOffset, int iSize);
+    void set(var iVar, int iOffset);
+    void add(var iVar, int iOffset);
+    void sub(var iVar, int iOffset);
+    void mul(var iVar, int iOffset);
     void scal(int iSize, int iOffset, var iVar);
     void mul(
         int iM, int iN, int iK, int iOffset,
-        const varheap* iHeapA, int iOffsetA, varheap* iHeapB
+        var iVarA, int iOffsetA, varheap* iHeapB
     );
     var asum();
 

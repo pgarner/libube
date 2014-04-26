@@ -32,12 +32,6 @@
 const var var::nil;
 
 /*
- * The standard functors
- */
-Tan var::tan;
-Pow var::pow;
-
-/*
  * Main data accessor
  */
 template<> char var::get<char>() const {
@@ -277,7 +271,8 @@ var& var::operator =(var iVar)
              mData.hp && mData.hp->copyable(iVar.heap()))
     {
         // Not a reference, but we are a copyable view.
-        mData.hp->set(iVar.heap(), 0, iVar.size());
+        // Could this use varheap::copy() instead?
+        mData.hp->set(iVar, 0);
     }
     else
     {
@@ -598,11 +593,14 @@ var Cast<T>::operator ()(var iVar) const
 }
 
 template <class T>
-var Cast<T>::operator ()(var iVar, var oVar) const
+var& Cast<T>::operator ()(const var& iVar, var& oVar) const
 {
     // Return immediately if no cast is required
     if (sameType(iVar))
-        return iVar;
+    {
+        oVar = iVar;
+        return oVar;
+    }
 
     // Strings get converted
     if (iVar.heap() && (iVar.heap()->type() == var::TYPE_CHAR))
@@ -653,7 +651,7 @@ Cast<double> var::castDouble;
 Cast<cfloat> var::castCFloat;
 Cast<cdouble> var::castCDouble;
 
-
+#if 0
 var& var::operator +=(var iVar)
 {
     switch (type())
@@ -692,7 +690,6 @@ var& var::operator +=(var iVar)
     return *this;
 }
 
-
 var& var::operator -=(var iVar)
 {
     switch (type())
@@ -727,6 +724,7 @@ var& var::operator -=(var iVar)
 
     return *this;
 }
+#endif
 
 
 var& var::operator *=(var iVar)
@@ -800,7 +798,7 @@ var& var::operator /=(var iVar)
     return *this;
 }
 
-
+#if 0
 var var::operator +(var iVar) const
 {
     var r = copy();
@@ -814,6 +812,7 @@ var var::operator -(var iVar) const
     r -= iVar;
     return r;
 }
+#endif
 
 var var::operator *(var iVar) const
 {
