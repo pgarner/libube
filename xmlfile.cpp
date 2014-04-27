@@ -133,11 +133,11 @@ var Expat::parse(const char* iFile)
     XML_Status s;
     while (f.getline(is))
     {
-        s = XML_Parse(mParser, &f, f.size(), 0);
+        s = XML_Parse(mParser, f.str(), f.size(), 0);
         if (!s)
             throw std::runtime_error("xmlfile::parse(): Error!");
     }
-    s = XML_Parse(mParser, &f, 0, 0);
+    s = XML_Parse(mParser, f.str(), 0, 0);
     if (!s)
         throw std::runtime_error("xmlfile::parse(): Error!");
     if (mStack.size() != 0)

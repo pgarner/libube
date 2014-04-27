@@ -18,7 +18,7 @@ void useString(var s)
 {
     // The ampersand suppresses the double quotes by passing the raw
     // char* to the format operator.
-    cout << "Using: " << &s << endl;
+    cout << "Using: " << s.str() << endl;
 }
 
 int main(int argc, char** argv)

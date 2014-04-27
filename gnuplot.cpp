@@ -71,7 +71,7 @@ void gnuplot::write(const char* iFile, var iVar)
         // supplied then write eps to it.
         puts("set term post eps");
         str.sprintf("set output \"%s\"", iFile);
-        puts(&str);
+        puts(str.str());
     }
 
     // Loop over the input var assuming it's an array of strings
@@ -81,7 +81,7 @@ void gnuplot::write(const char* iFile, var iVar)
         switch (str.heap()->type())
         {
         case var::TYPE_CHAR:
-            puts(&str);
+            puts(str.str());
             break;
         case var::TYPE_INT:
         case var::TYPE_LONG:

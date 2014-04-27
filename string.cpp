@@ -58,7 +58,7 @@ var var::split(const char* iStr, int iMax) const
     var r;
     int strLen = std::strlen(iStr);
     var s = *this;
-    const char* source = &s;
+    const char* source = s.ptr<char>();
     const char* p;
     if (iMax != 1)
         while ( (p = std::strstr(source, iStr)) )
@@ -109,7 +109,7 @@ var var::strip()
     if (v.heap()->type() != TYPE_CHAR)
         return *this;
 
-    char* ptr = &v;
+    char* ptr = v.ptr<char>();
     int leading = 0;
     while ((leading < v.size()) && (isspace(ptr[leading])))
         leading++;
@@ -139,7 +139,7 @@ var& var::sprintf(const char* iFormat, ...)
         // Bear in mind that libvar handles the null terminator
         // implicitly.
         va_start(ap, iFormat);
-        int m = vsnprintf(&(*this), size(), iFormat, ap);
+        int m = vsnprintf(this->ptr<char>(), size(), iFormat, ap);
         va_end(ap);
         if (m < 0)
             throw std::runtime_error("var::sprintf(): Some error");
@@ -162,8 +162,8 @@ bool var::search(var iRE)
 {
     if (heap()->type() != TYPE_CHAR)
         throw std::runtime_error("var::search(): Not a string");
-    boost::regex rgx(&iRE);
-    bool r = boost::regex_search(&(*this), rgx);
+    boost::regex rgx(iRE.ptr<char>());
+    bool r = boost::regex_search(this->ptr<char>(), rgx);
     return r;
 }
 
@@ -175,8 +175,8 @@ bool var::match(var iRE)
 {
     if (type() != TYPE_CHAR)
         throw std::runtime_error("var::match(): Not a string");
-    boost::regex rgx(&iRE);
-    bool r = boost::regex_match(&(*this), rgx);
+    boost::regex rgx(iRE.ptr<char>());
+    bool r = boost::regex_match(this->ptr<char>(), rgx);
     return r;
 }
 
@@ -189,8 +189,8 @@ var var::replace(var iRE, var iStr)
     if (heap()->type() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
 
-    std::string str = &(*this);
-    boost::regex rgx(&iRE);
-    var r = boost::regex_replace(str, rgx, &iStr).c_str();
+    std::string str = this->ptr<char>();
+    boost::regex rgx(iRE.ptr<char>());
+    var r = boost::regex_replace(str, rgx, iStr.ptr<char>()).c_str();
     return r;
 }

@@ -23,7 +23,7 @@ vfile::vfile(const char* iType)
     var lib = "lib";
     lib.append(iType);
     lib.append(".so");
-    mHandle = dlopen(&lib, RTLD_LAZY);
+    mHandle = dlopen(lib.str(), RTLD_LAZY);
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
     if (!mHandle)

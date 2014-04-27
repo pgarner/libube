@@ -131,6 +131,19 @@ template<> cdouble* var::ptr<cdouble>()
 }
 
 
+/**
+ * Get a string
+ *
+ * Returns a pointer to the internal string assuming it's a char array.
+ */
+const char* var::str()
+{
+    // Normally would be inline, but needs to be defined after the ptr
+    // templates.
+    return ptr<char>();
+}
+
+
 template<> char var::cast<char>() const {
     return castChar(*this).get<char>();
 }
@@ -826,18 +839,6 @@ var var::operator /(var iVar) const
     var r = copy();
     r /= iVar;
     return r;
-}
-
-
-/**
- * Get a pointer to the actual storage
- *
- * Returns char* as that's what is often needed; must be cast
- * otherwise.
- */
-char* var::operator &()
-{
-    return ptr<char>();
 }
 
 
@@ -1552,7 +1553,8 @@ varbuf::varbuf()
 
     // Set the pointers meaning the buffer has zero size.  This will
     // cause the ostream machinery to call overflow() on every write
-    setp(&mVar, &mVar);
+    char* str = mVar.ptr<char>();
+    setp(str, str);
 }
 
 
@@ -1595,7 +1597,7 @@ vruntime_error::vruntime_error(var iVar)
     vstream vs;
     vs << iVar;
     mVar = vs.var();
-    mStr = &mVar;
+    mStr = mVar.ptr<char>();
 }
 
 const char* vruntime_error::what() const noexcept

@@ -217,6 +217,7 @@ public:
     // Data accessor
     template<class T> T get() const;
     template<class T> T* ptr();
+    const char* str();
 
     // Operators
     bool operator !=(var iVar) const;
@@ -233,7 +234,6 @@ public:
     var operator -(var iVar) const { return sub(*this, iVar); };
     var operator *(var iVar) const;
     var operator /(var iVar) const;
-    char* operator &();
     var operator [](int iIndex);
     var operator [](var iVar);
     var operator ()(int iFirst, ...);
@@ -369,7 +369,7 @@ class vstream : public std::ostream
 public:
     vstream();
     class var var() const { return mVarBuf.var(); };
-    const char* operator &() { return &(mVarBuf.var()); };
+    const char* operator &() { return mVarBuf.var().str(); };
 
 private:
     class varbuf mVarBuf;
