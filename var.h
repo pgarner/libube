@@ -95,6 +95,19 @@ public:
 
 
 /**
+ * Set/Copy functor
+ */
+class Set : public BinaryFunctor
+{
+public:
+    var operator ()(var iVar1, var iVar2) const;
+    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+protected:
+    void array(var iVar1, var iVar2, int iOffset) const;
+};
+
+
+/**
  * Addition functor
  */
 class Add : public BinaryFunctor
@@ -148,6 +161,19 @@ public:
 
 
 /**
+ * Absolute sum functor
+ */
+class ASum : public UnaryFunctor
+{
+public:
+    var operator ()(var iVar) const;
+    var& operator ()(const var& iVar, var& oVar) const;
+protected:
+    void array(var iVar, int iOffset) const;
+};
+
+
+/**
  * Class with runtime type determination.
  *
  * The name 'var' is borrowed from ECMAScript.  The syntax is intended
@@ -178,6 +204,7 @@ public:
     // Functors
     static Tan tan;
     static Pow pow;
+    static Set set;
     static Add add;
     static Sub sub;
     static Mul mul;
@@ -191,7 +218,6 @@ public:
     static Cast<double> castDouble;
     static Cast<cfloat> castCFloat;
     static Cast<cdouble> castCDouble;
-
 
     // Special member functions
     var();

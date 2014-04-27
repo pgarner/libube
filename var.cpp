@@ -284,8 +284,8 @@ var& var::operator =(var iVar)
              mData.hp && mData.hp->copyable(iVar.heap()))
     {
         // Not a reference, but we are a copyable view.
-        // Could this use varheap::copy() instead?
-        mData.hp->set(iVar, 0);
+        // This is the broadcastable set(); could use varheap::copy() instead?
+        set(*this, iVar, *this);
     }
     else
     {

@@ -71,7 +71,6 @@ public:
     bool copyable(varheap* iHeap);
 
     // Vector ops
-    void set(var iVar, int iOffset);
     var asum();
 
 private:

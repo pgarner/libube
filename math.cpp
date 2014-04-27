@@ -22,6 +22,7 @@
  */
 Tan var::tan;
 Pow var::pow;
+Set var::set;
 Add var::add;
 Sub var::sub;
 Mul var::mul;
@@ -269,6 +270,76 @@ var& Pow::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
+var Set::operator ()(var iVar1, var iVar2) const
+{
+    var r = iVar1.copy(true);
+    return operator()(iVar1, iVar2, r);
+}
+
+
+var& Set::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
+{
+    switch(type(oVar))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar1, iVar2, oVar);
+        break;
+    case var::TYPE_CHAR:
+        *oVar.ptr<char>() = iVar2.cast<char>();
+        break;
+    case var::TYPE_INT:
+        *oVar.ptr<int>() = iVar2.cast<int>();
+        break;
+    case var::TYPE_LONG:
+        *oVar.ptr<long>() = iVar2.cast<long>();
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = iVar2.cast<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = iVar2.cast<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = iVar2.cast<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = iVar2.cast<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Set::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void Set::array(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar2.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        float* x = iVar2.ptr<float>();
+        float* y = iVar1.ptr<float>()+iOffset;
+        scopy_(&size, x, &one, y, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        double* x = iVar2.ptr<double>();
+        double* y = iVar1.ptr<double>()+iOffset;
+        dcopy_(&size, x, &one, y, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Set::array: Unknown type");
+    }
+}
+
+
 var Add::operator ()(var iVar1, var iVar2) const
 {
     var r = iVar1.copy(true);
@@ -503,12 +574,11 @@ var& Mul::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 
 void Mul::array(var iVar1, var iVar2, int iOffset) const
 {
-    // Elementwise multiplication is actually multiplication by a
-    // diagonal matrix.  In BLAS speak, a diagonal matrix is a band
-    // matrix with no superdiagonals.  In this sense, we want xsbmv()
-    // (symmetric band), but that puts the result in a new location.
-    // Rather, xtbmv() (triangular band) overwrites the current
-    // location.
+    // Elementwise multiplication is actually multiplication by a diagonal
+    // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
+    // superdiagonals.  In this sense, we want xsbmv() (symmetric band), but
+    // that puts the result in a new location.  Rather, xtbmv() (triangular
+    // band) overwrites the current location.
     assert(type(iVar1) == var::TYPE_ARRAY);
     static int zero = 0;
     static int one = 1;
@@ -589,6 +659,60 @@ var& Div::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
+var ASum::operator ()(var iVar) const
+{
+    var r = iVar.copy(true);
+    return operator()(iVar, r);
+}
+
+
+var& ASum::operator ()(const var& iVar, var& oVar) const
+{
+    switch(type(iVar))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = std::abs(iVar.get<float>());
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = std::abs(iVar.get<double>());
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar.ptr<cfloat>() = std::abs(iVar.get<cfloat>());
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar.ptr<cdouble>() = std::abs(iVar.get<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("ASum::operator(): Unknown type");
+    }
+
+    return oVar;
+}
+
+
+void ASum::array(var iVar, int iOffset) const
+{
+    var oVar; // TEMP
+    assert(type(iVar) == var::TYPE_ARRAY);
+    static int inc = 1;
+    int size = iVar.size();
+    switch(iVar.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+        *oVar.ptr<float>() = sasum_(&size, iVar.ptr<float>()+iOffset, &inc);
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar.ptr<double>() = dasum_(&size, iVar.ptr<double>()+iOffset, &inc);
+        break;
+    default:
+        throw std::runtime_error("ASum::array: Unknown type");
+    }
+}
+
+
 #define MATH(func) var var::func() const \
 { \
     var r; \
@@ -613,35 +737,6 @@ MATH(cos)
 MATH(sin)
 MATH(floor)
 
-
-/*
- * Right now, operator =() calls this.  But it's not clear it's
- * actually necessary given the var::copy() methods.
- */
-void varheap::set(var iVar, int iOffset)
-{
-    static int one = 1;
-    int size = iVar.size();
-    switch(type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        float* x = iVar.ptr<float>();
-        float* y = ptr<float>(iOffset);
-        scopy_(&size, x, &one, y, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        double* x = iVar.ptr<double>();
-        double* y = ptr<double>(iOffset);
-        dcopy_(&size, x, &one, y, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::set: Unknown type");
-    }
-}
 
 #if 0
 void varheap::mul(
@@ -679,6 +774,7 @@ void varheap::mul(
     }
 }
 #endif
+
 
 var var::asum() const
 {
