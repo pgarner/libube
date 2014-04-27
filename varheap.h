@@ -70,19 +70,8 @@ public:
     int& viewRef(int iIndex);
     bool copyable(varheap* iHeap);
 
-    // Maths
-    void pow(var iPower);
-
     // Vector ops
     void set(var iVar, int iOffset);
-    void add(var iVar, int iOffset);
-    void sub(var iVar, int iOffset);
-    void mul(var iVar, int iOffset);
-    void scal(int iSize, int iOffset, var iVar);
-    void mul(
-        int iM, int iN, int iK, int iOffset,
-        var iVarA, int iOffsetA, varheap* iHeapB
-    );
     var asum();
 
 private:

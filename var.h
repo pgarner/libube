@@ -36,8 +36,8 @@ public:
     virtual var& operator ()(const var& iVar, var& oVar) const = 0;
 protected:
     int mDim;
-    void broadcast(var iVar1, var oVar) const;
-    virtual void arrayOp(var iVar, int iOffset) const;
+    virtual void broadcast(var iVar1, var oVar) const;
+    virtual void array(var iVar, int iOffset) const;
 };
 
 
@@ -54,8 +54,8 @@ public:
     virtual var& operator ()(const var& iVar1, const var& iVar2, var& oVar)
         const = 0;
 protected:
-    void broadcast(var iVar1, var iVar2, var oVar) const;
-    virtual void arrayOp(var iVar1, var iVar2, int iOffset) const;
+    virtual void broadcast(var iVar1, var iVar2, var oVar) const;
+    virtual void array(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -103,7 +103,7 @@ public:
     var operator ()(var iVar1, var iVar2) const;
     var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
 protected:
-    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+    void array(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -116,7 +116,7 @@ public:
     var operator ()(var iVar1, var iVar2) const;
     var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
 protected:
-    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+    void array(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -129,20 +129,21 @@ public:
     var operator ()(var iVar1, var iVar2) const;
     var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
 protected:
-    void arrayOp(var iVar1, var iVar2, int iOffset) const;
+    void broadcast(var iVar1, var iVar2, var oVar) const;
+    void array(var iVar1, var iVar2, int iOffset) const;
+    void scale(var iVar1, var iVar2, int iOffset) const;
 };
 
 
 /**
  * Division functor
+ * There's no array operation.
  */
 class Div : public BinaryFunctor
 {
 public:
     var operator ()(var iVar1, var iVar2) const;
     var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
-protected:
-    void arrayOp(var iVar1, var iVar2, int iOffset) const;
 };
 
 
@@ -228,12 +229,12 @@ public:
     bool operator >=(var iVar) const { return !(*this < iVar); };
     var& operator +=(var iVar) { return add(*this, iVar, *this); };
     var& operator -=(var iVar) { return sub(*this, iVar, *this); };
-    var& operator *=(var iVar);
-    var& operator /=(var iVar);
+    var& operator *=(var iVar) { return mul(*this, iVar, *this); };
+    var& operator /=(var iVar) { return div(*this, iVar, *this); };
     var operator +(var iVar) const { return add(*this, iVar); };
     var operator -(var iVar) const { return sub(*this, iVar); };
-    var operator *(var iVar) const;
-    var operator /(var iVar) const;
+    var operator *(var iVar) const { return mul(*this, iVar); };
+    var operator /(var iVar) const { return div(*this, iVar); };
     var operator [](int iIndex);
     var operator [](var iVar);
     var operator ()(int iFirst, ...);
@@ -337,11 +338,6 @@ private:
     int detach(varheap* iHeap=0);
     const char* typeOf(dataEnum iType);
     int binary(var iData) const;
-    void broadcast(
-        var iVar,
-        var& (var::*iUnaryOp)(var),
-        void (varheap::*iArrayOp)(var, int) = 0
-    );
 };
 
 

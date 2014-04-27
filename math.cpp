@@ -15,13 +15,18 @@
 #include "var.h"
 #include "varheap.h"
 
+
 /*
- * The standard functors
+ * The instantiations of the math and standard functors defined in this module.
+ * They are declared static in the var class definition.
  */
 Tan var::tan;
 Pow var::pow;
 Add var::add;
 Sub var::sub;
+Mul var::mul;
+Div var::div;
+
 
 /*
  * In some sense it would be best to use cblas.  Netlib defines it,
@@ -110,13 +115,13 @@ var::dataEnum type(var iVar)
 }
 
 
-void UnaryFunctor::arrayOp(var iVar, int iOffset) const
+void UnaryFunctor::array(var iVar, int iOffset) const
 {
     throw std::runtime_error("UnaryFunctor: not an array operation");
 }
 
 
-void BinaryFunctor::arrayOp(var iVar1, var iVar2, int iOffset) const
+void BinaryFunctor::array(var iVar1, var iVar2, int iOffset) const
 {
     throw std::runtime_error("BinaryFunctor: not an array operation");
 }
@@ -151,7 +156,7 @@ void UnaryFunctor::broadcast(var iVar, var oVar) const
     int s = iVar.stride(iDim-mDim);
     std::cout << "Striding: " << s << std::endl;
     for (int i=0; i<iVar.size(); i+=s)
-        arrayOp(iVar, i);
+        array(iVar, i);
 }
 
 
@@ -192,7 +197,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
     for (int i=0; i<iVar1.size(); i+=iVar2.size())
-        arrayOp(iVar1, iVar2, i);
+        array(iVar1, iVar2, i);
 }
 
 
@@ -276,9 +281,6 @@ var& Add::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        //if (iVar1.heap()->type() == var::TYPE_CHAR)
-        //    oVar.append(iVar2); // Bug! Assumes oVar == iVar1
-        //else
         broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
@@ -310,7 +312,7 @@ var& Add::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-void Add::arrayOp(var iVar1, var iVar2, int iOffset) const
+void Add::array(var iVar1, var iVar2, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
     static int one = 1;
@@ -334,7 +336,7 @@ void Add::arrayOp(var iVar1, var iVar2, int iOffset) const
         break;
     }
     default:
-        throw std::runtime_error("Add::arrayOp: Unknown type");
+        throw std::runtime_error("Add::array: Unknown type");
     }
 }
 
@@ -382,7 +384,7 @@ var& Sub::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-void Sub::arrayOp(var iVar1, var iVar2, int iOffset) const
+void Sub::array(var iVar1, var iVar2, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
     static int one = 1;
@@ -406,7 +408,52 @@ void Sub::arrayOp(var iVar1, var iVar2, int iOffset) const
         break;
     }
     default:
-        throw std::runtime_error("Sub::arrayOp: Unknown type");
+        throw std::runtime_error("Sub::array: Unknown type");
+    }
+}
+
+
+/**
+ * Overload of broadcast() for multiplication.  This catches the case where
+ * just scaling is being done, meaning a different BLAS call is necessary.
+ */
+void Mul::broadcast(var iVar1, var iVar2, var oVar) const
+{
+    // If iVar2 has size 1, call scale rather than let the base class broadcast
+    // it over the unary operator.
+    if ((iVar2.dim() == 1) && (iVar2.size() == 1))
+    {
+        scale(iVar1, iVar2, 0);
+        return;
+    }
+    else
+        BinaryFunctor::broadcast(iVar1, iVar2, oVar);
+}
+
+
+void Mul::scale(var iVar1, var iVar2, int iOffset) const
+{
+    assert(type(iVar1) == var::TYPE_ARRAY);
+    static int one = 1;
+    int size = iVar1.size();
+    switch(iVar1.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+    {
+        float alpha = iVar2.cast<float>();
+        float* x = iVar1.ptr<float>()+iOffset;
+        sscal_(&size, &alpha, x, &one);
+        break;
+    }
+    case var::TYPE_DOUBLE:
+    {
+        double alpha = iVar2.cast<double>();
+        double* x = iVar1.ptr<double>()+iOffset;
+        dscal_(&size, &alpha, x, &one);
+        break;
+    }
+    default:
+        throw std::runtime_error("Mul::scal: Unknown type");
     }
 }
 
@@ -454,31 +501,47 @@ var& Mul::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-void Mul::arrayOp(var iVar1, var iVar2, int iOffset) const
+void Mul::array(var iVar1, var iVar2, int iOffset) const
 {
+    // Elementwise multiplication is actually multiplication by a
+    // diagonal matrix.  In BLAS speak, a diagonal matrix is a band
+    // matrix with no superdiagonals.  In this sense, we want xsbmv()
+    // (symmetric band), but that puts the result in a new location.
+    // Rather, xtbmv() (triangular band) overwrites the current
+    // location.
     assert(type(iVar1) == var::TYPE_ARRAY);
+    static int zero = 0;
     static int one = 1;
+    static char uplo = 'U';
+    static char trans = 'T';
+    static char diag = 'N';
     int size = iVar2.size();
     switch(iVar1.heap()->type())
     {
     case var::TYPE_FLOAT:
     {
-        static float alpha = -1.0f;
-        float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>()+iOffset;
-        saxpy_(&size, &alpha, x, &one, y, &one);
+        //static float alpha = 1.0f;
+        //static float beta = 0.0f;
+        float* A = iVar2.ptr<float>();
+        float* x = iVar1.ptr<float>()+iOffset;
+        //ssbmv_(&uplo, &size, &zero,
+        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
+        stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
         break;
     }
     case var::TYPE_DOUBLE:
     {
-        static double alpha = -1.0;
-        double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>()+iOffset;
-        daxpy_(&size, &alpha, x, &one, y, &one);
+        //static double alpha = 1.0;
+        //static double beta = 0.0;
+        double* A = iVar2.ptr<double>();
+        double* x = iVar1.ptr<double>()+iOffset;
+        //dsbmv_(&uplo, &size, &zero,
+        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
+        dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
         break;
     }
     default:
-        throw std::runtime_error("Mul::arrayOp: Unknown type");
+        throw std::runtime_error("varheap::mul: Unknown type");
     }
 }
 
@@ -526,35 +589,6 @@ var& Div::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-void Div::arrayOp(var iVar1, var iVar2, int iOffset) const
-{
-    assert(type(iVar1) == var::TYPE_ARRAY);
-    static int one = 1;
-    int size = iVar2.size();
-    switch(iVar1.heap()->type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        static float alpha = -1.0f;
-        float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>()+iOffset;
-        saxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        static double alpha = -1.0;
-        double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>()+iOffset;
-        daxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("Div::arrayOp: Unknown type");
-    }
-}
-
-
 #define MATH(func) var var::func() const \
 { \
     var r; \
@@ -578,58 +612,6 @@ MATH(sqrt)
 MATH(cos)
 MATH(sin)
 MATH(floor)
-
-
-/**
- * Broadcaster
- *
- * Broadcasts iVar against *this; i.e., *this is the lvalue and iVar
- * is the rvalue.  It should only be called from an operation, and
- * hence *this should be (a reference to) an array.
- */
-void var::broadcast(
-    var iVar,
-    var& (var::*iUnaryOp)(var),
-    void (varheap::*iArrayOp)(var, int)
-)
-{
-    int mDim = dim();
-    int iDim = iVar.dim();
-
-    // Case 1: iVar has size 1
-    // Call back to the unary operator
-    if ((iDim == 1) && (iVar.size() == 1) && (type() != TYPE_CDOUBLE))
-    {
-        // Scaling is a special case
-        if (iUnaryOp == (&var::operator *=))
-            heap()->scal(size(), 0, iVar);
-        else
-            // This could be parallel!
-            for (int i=0; i<size(); i++)
-                (at(i).*iUnaryOp)(iVar);
-        return;
-    }
-
-    // Case 2: iVar is also an array
-    // Check that the two arrays are broadcastable
-    if (!iArrayOp)
-        throw std::runtime_error("var::broadcast: not an array operation");
-    if (iDim > mDim)
-        throw std::runtime_error("var::broadcast: input dimension too large");
-    if (heap()->type() != iVar.heap()->type())
-        throw std::runtime_error("var::broadcast: types must match (for now)");
-    for (int i=0; i>iDim; i++)
-    {
-        // The dimensions should match
-        if (shape(mDim-i) != iVar.shape(iDim-i))
-            throw std::runtime_error("var::broadcast: dimension mismatch");
-    }
-
-    // If it didn't throw, then the arrays are broadcastable
-    // In this case, loop over *this with different offsets
-    for (int i=0; i<size(); i+=iVar.size())
-        (heap()->*iArrayOp)(iVar, i);
-}
 
 
 /*
@@ -662,131 +644,6 @@ void varheap::set(var iVar, int iOffset)
 }
 
 #if 0
-void varheap::add(var iVar, int iOffset)
-{
-    static int one = 1;
-    int size = iVar.size();
-    switch(type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        static float alpha = 1.0f;
-        float* x = iVar.ptr<float>();
-        float* y = ptr<float>(iOffset);
-        saxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        static double alpha = 1.0;
-        double* x = iVar.ptr<double>();
-        double* y = ptr<double>(iOffset);
-        daxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::add: Unknown type");
-    }
-}
-
-void varheap::sub(var iVar, int iOffset)
-{
-    static int one = 1;
-    int size = iVar.size();
-    switch(type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        static float alpha = -1.0f;
-        float* x = iVar.ptr<float>();
-        float* y = ptr<float>(iOffset);
-        saxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        static double alpha = -1.0;
-        double* x = iVar.ptr<double>();
-        double* y = ptr<double>(iOffset);
-        daxpy_(&size, &alpha, x, &one, y, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::sub: Unknown type");
-    }
-}
-#endif
-
-
-void varheap::mul(var iVar, int iOffset)
-{
-    // Elementwise multiplication is actually multiplication by a
-    // diagonal matrix.  In BLAS speak, a diagonal matrix is a band
-    // matrix with no superdiagonals.  In this sense, we want xsbmv()
-    // (symmetric band), but that puts the result in a new location.
-    // Rather, xtbmv() (triangular band) overwrites the current
-    // location.
-    static int zero = 0;
-    static int one = 1;
-    static char uplo = 'U';
-    static char trans = 'T';
-    static char diag = 'N';
-    int size = iVar.size();
-    switch(type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        //static float alpha = 1.0f;
-        //static float beta = 0.0f;
-        float* A = iVar.ptr<float>();
-        float* x = ptr<float>(iOffset);
-        //ssbmv_(&uplo, &size, &zero,
-        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        //static double alpha = 1.0;
-        //static double beta = 0.0;
-        double* A = iVar.ptr<double>();
-        double* x = ptr<double>(iOffset);
-        //dsbmv_(&uplo, &size, &zero,
-        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::mul: Unknown type");
-    }
-}
-
-
-void varheap::scal(int iSize, int iOffset, var iVar)
-{
-    static int one = 1;
-    switch(type())
-    {
-    case var::TYPE_FLOAT:
-    {
-        float alpha = iVar.cast<float>();
-        float* x = ptr<float>(iOffset);
-        sscal_(&iSize, &alpha, x, &one);
-        break;
-    }
-    case var::TYPE_DOUBLE:
-    {
-        double alpha = iVar.cast<double>();
-        double* x = ptr<double>(iOffset);
-        dscal_(&iSize, &alpha, x, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::scal: Unknown type");
-    }
-}
-
-
 void varheap::mul(
     int iM, int iN, int iK, int iOffset,
     var iVarA, int iOffsetA, varheap* iHeapB
@@ -821,7 +678,7 @@ void varheap::mul(
         throw std::runtime_error("varheap::mul: Unknown type");
     }
 }
-
+#endif
 
 var var::asum() const
 {
