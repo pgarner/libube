@@ -35,8 +35,8 @@ public:
     virtual var operator ()(const var& iVar, var* oVar=0) const = 0;
 protected:
     int mDim;
-    virtual void broadcast(var iVar1, var oVar) const;
-    virtual void array(var iVar, int iOffset) const;
+    virtual void broadcast(var iVar1, var* oVar) const;
+    virtual void array(var iVar, var* oVar, int iOffset) const;
 };
 
 
@@ -52,8 +52,8 @@ public:
     virtual var operator ()(const var& iVar1, const var& iVar2, var* oVar=0)
         const = 0;
 protected:
-    virtual void broadcast(var iVar1, var iVar2, var oVar) const;
-    virtual void array(var iVar1, var iVar2, int iOffset) const;
+    virtual void broadcast(var iVar1, var iVar2, var* oVar) const;
+    virtual void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
 };
 
 
@@ -97,7 +97,7 @@ class Set : public BinaryFunctor
 public:
     var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
-    void array(var iVar1, var iVar2, int iOffset) const;
+    void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
 };
 
 
@@ -109,7 +109,7 @@ class Add : public BinaryFunctor
 public:
     var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
-    void array(var iVar1, var iVar2, int iOffset) const;
+    void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
 };
 
 
@@ -121,7 +121,7 @@ class Sub : public BinaryFunctor
 public:
     var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
-    void array(var iVar1, var iVar2, int iOffset) const;
+    void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
 };
 
 
@@ -133,9 +133,9 @@ class Mul : public BinaryFunctor
 public:
     var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
-    void broadcast(var iVar1, var iVar2, var oVar) const;
-    void array(var iVar1, var iVar2, int iOffset) const;
-    void scale(var iVar1, var iVar2, int iOffset) const;
+    void broadcast(var iVar1, var iVar2, var* oVar) const;
+    void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+    void scale(var iVar1, var iVar2, var* oVar, int iOffset) const;
 };
 
 
@@ -158,7 +158,7 @@ class ASum : public UnaryFunctor
 public:
     var operator ()(const var& iVar, var* oVar=0) const;
 protected:
-    void array(var iVar, int iOffset) const;
+    void array(var iVar, var* oVar, int iOffset) const;
 };
 
 
@@ -258,6 +258,7 @@ public:
 
     // Methods
     template<class T> T cast() const;
+    bool is(var& iVar) const;
     var at(int iIndex) const;
     var at(var iVar) const;
     var copy(bool iAllocOnly=false) const;

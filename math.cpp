@@ -116,13 +116,13 @@ var::dataEnum type(var iVar)
 }
 
 
-void UnaryFunctor::array(var iVar, int iOffset) const
+void UnaryFunctor::array(var iVar, var* oVar, int iOffset) const
 {
     throw std::runtime_error("UnaryFunctor: not an array operation");
 }
 
 
-void BinaryFunctor::array(var iVar1, var iVar2, int iOffset) const
+void BinaryFunctor::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     throw std::runtime_error("BinaryFunctor: not an array operation");
 }
@@ -133,7 +133,7 @@ void BinaryFunctor::array(var iVar1, var iVar2, int iOffset) const
  *
  * Broadcasts the operation against iVar.
  */
-void UnaryFunctor::broadcast(var iVar, var oVar) const
+void UnaryFunctor::broadcast(var iVar, var* oVar) const
 {
     int iDim = iVar.dim();
 
@@ -143,7 +143,7 @@ void UnaryFunctor::broadcast(var iVar, var oVar) const
     {
         // This could be parallel!
         for (int i=0; i<iVar.size(); i++)
-            oVar.at(i) = operator ()(iVar.at(i));
+            oVar->at(i) = operator ()(iVar.at(i));
         return;
     }
 
@@ -157,7 +157,7 @@ void UnaryFunctor::broadcast(var iVar, var oVar) const
     int s = iVar.stride(iDim-mDim);
     std::cout << "Striding: " << s << std::endl;
     for (int i=0; i<iVar.size(); i+=s)
-        array(iVar, i);
+        array(iVar, oVar, i);
 }
 
 
@@ -167,7 +167,7 @@ void UnaryFunctor::broadcast(var iVar, var oVar) const
  * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
  * is the rvalue.
  */
-void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
+void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
 {
     int dim1 = iVar1.dim();
     int dim2 = iVar2.dim();
@@ -178,7 +178,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
     {
         // This could be parallel!
         for (int i=0; i<iVar1.size(); i++)
-            oVar.at(i) = operator ()(iVar1.at(i), iVar2);
+            oVar->at(i) = operator ()(iVar1.at(i), iVar2);
         return;
     }
 
@@ -198,7 +198,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
     for (int i=0; i<iVar1.size(); i+=iVar2.size())
-        array(iVar1, iVar2, i);
+        array(iVar1, iVar2, oVar, i);
 }
 
 
@@ -214,7 +214,7 @@ var Tan::operator ()(const var& iVar, var* oVar) const
     switch (type(iVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, *oVar);
+        broadcast(iVar, oVar);
         break;
     case var::TYPE_FLOAT:
         *oVar = std::tan(iVar.get<float>());
@@ -248,7 +248,7 @@ var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_FLOAT:
         *oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
@@ -282,7 +282,7 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(*oVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar->ptr<char>() = iVar2.cast<char>();
@@ -313,7 +313,7 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Set::array(var iVar1, var iVar2, int iOffset) const
+void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
     static int one = 1;
@@ -352,7 +352,7 @@ var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
@@ -383,9 +383,10 @@ var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Add::array(var iVar1, var iVar2, int iOffset) const
+void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
     switch(iVar1.heap()->type())
@@ -424,7 +425,7 @@ var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
@@ -455,9 +456,10 @@ var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Sub::array(var iVar1, var iVar2, int iOffset) const
+void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
     switch(iVar1.heap()->type())
@@ -488,13 +490,13 @@ void Sub::array(var iVar1, var iVar2, int iOffset) const
  * Overload of broadcast() for multiplication.  This catches the case where
  * just scaling is being done, meaning a different BLAS call is necessary.
  */
-void Mul::broadcast(var iVar1, var iVar2, var oVar) const
+void Mul::broadcast(var iVar1, var iVar2, var* oVar) const
 {
     // If iVar2 has size 1, call scale rather than let the base class broadcast
     // it over the unary operator.
     if ((iVar2.dim() == 1) && (iVar2.size() == 1))
     {
-        scale(iVar1, iVar2, 0);
+        scale(iVar1, iVar2, oVar, 0);
         return;
     }
     else
@@ -502,7 +504,7 @@ void Mul::broadcast(var iVar1, var iVar2, var oVar) const
 }
 
 
-void Mul::scale(var iVar1, var iVar2, int iOffset) const
+void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == var::TYPE_ARRAY);
     static int one = 1;
@@ -541,7 +543,7 @@ var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
@@ -572,7 +574,7 @@ var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Mul::array(var iVar1, var iVar2, int iOffset) const
+void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
     // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
@@ -580,6 +582,7 @@ void Mul::array(var iVar1, var iVar2, int iOffset) const
     // that puts the result in a new location.  Rather, xtbmv() (triangular
     // band) overwrites the current location.
     assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(iVar1.is(*oVar));
     static int zero = 0;
     static int one = 1;
     static char uplo = 'U';
@@ -628,7 +631,7 @@ var Div::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, *oVar);
+        broadcast(iVar1, iVar2, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
@@ -671,7 +674,7 @@ var ASum::operator ()(const var& iVar, var* oVar) const
     switch(type(iVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, *oVar);
+        broadcast(iVar, oVar);
         break;
     case var::TYPE_FLOAT:
         *oVar->ptr<float>() = std::abs(iVar.get<float>());
@@ -693,19 +696,18 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 }
 
 
-void ASum::array(var iVar, int iOffset) const
+void ASum::array(var iVar, var* oVar, int iOffset) const
 {
-    var oVar; // TEMP
     assert(type(iVar) == var::TYPE_ARRAY);
     static int inc = 1;
     int size = iVar.size();
     switch(iVar.heap()->type())
     {
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = sasum_(&size, iVar.ptr<float>()+iOffset, &inc);
+        *oVar->ptr<float>() = sasum_(&size, iVar.ptr<float>()+iOffset, &inc);
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = dasum_(&size, iVar.ptr<double>()+iOffset, &inc);
+        *oVar->ptr<double>() = dasum_(&size, iVar.ptr<double>()+iOffset, &inc);
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");

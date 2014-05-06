@@ -623,7 +623,7 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
     switch (iVar.type())
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, *oVar);
+        broadcast(iVar, oVar);
         break;
     case var::TYPE_CHAR:
         *oVar = static_cast<T>(iVar.get<char>());
@@ -736,6 +736,29 @@ var var::operator ()(int iFirst, ...)
     }
     va_end(ap);
     return at(p);
+}
+
+
+/**
+ * Check for identical storage.  Returns true if the storage of this and the
+ * parameter are refer to the same memory locations.
+ */
+bool var::is(var& iVar) const
+{
+    // Are they the same var?
+    if (this == &iVar)
+        return true;
+
+    // Are they both arrays and point to the same heap?
+    varheap* h1 = heap();
+    if (!h1)
+        return false;
+    varheap* h2 = iVar.heap();
+    if (!h2)
+        return false;
+    if (h1 == h2)
+        return true;
+    return false;
 }
 
 
