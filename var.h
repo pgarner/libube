@@ -32,8 +32,7 @@ class UnaryFunctor
 public:
     UnaryFunctor() { mDim = 0; };
     virtual ~UnaryFunctor() {};
-    virtual var operator ()(var iVar) const = 0;
-    virtual var& operator ()(const var& iVar, var& oVar) const = 0;
+    virtual var operator ()(const var& iVar, var* oVar=0) const = 0;
 protected:
     int mDim;
     virtual void broadcast(var iVar1, var oVar) const;
@@ -50,8 +49,7 @@ class BinaryFunctor
 {
 public:
     virtual ~BinaryFunctor() {};
-    virtual var operator ()(var iVar1, var iVar2) const = 0;
-    virtual var& operator ()(const var& iVar1, const var& iVar2, var& oVar)
+    virtual var operator ()(const var& iVar1, const var& iVar2, var* oVar=0)
         const = 0;
 protected:
     virtual void broadcast(var iVar1, var iVar2, var oVar) const;
@@ -67,8 +65,7 @@ class Cast : public UnaryFunctor
 {
 public:
     bool sameType(var iVar) const;
-    var operator ()(var iVar) const;
-    var& operator ()(const var& iVar, var& oVar) const;
+    var operator ()(const var& iVar, var* oVar=0) const;
 };
 
 
@@ -78,8 +75,7 @@ public:
 class Tan : public UnaryFunctor
 {
 public:
-    var operator ()(var iVar) const;
-    var& operator ()(const var& iVar, var& oVar) const;
+    var operator ()(const var& iVar, var* oVar=0) const;
 };
 
 
@@ -89,8 +85,7 @@ public:
 class Pow : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 };
 
 
@@ -100,8 +95,7 @@ public:
 class Set : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
     void array(var iVar1, var iVar2, int iOffset) const;
 };
@@ -113,8 +107,7 @@ protected:
 class Add : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
     void array(var iVar1, var iVar2, int iOffset) const;
 };
@@ -126,8 +119,7 @@ protected:
 class Sub : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
     void array(var iVar1, var iVar2, int iOffset) const;
 };
@@ -139,8 +131,7 @@ protected:
 class Mul : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 protected:
     void broadcast(var iVar1, var iVar2, var oVar) const;
     void array(var iVar1, var iVar2, int iOffset) const;
@@ -155,8 +146,7 @@ protected:
 class Div : public BinaryFunctor
 {
 public:
-    var operator ()(var iVar1, var iVar2) const;
-    var& operator ()(const var& iVar1, const var& iVar2, var& oVar) const;
+    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
 };
 
 
@@ -166,8 +156,7 @@ public:
 class ASum : public UnaryFunctor
 {
 public:
-    var operator ()(var iVar) const;
-    var& operator ()(const var& iVar, var& oVar) const;
+    var operator ()(const var& iVar, var* oVar=0) const;
 protected:
     void array(var iVar, int iOffset) const;
 };
@@ -253,10 +242,10 @@ public:
     bool operator >(var iVar) const { return iVar < *this; };
     bool operator <=(var iVar) const { return !(*this > iVar); };
     bool operator >=(var iVar) const { return !(*this < iVar); };
-    var& operator +=(var iVar) { return add(*this, iVar, *this); };
-    var& operator -=(var iVar) { return sub(*this, iVar, *this); };
-    var& operator *=(var iVar) { return mul(*this, iVar, *this); };
-    var& operator /=(var iVar) { return div(*this, iVar, *this); };
+    var& operator +=(var iVar) { add(*this, iVar, this); return *this; };
+    var& operator -=(var iVar) { sub(*this, iVar, this); return *this; };
+    var& operator *=(var iVar) { mul(*this, iVar, this); return *this; };
+    var& operator /=(var iVar) { div(*this, iVar, this); return *this; };
     var operator +(var iVar) const { return add(*this, iVar); };
     var operator -(var iVar) const { return sub(*this, iVar); };
     var operator *(var iVar) const { return mul(*this, iVar); };

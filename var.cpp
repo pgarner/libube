@@ -285,7 +285,7 @@ var& var::operator =(var iVar)
     {
         // Not a reference, but we are a copyable view.
         // This is the broadcastable set(); could use varheap::copy() instead?
-        set(*this, iVar, *this);
+        set(*this, iVar, this);
     }
     else
     {
@@ -594,66 +594,63 @@ bool Cast<T>::sameType(var iVar) const
 }
 
 template <class T>
-var Cast<T>::operator ()(var iVar) const
-{
-    // Return immediately if no cast is required
-    if (sameType(iVar))
-        return iVar;
-
-    // Allocate storage and pass it to the other operator
-    var r = iVar.copy(true);
-    return operator()(iVar, r);
-}
-
-template <class T>
-var& Cast<T>::operator ()(const var& iVar, var& oVar) const
+var Cast<T>::operator ()(const var& iVar, var* oVar) const
 {
     // Return immediately if no cast is required
     if (sameType(iVar))
     {
-        oVar = iVar;
-        return oVar;
+        if (oVar)
+            *oVar = iVar;
+        return iVar;
+    }
+
+    // Output variable; may not be used.  Hereafter just write to oVar
+    var r;
+    if (!oVar)
+    {
+        r = iVar.copy(true);
+        oVar = &r;
     }
 
     // Strings get converted
     if (iVar.heap() && (iVar.heap()->type() == var::TYPE_CHAR))
     {
-        oVar = static_cast<T>(iVar.heap()->strtold());
-        return oVar;
+        *oVar = static_cast<T>(iVar.heap()->strtold());
+        return *oVar;
     }
 
     // Everything else gets cast<>ed
     switch (iVar.type())
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, oVar);
+        broadcast(iVar, *oVar);
         break;
     case var::TYPE_CHAR:
-        oVar = static_cast<T>(iVar.get<char>());
+        *oVar = static_cast<T>(iVar.get<char>());
         break;
     case var::TYPE_INT:
-        oVar = static_cast<T>(iVar.get<int>());
+        *oVar = static_cast<T>(iVar.get<int>());
         break;
     case var::TYPE_LONG:
-        oVar = static_cast<T>(iVar.get<long>());
+        *oVar = static_cast<T>(iVar.get<long>());
         break;
     case var::TYPE_FLOAT:
-        oVar = static_cast<T>(iVar.get<float>());
+        *oVar = static_cast<T>(iVar.get<float>());
         break;
     case var::TYPE_DOUBLE:
-        oVar = static_cast<T>(iVar.get<double>());
+        *oVar = static_cast<T>(iVar.get<double>());
         break;
     case var::TYPE_CFLOAT:
-        oVar = static_cast<T>(iVar.get<cfloat>().real());
+        *oVar = static_cast<T>(iVar.get<cfloat>().real());
         break;
     case var::TYPE_CDOUBLE:
-        oVar = static_cast<T>(iVar.get<cdouble>().real());
+        *oVar = static_cast<T>(iVar.get<cdouble>().real());
         break;
     default:
         throw std::runtime_error("Cast::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 

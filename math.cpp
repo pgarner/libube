@@ -202,114 +202,114 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
 }
 
 
-var Tan::operator ()(var iVar) const
+var Tan::operator ()(const var& iVar, var* oVar) const
 {
-    var r = iVar.copy(true);
-    return operator()(iVar, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar.copy(true);
+        oVar = &r;
+    }
 
-
-var& Tan::operator ()(const var& iVar, var& oVar) const
-{
     switch (type(iVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, oVar);
+        broadcast(iVar, *oVar);
         break;
     case var::TYPE_FLOAT:
-        oVar = std::tan(iVar.get<float>());
+        *oVar = std::tan(iVar.get<float>());
         break;
     case var::TYPE_DOUBLE:
-        oVar = std::tan(iVar.get<double>());
+        *oVar = std::tan(iVar.get<double>());
         break;
     case var::TYPE_CFLOAT:
-        oVar = std::tan(iVar.get<cfloat>());
+        *oVar = std::tan(iVar.get<cfloat>());
         break;
     case var::TYPE_CDOUBLE:
-        oVar = std::tan(iVar.get<cdouble>());
+        *oVar = std::tan(iVar.get<cdouble>());
         break;
     default:
         throw std::runtime_error("Tan::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
-var Pow::operator ()(var iVar1, var iVar2) const
+var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Pow::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_FLOAT:
-        oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
+        *oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
         break;
     case var::TYPE_DOUBLE:
-        oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
+        *oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
         break;
     case var::TYPE_CFLOAT:
-        oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
+        *oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
         break;
     case var::TYPE_CDOUBLE:
-        oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
+        *oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
         break;
     default:
         throw std::runtime_error("Pow::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
-var Set::operator ()(var iVar1, var iVar2) const
+var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Set::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
-    switch(type(oVar))
+    switch(type(*oVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_CHAR:
-        *oVar.ptr<char>() = iVar2.cast<char>();
+        *oVar->ptr<char>() = iVar2.cast<char>();
         break;
     case var::TYPE_INT:
-        *oVar.ptr<int>() = iVar2.cast<int>();
+        *oVar->ptr<int>() = iVar2.cast<int>();
         break;
     case var::TYPE_LONG:
-        *oVar.ptr<long>() = iVar2.cast<long>();
+        *oVar->ptr<long>() = iVar2.cast<long>();
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = iVar2.cast<float>();
+        *oVar->ptr<float>() = iVar2.cast<float>();
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = iVar2.cast<double>();
+        *oVar->ptr<double>() = iVar2.cast<double>();
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = iVar2.cast<cfloat>();
+        *oVar->ptr<cfloat>() = iVar2.cast<cfloat>();
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = iVar2.cast<cdouble>();
+        *oVar->ptr<cdouble>() = iVar2.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("Set::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
@@ -340,46 +340,46 @@ void Set::array(var iVar1, var iVar2, int iOffset) const
 }
 
 
-var Add::operator ()(var iVar1, var iVar2) const
+var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Add::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_CHAR:
-        *oVar.ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
+        *oVar->ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
         break;
     case var::TYPE_INT:
-        *oVar.ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
+        *oVar->ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
         break;
     case var::TYPE_LONG:
-        *oVar.ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
+        *oVar->ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
+        *oVar->ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
+        *oVar->ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
+        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
+        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("Add::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
@@ -412,46 +412,46 @@ void Add::array(var iVar1, var iVar2, int iOffset) const
 }
 
 
-var Sub::operator ()(var iVar1, var iVar2) const
+var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Sub::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_CHAR:
-        *oVar.ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
+        *oVar->ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
         break;
     case var::TYPE_INT:
-        *oVar.ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
+        *oVar->ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
         break;
     case var::TYPE_LONG:
-        *oVar.ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
+        *oVar->ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
+        *oVar->ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
+        *oVar->ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
+        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
+        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("Sub::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
@@ -529,46 +529,46 @@ void Mul::scale(var iVar1, var iVar2, int iOffset) const
 }
 
 
-var Mul::operator ()(var iVar1, var iVar2) const
+var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Mul::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_CHAR:
-        *oVar.ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
+        *oVar->ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
         break;
     case var::TYPE_INT:
-        *oVar.ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
+        *oVar->ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
         break;
     case var::TYPE_LONG:
-        *oVar.ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
+        *oVar->ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
+        *oVar->ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
+        *oVar->ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
+        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
+        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("Mul::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
@@ -616,80 +616,80 @@ void Mul::array(var iVar1, var iVar2, int iOffset) const
 }
 
 
-var Div::operator ()(var iVar1, var iVar2) const
+var Div::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 {
-    var r = iVar1.copy(true);
-    return operator()(iVar1, iVar2, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar1.copy(true);
+        oVar = &r;
+    }
 
-
-var& Div::operator ()(const var& iVar1, const var& iVar2, var& oVar) const
-{
     switch(type(iVar1))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar1, iVar2, oVar);
+        broadcast(iVar1, iVar2, *oVar);
         break;
     case var::TYPE_CHAR:
-        *oVar.ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
+        *oVar->ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
         break;
     case var::TYPE_INT:
-        *oVar.ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
+        *oVar->ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
         break;
     case var::TYPE_LONG:
-        *oVar.ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
+        *oVar->ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
+        *oVar->ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
+        *oVar->ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
+        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
+        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
         break;
     default:
         throw std::runtime_error("Div::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 
-var ASum::operator ()(var iVar) const
+var ASum::operator ()(const var& iVar, var* oVar) const
 {
-    var r = iVar.copy(true);
-    return operator()(iVar, r);
-}
+    var r;
+    if (!oVar)
+    {
+        r = iVar.copy(true);
+        oVar = &r;
+    }
 
-
-var& ASum::operator ()(const var& iVar, var& oVar) const
-{
     switch(type(iVar))
     {
     case var::TYPE_ARRAY:
-        broadcast(iVar, oVar);
+        broadcast(iVar, *oVar);
         break;
     case var::TYPE_FLOAT:
-        *oVar.ptr<float>() = std::abs(iVar.get<float>());
+        *oVar->ptr<float>() = std::abs(iVar.get<float>());
         break;
     case var::TYPE_DOUBLE:
-        *oVar.ptr<double>() = std::abs(iVar.get<double>());
+        *oVar->ptr<double>() = std::abs(iVar.get<double>());
         break;
     case var::TYPE_CFLOAT:
-        *oVar.ptr<cfloat>() = std::abs(iVar.get<cfloat>());
+        *oVar->ptr<cfloat>() = std::abs(iVar.get<cfloat>());
         break;
     case var::TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>() = std::abs(iVar.get<cdouble>());
+        *oVar->ptr<cdouble>() = std::abs(iVar.get<cdouble>());
         break;
     default:
         throw std::runtime_error("ASum::operator(): Unknown type");
     }
 
-    return oVar;
+    return *oVar;
 }
 
 

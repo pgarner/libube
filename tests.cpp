@@ -396,9 +396,9 @@ int main(int argc, char** argv)
     cout << "dc: " << dc << endl;
     cout << "pow(dc,2): " << pow(dc, 2) << endl;
     cout << "tan(dc): " << tan(dc) << endl;
-    //var dd = complex<double>(1.0, 1.2);
-    //dc += dd;
-    //cout << "dc: " << dc << endl;
+    var dd = complex<double>(1.0, 1.2);
+    dc += dd;
+    cout << "dc: " << dc << endl;
 
     // Phil, leave this at the end!
     return 0;
