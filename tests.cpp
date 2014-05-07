@@ -372,6 +372,7 @@ int main(int argc, char** argv)
     cout << "r6: " << r6 << endl;
     r6 *= r2;
     cout << "r6: " << r6 << endl;
+    cout << "r6*r6: " << r6 * r6 << endl;
 
     // View of a view
     var r3 = r6.view({2}, 0);

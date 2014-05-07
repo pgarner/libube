@@ -53,14 +53,14 @@ extern "C" {
     void   dtbmv_ (
         char *, char *, char *, int *, int *, double *, int *, double *, int *
     );
-    //void   ssbmv_ (
-    //    char *, int *, int *, float  *, float  *, int *,
-    //    float  *, int *, float  *, float  *, int *
-    //);
-    //void   dsbmv_ (
-    //    char *, int *, int *, double *, double *, int *,
-    //    double *, int *, double *, double *, int *
-    //);
+    void   ssbmv_ (
+        char *, int *, int *, float  *, float  *, int *,
+        float  *, int *, float  *, float  *, int *
+    );
+    void   dsbmv_ (
+        char *, int *, int *, double *, double *, int *,
+        double *, int *, double *, double *, int *
+    );
     void   sgemm_ (
         char *, char *, int *, int *, int *, float *,
         float  *, int *, float  *, int *, float  *, float  *, int *
@@ -578,43 +578,67 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
     // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
-    // superdiagonals.  In this sense, we want xsbmv() (symmetric band), but
-    // that puts the result in a new location.  Rather, xtbmv() (triangular
-    // band) overwrites the current location.
+    // superdiagonals.
     assert(type(iVar1) == var::TYPE_ARRAY);
-    assert(iVar1.is(*oVar));
     static int zero = 0;
     static int one = 1;
     static char uplo = 'U';
-    static char trans = 'T';
-    static char diag = 'N';
     int size = iVar2.size();
-    switch(iVar1.heap()->type())
+    if (iVar1.is(*oVar))
     {
-    case var::TYPE_FLOAT:
-    {
-        //static float alpha = 1.0f;
-        //static float beta = 0.0f;
-        float* A = iVar2.ptr<float>();
-        float* x = iVar1.ptr<float>()+iOffset;
-        //ssbmv_(&uplo, &size, &zero,
-        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
-        break;
+        // xtbmv() (triangular band) overwrites the current location.
+        static char trans = 'T';
+        static char diag = 'N';
+        switch(iVar1.heap()->type())
+        {
+        case var::TYPE_FLOAT:
+        {
+            float* A = iVar2.ptr<float>();
+            float* x = iVar1.ptr<float>()+iOffset;
+            stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
+            break;
+        }
+        case var::TYPE_DOUBLE:
+        {
+            double* A = iVar2.ptr<double>();
+            double* x = iVar1.ptr<double>()+iOffset;
+            dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
+            break;
+        }
+        default:
+            throw std::runtime_error("Mul::array: Unknown type");
+        }
     }
-    case var::TYPE_DOUBLE:
+    else
     {
-        //static double alpha = 1.0;
-        //static double beta = 0.0;
-        double* A = iVar2.ptr<double>();
-        double* x = iVar1.ptr<double>()+iOffset;
-        //dsbmv_(&uplo, &size, &zero,
-        //       &alpha, A, &one, x+iOffset, &one, &beta, x+iOffset, &one);
-        dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
-        break;
-    }
-    default:
-        throw std::runtime_error("varheap::mul: Unknown type");
+        // xsbmv() (symmetric band) puts the result in a new location.
+        switch(iVar1.heap()->type())
+        {
+        case var::TYPE_FLOAT:
+        {
+            static float alpha = 1.0f;
+            static float beta = 0.0f;
+            float* A = iVar2.ptr<float>();
+            float* x = iVar1.ptr<float>()+iOffset;
+            float* y = oVar->ptr<float>()+iOffset;
+            ssbmv_(&uplo, &size, &zero,
+                   &alpha, A, &one, x, &one, &beta, y, &one);
+            break;
+        }
+        case var::TYPE_DOUBLE:
+        {
+            static double alpha = 1.0;
+            static double beta = 0.0;
+            double* A = iVar2.ptr<double>();
+            double* x = iVar1.ptr<double>()+iOffset;
+            double* y = oVar->ptr<double>()+iOffset;
+            dsbmv_(&uplo, &size, &zero,
+                   &alpha, A, &one, x, &one, &beta, y, &one);
+            break;
+        }
+        default:
+            throw std::runtime_error("Mul::array: Unknown type");
+        }
     }
 }
 
