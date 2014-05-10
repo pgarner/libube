@@ -132,9 +132,6 @@ endif (EXPAT_FOUND)
 add_executable(tests tests.cpp)
 target_link_libraries(tests shared-lib)
 
-add_executable(aspect aspect.cpp)
-target_link_libraries(aspect shared-lib)
-
 enable_testing()
 add_test(
   NAME libvar
