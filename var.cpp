@@ -1376,7 +1376,12 @@ int var::shape(int iDim) const
 int var::stride(int iDim) const
 {
     if (!heap() || !heap()->view())
-        throw std::runtime_error("var::stride(): Not a view");
+    {
+        if (iDim > 0)
+            throw std::runtime_error("var::stride(): dimension too large");
+        else
+            return size();
+    }
     return heap()->stride(iDim);
 }
 

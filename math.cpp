@@ -155,7 +155,6 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
     // If it didn't throw, then the array is broadcastable
     // In this case, loop over iVar with different offsets
     int s = iVar.stride(iDim-mDim);
-    std::cout << "Striding: " << s << std::endl;
     for (int i=0; i<iVar.size(); i+=s)
         array(iVar, oVar, i);
 }

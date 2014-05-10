@@ -27,6 +27,7 @@ set(SOURCES
   varfile.cpp
   math.cpp
   string.cpp
+  dft-mkl.cpp
   )
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES

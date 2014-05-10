@@ -401,6 +401,15 @@ int main(int argc, char** argv)
     dc += dd;
     cout << "dc: " << dc << endl;
 
+    // DFT
+    var td;
+    for (int i=0; i<10; i++)
+        td.push(sinf(i));
+    cout << "Sin: " << td << endl;
+    DFT dft(10);
+    var fd = dft(td);
+    cout << "Freq: " << fd << endl;
+
     // Phil, leave this at the end!
     return 0;
 }
