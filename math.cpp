@@ -20,7 +20,13 @@
  * The instantiations of the math and standard functors defined in this module.
  * They are declared static in the var class definition.
  */
+Abs var::abs;
+Sin var::sin;
+Cos var::cos;
 Tan var::tan;
+Floor var::floor;
+Sqrt var::sqrt;
+
 Pow var::pow;
 Set var::set;
 Add var::add;
@@ -201,38 +207,75 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
 }
 
 
-var Tan::operator ()(const var& iVar, var* oVar) const
-{
-    var r;
-    if (!oVar)
-    {
-        r = iVar.copy(true);
-        oVar = &r;
+#define CMATH_UNARY_FUNCTOR(F,f)                                        \
+    var F::operator ()(const var& iVar, var* oVar) const                \
+    {                                                                   \
+        var r;                                                          \
+        if (!oVar)                                                      \
+        {                                                               \
+            r = iVar.copy(true);                                        \
+            oVar = &r;                                                  \
+        }                                                               \
+                                                                        \
+        switch (type(iVar))                                             \
+        {                                                               \
+        case var::TYPE_ARRAY:                                           \
+            broadcast(iVar, oVar);                                      \
+            break;                                                      \
+        case var::TYPE_FLOAT:                                           \
+            *oVar = std::f(iVar.get<float>());                          \
+            break;                                                      \
+        case var::TYPE_DOUBLE:                                          \
+            *oVar = std::f(iVar.get<double>());                         \
+            break;                                                      \
+        default:                                                        \
+            throw std::runtime_error("#F##::operator(): Unknown type"); \
+        }                                                               \
+                                                                        \
+        return *oVar;                                                   \
     }
 
-    switch (type(iVar))
-    {
-    case var::TYPE_ARRAY:
-        broadcast(iVar, oVar);
-        break;
-    case var::TYPE_FLOAT:
-        *oVar = std::tan(iVar.get<float>());
-        break;
-    case var::TYPE_DOUBLE:
-        *oVar = std::tan(iVar.get<double>());
-        break;
-    case var::TYPE_CFLOAT:
-        *oVar = std::tan(iVar.get<cfloat>());
-        break;
-    case var::TYPE_CDOUBLE:
-        *oVar = std::tan(iVar.get<cdouble>());
-        break;
-    default:
-        throw std::runtime_error("Tan::operator(): Unknown type");
+#define COMPLEX_UNARY_FUNCTOR(F,f)                                      \
+    var F::operator ()(const var& iVar, var* oVar) const                \
+    {                                                                   \
+        var r;                                                          \
+        if (!oVar)                                                      \
+        {                                                               \
+            r = iVar.copy(true);                                        \
+            oVar = &r;                                                  \
+        }                                                               \
+                                                                        \
+        switch (type(iVar))                                             \
+        {                                                               \
+        case var::TYPE_ARRAY:                                           \
+            broadcast(iVar, oVar);                                      \
+            break;                                                      \
+        case var::TYPE_FLOAT:                                           \
+            *oVar = std::f(iVar.get<float>());                          \
+            break;                                                      \
+        case var::TYPE_DOUBLE:                                          \
+            *oVar = std::f(iVar.get<double>());                         \
+            break;                                                      \
+        case var::TYPE_CFLOAT:                                          \
+            *oVar = std::f(iVar.get<cfloat>());                         \
+            break;                                                      \
+        case var::TYPE_CDOUBLE:                                         \
+            *oVar = std::f(iVar.get<cdouble>());                        \
+            break;                                                      \
+        default:                                                        \
+            throw std::runtime_error("#F##::operator(): Unknown type"); \
+        }                                                               \
+                                                                        \
+        return *oVar;                                                   \
     }
 
-    return *oVar;
-}
+
+CMATH_UNARY_FUNCTOR(Floor,floor)
+COMPLEX_UNARY_FUNCTOR(Abs,abs)
+COMPLEX_UNARY_FUNCTOR(Sin,sin)
+COMPLEX_UNARY_FUNCTOR(Cos,cos)
+COMPLEX_UNARY_FUNCTOR(Tan,tan)
+COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
 
 
 var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
@@ -738,31 +781,6 @@ void ASum::array(var iVar, var* oVar, int iOffset) const
 }
 
 
-#define MATH(func) var var::func() const \
-{ \
-    var r; \
-    switch(mType) \
-    { \
-    case TYPE_FLOAT: \
-        r = std::func(mData.f); \
-        break; \
-    case TYPE_DOUBLE: \
-        r = std::func(mData.d); \
-        break; \
-    default: \
-        throw std::runtime_error("Unknown type"); \
-    } \
-    return r; \
-}
-
-
-MATH(abs)
-MATH(sqrt)
-MATH(cos)
-MATH(sin)
-MATH(floor)
-
-
 #if 0
 void varheap::mul(
     int iM, int iN, int iK, int iOffset,
@@ -807,7 +825,7 @@ var var::asum() const
     if (type() == TYPE_ARRAY)
         asum = heap()->asum();
     else
-        asum = this->abs();
+        asum = abs(*this);
     return asum;
 }
 

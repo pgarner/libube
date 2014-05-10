@@ -57,36 +57,33 @@ protected:
 };
 
 
-/**
- * Casting functor
- */
+#define BASIC_UNARY_FUNCTOR_DECL(f)                             \
+    class f : public UnaryFunctor                               \
+    {                                                           \
+    public:                                                     \
+        var operator ()(const var& iVar, var* oVar=0) const;    \
+    };
+
+#define BASIC_BINARY_FUNCTOR_DECL(f)                            \
+    class f : public BinaryFunctor                              \
+    {                                                           \
+    public:                                                     \
+        var operator ()(                                        \
+            const var& iVar1, const var& iVar2, var* oVar=0     \
+        ) const;                                                \
+    };
+
+BASIC_UNARY_FUNCTOR_DECL(Abs)
+BASIC_UNARY_FUNCTOR_DECL(Sin)
+BASIC_UNARY_FUNCTOR_DECL(Cos)
+BASIC_UNARY_FUNCTOR_DECL(Tan)
+BASIC_UNARY_FUNCTOR_DECL(Floor)
+BASIC_UNARY_FUNCTOR_DECL(Sqrt)
+BASIC_BINARY_FUNCTOR_DECL(Pow)
+
+
 template <class T>
-class Cast : public UnaryFunctor
-{
-public:
-    bool sameType(var iVar) const;
-    var operator ()(const var& iVar, var* oVar=0) const;
-};
-
-
-/**
- * Tan functor (exemplar unary functor)
- */
-class Tan : public UnaryFunctor
-{
-public:
-    var operator ()(const var& iVar, var* oVar=0) const;
-};
-
-
-/**
- * Power functor (exemplar binary functor)
- */
-class Pow : public BinaryFunctor
-{
-public:
-    var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
-};
+BASIC_UNARY_FUNCTOR_DECL(Cast)
 
 
 /**
@@ -191,8 +188,14 @@ public:
     static const var nil;
 
     // Functors
+    static Abs abs;
+    static Sin sin;
+    static Cos cos;
     static Tan tan;
+    static Floor floor;
+    static Sqrt sqrt;
     static Pow pow;
+
     static Set set;
     static Add add;
     static Sub sub;
@@ -294,11 +297,14 @@ public:
     );
 
     // math.cpp
+#if 0
+    // These need to be in a different namespace to be methods
+    var floor() { return floor(*this, this); };
+    var sin();
+    var cos();
+    var sqrt();
     var abs() const;
-    var floor() const;
-    var sin() const;
-    var cos() const;
-    var sqrt() const;
+#endif
     var asum() const;
 
     // string.cpp

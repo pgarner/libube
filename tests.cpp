@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     w = 'w';
     x = 2;
     y = 3.14;
-    z = y.cos();
+    z = var::cos(y);
     s = "Hello!";
     cout << (s ? "true" : "false") << endl;
     cout << (!s ? "true" : "false") << endl;

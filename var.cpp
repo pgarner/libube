@@ -584,20 +584,12 @@ var::dataEnum var::type() const
 
 
 template <class T>
-bool Cast<T>::sameType(var iVar) const
-{
-    const T t = 0;
-    static var v = t;
-    if (v.type() == iVar.type())
-        return true;
-    return false;
-}
-
-template <class T>
 var Cast<T>::operator ()(const var& iVar, var* oVar) const
 {
     // Return immediately if no cast is required
-    if (sameType(iVar))
+    const T t = 0;
+    static var v = t;
+    if (v.type() == iVar.type())
     {
         if (oVar)
             *oVar = iVar;
