@@ -20,9 +20,8 @@ vfile::vfile(const char* iType)
     char *error = dlerror();
 
     // Open the library
-    var lib = "lib";
-    lib.append(iType);
-    lib.append(".so");
+    vstream lib;
+    lib << "lib" << iType << ".so";
     mHandle = dlopen(lib.str(), RTLD_LAZY);
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);

@@ -975,10 +975,9 @@ var var::typeOf()
 {
     if (mType == TYPE_ARRAY)
     {
-        var s = "array[";
-        s += typeOf(heap()->type());
-        s += "]";
-        return s;
+        vstream s;
+        s << "array[" << typeOf(heap()->type()) << "]";
+        return s.var();
     }
     return typeOf(mType);
 }

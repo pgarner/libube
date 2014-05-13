@@ -91,7 +91,7 @@ void gnuplot::write(const char* iFile, var iVar)
             {
                 vstream vs;
                 vs << str.at(j);
-                puts(&vs);
+                puts(vs.str());
             }
             puts("e");
             break;
