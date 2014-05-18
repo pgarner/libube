@@ -353,7 +353,7 @@ private:
     dataEnum mType; ///< The data type
 
     // Methods
-    var& varderef(bool& oSuccess);
+    var& varderef();
     bool reference() const;
     var reference(int iIndex) const;
     var& dereference();

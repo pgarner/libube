@@ -61,9 +61,8 @@ template<> char* var::ptr<char>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.c : mData.hp->ptr<char>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.c : mData.hp->ptr<char>(-mIndex-1);
     }
     return heap() ? heap()->ptr<char>() : &mData.c;
 }
@@ -71,9 +70,8 @@ template<> int* var::ptr<int>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.i : mData.hp->ptr<int>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.i : mData.hp->ptr<int>(-mIndex-1);
     }
     return heap() ? heap()->ptr<int>() : &mData.i;
 }
@@ -81,9 +79,8 @@ template<> long* var::ptr<long>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.l : mData.hp->ptr<long>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.l : mData.hp->ptr<long>(-mIndex-1);
     }
     return heap() ? heap()->ptr<long>() : &mData.l;
 }
@@ -91,9 +88,8 @@ template<> float* var::ptr<float>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.f : mData.hp->ptr<float>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.f : mData.hp->ptr<float>(-mIndex-1);
     }
     return heap() ? heap()->ptr<float>() : &mData.f;
 }
@@ -101,9 +97,8 @@ template<> double* var::ptr<double>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.d : mData.hp->ptr<double>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.d : mData.hp->ptr<double>(-mIndex-1);
     }
     return heap() ? heap()->ptr<double>() : &mData.d;
 }
@@ -111,9 +106,8 @@ template<> cfloat* var::ptr<cfloat>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        return s ? &r.mData.cf : mData.hp->ptr<cfloat>(-mIndex-1);
+        var& r = varderef();
+        return (&r != this) ? &r.mData.cf : mData.hp->ptr<cfloat>(-mIndex-1);
     }
     return heap() ? heap()->ptr<cfloat>() : &mData.cf;
 }
@@ -121,11 +115,9 @@ template<> cdouble* var::ptr<cdouble>()
 {
     if (reference())
     {
-        bool s;
-        var& r = varderef(s);
-        assert(!s);
-        return s
-            ? r.mData.hp->ptr<cdouble>(0) : mData.hp->ptr<cdouble>(-mIndex-1);
+        var& r = varderef();
+        assert(&r == this);
+        return mData.hp->ptr<cdouble>(-mIndex-1);
     }
     return mData.hp->ptr<cdouble>(0);
 }
@@ -440,14 +432,10 @@ var::var(int iSize, var iVar) : var()
  *
  * When dereferencing, the result can be two kinds of thing.  One is a
  * simple reference into an array.  The other is a var that is part of
- * a var/pair array.  This handles the latter case.  Whacko interface
- * because it has to return a reference to something that already
- * exists, and some success metric.  ...and I've overloaded &var, so
- * &var == this won't work :-(
+ * a var/pair array.  This handles the latter case.
  */
-var& var::varderef(bool& oSuccess)
+var& var::varderef()
 {
-    oSuccess = true;
     int index = -mIndex-1;
     dataEnum type = mData.hp->type();
     if (type == TYPE_VAR)
@@ -458,7 +446,7 @@ var& var::varderef(bool& oSuccess)
     {
         return mData.hp->ptr<pair>(index)->val;
     }
-    oSuccess = false;
+    // Return this on "failure"
     return *this;
 }
 
@@ -1193,9 +1181,8 @@ var& var::dereference()
     if (!reference())
         return *this;
 
-    bool s;
-    var& r = varderef(s);
-    if (s)
+    var& r = varderef();
+    if (&r != this)
     {
         // Set mIndex to not-a-reference, then let operator=() do the
         // housekeeping
