@@ -18,6 +18,8 @@
 typedef std::complex<float> cfloat;
 typedef std::complex<double> cdouble;
 
+#include "ind.h"
+
 class varheap;
 class var;
 
@@ -278,8 +280,7 @@ public:
     var& append(var iVar) { return insert(iVar, size()); };
     var shift() { return remove(0); };
     var sort() const;
-    var index(var iVar) const;
-    int index() const;
+    ind index(var iVar) const;
     var& clear();
     var& resize(int iSize);
     var& presize(int iSize);

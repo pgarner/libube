@@ -1095,24 +1095,12 @@ var var::sort() const
 }
 
 
-var var::index(var iVar) const
+ind var::index(var iVar) const
 {
-    var r; // Undefined
-    for (int i=0; i<size(); i++)
+    for (ind i=0; i<size(); i++)
         if (at(i) == iVar)
-            r = i;
-    return r;
-}
-
-
-int var::index() const
-{
-    if (!defined())
-        throw std::runtime_error("var::index(): undefined");
-    if (!reference())
-        throw std::runtime_error("var::index(): not a reference");
-    int i = -mIndex-1;
-    return i;
+            return i;
+    return -1;
 }
 
 

@@ -41,11 +41,11 @@ var inifile::read(const char* iFile)
         if (f[0] == '[')
         {
             // It's a section line
-            var close = f.index(']');
+            ind close = f.index(']');
             if (!close)
                 throw std::runtime_error("inifile::read(): can't find ]");
             section = f.copy();
-            section.resize(close.cast<int>());
+            section.resize(close);
             section.shift();
         }
         else

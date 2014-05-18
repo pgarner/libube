@@ -130,11 +130,16 @@ endif (EXPAT_FOUND)
 # file.  This lets us compare output with a reference output rather
 # than just test that something runs.
 add_executable(tests tests.cpp)
+add_executable(test-ind test-ind.cpp)
 target_link_libraries(tests shared-lib)
 
 enable_testing()
 add_test(
-  NAME libvar
+  NAME ind
+  COMMAND test-ind
+  )
+add_test(
+  NAME var
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
   )
 
