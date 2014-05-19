@@ -269,7 +269,7 @@ public:
     var copy(bool iAllocOnly=false) const;
     bool defined() const;
     int size() const;
-    dataEnum type() const;
+    ind type() const;
     varheap* heap() const;
     var pop();
     var top() { return at(size() - 1); };
@@ -336,7 +336,7 @@ public:
 private:
 
     union dataType {
-        dataType() {}; // Because of cfloat
+        dataType() { hp = 0; }; // Because of cfloat, and to avoid default ctor
         char c;
         int i;
         long l;
@@ -349,8 +349,7 @@ private:
     // Putting the data first makes sure it will be aligned on an
     // allocation boundary
     dataType mData; ///< The payload
-    int mIndex;     ///< 0, or (negative) offset if it's a reference
-    dataEnum mType; ///< The data type
+    ind mType;      ///< The data type or reference index
 
     // Methods
     var& varderef();
@@ -359,7 +358,7 @@ private:
     var& dereference();
     int attach(varheap* iHeap=0);
     int detach(varheap* iHeap=0);
-    const char* typeOf(dataEnum iType);
+    const char* typeOf(ind iType);
     int binary(var iData) const;
 };
 

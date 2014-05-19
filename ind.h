@@ -33,8 +33,8 @@ public:
     ind() { mInt = 0; };
     ind(intptr_t iInt) { mInt = iInt; };
     static bool size() { return sizeof(ind) == sizeof(std::size_t); };
-    explicit operator bool() { return mInt < 0 ? false : true; };
-    operator intptr_t() { return mInt; };
+    explicit operator bool() const { return mInt < 0 ? false : true; };
+    operator intptr_t() const { return mInt; };
     ind  operator ++(int iInt) { ind t = *this; ++mInt; return t; };
     ind  operator --(int iInt) { ind t = *this; --mInt; return t; };
     ind& operator ++() { ++mInt; return *this; };

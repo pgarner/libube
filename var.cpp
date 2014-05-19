@@ -62,7 +62,7 @@ template<> char* var::ptr<char>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.c : mData.hp->ptr<char>(-mIndex-1);
+        return (&r != this) ? &r.mData.c : mData.hp->ptr<char>(~mType);
     }
     return heap() ? heap()->ptr<char>() : &mData.c;
 }
@@ -71,7 +71,7 @@ template<> int* var::ptr<int>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.i : mData.hp->ptr<int>(-mIndex-1);
+        return (&r != this) ? &r.mData.i : mData.hp->ptr<int>(~mType);
     }
     return heap() ? heap()->ptr<int>() : &mData.i;
 }
@@ -80,7 +80,7 @@ template<> long* var::ptr<long>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.l : mData.hp->ptr<long>(-mIndex-1);
+        return (&r != this) ? &r.mData.l : mData.hp->ptr<long>(~mType);
     }
     return heap() ? heap()->ptr<long>() : &mData.l;
 }
@@ -89,7 +89,7 @@ template<> float* var::ptr<float>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.f : mData.hp->ptr<float>(-mIndex-1);
+        return (&r != this) ? &r.mData.f : mData.hp->ptr<float>(~mType);
     }
     return heap() ? heap()->ptr<float>() : &mData.f;
 }
@@ -98,7 +98,7 @@ template<> double* var::ptr<double>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.d : mData.hp->ptr<double>(-mIndex-1);
+        return (&r != this) ? &r.mData.d : mData.hp->ptr<double>(~mType);
     }
     return heap() ? heap()->ptr<double>() : &mData.d;
 }
@@ -107,7 +107,7 @@ template<> cfloat* var::ptr<cfloat>()
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.cf : mData.hp->ptr<cfloat>(-mIndex-1);
+        return (&r != this) ? &r.mData.cf : mData.hp->ptr<cfloat>(~mType);
     }
     return heap() ? heap()->ptr<cfloat>() : &mData.cf;
 }
@@ -117,7 +117,7 @@ template<> cdouble* var::ptr<cdouble>()
     {
         var& r = varderef();
         assert(&r == this);
-        return mData.hp->ptr<cdouble>(-mIndex-1);
+        return mData.hp->ptr<cdouble>(~mType);
     }
     return mData.hp->ptr<cdouble>(0);
 }
@@ -185,7 +185,6 @@ var::var()
 {
     VDEBUG(std::cout << "Ctor(default)" << std::endl);
     mData.hp = 0;
-    mIndex = 0;
     mType = TYPE_ARRAY;
 }
 
@@ -215,7 +214,6 @@ var::var(const var& iVar)
 {
     VDEBUG(std::cout << "Const copy" << std::endl);
     mData = iVar.mData;
-    mIndex = iVar.mIndex;
     mType = iVar.mType;
     attach();
     dereference();
@@ -238,7 +236,7 @@ var& var::operator =(var iVar)
         // We are a reference; have to write directly into a typed
         // array.  However, no new storage is allocated, so no need to
         // detach from old storage
-        int index = -mIndex-1;
+        int index = ~mType;
         switch (mData.hp->type())
         {
         case TYPE_CHAR:
@@ -285,7 +283,6 @@ var& var::operator =(var iVar)
         // allocation. If so, detach it after attaching the new value.
         varheap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
         mData = iVar.mData;
-        mIndex = iVar.mIndex;
         mType = iVar.mType;
         attach();
         if (tmp)
@@ -308,13 +305,11 @@ var::var(var&& iVar)
 
     // Move the content to the new var
     mData = iVar.mData;
-    mIndex = iVar.mIndex;
     mType = iVar.mType;
 
     // Set the old one to nil.  ...although doing that via operator=()
     // causes trouble
     iVar.mData.hp = 0;
-    iVar.mIndex = 0;
     iVar.mType = TYPE_ARRAY;
 }
 
@@ -328,7 +323,6 @@ var::var(char iData)
 {
     VDEBUG(std::cout << "Ctor(char): " << iData << std::endl);
     mData.c = iData;
-    mIndex = 0;
     mType = TYPE_CHAR;
 }
 
@@ -336,7 +330,6 @@ var::var(int iData)
 {
     VDEBUG(std::cout << "Ctor(int): " << iData << std::endl);
     mData.i = iData;
-    mIndex = 0;
     mType = TYPE_INT;
 }
 
@@ -344,7 +337,6 @@ var::var(long iData)
 {
     VDEBUG(std::cout << "Ctor(long): " << iData << std::endl);
     mData.l = iData;
-    mIndex = 0;
     mType = TYPE_LONG;
 }
 
@@ -352,7 +344,6 @@ var::var(float iData)
 {
     VDEBUG(std::cout << "Ctor(float): " << iData << std::endl);
     mData.f = iData;
-    mIndex = 0;
     mType = TYPE_FLOAT;
 }
 
@@ -360,14 +351,12 @@ var::var(double iData)
 {
     VDEBUG(std::cout << "Ctor(double): " << iData << std::endl);
     mData.d = iData;
-    mIndex = 0;
     mType = TYPE_DOUBLE;
 }
 
 var::var(cfloat iData)
 {
     mData.cf = iData;
-    mIndex = 0;
     mType = TYPE_CFLOAT;
 }
 
@@ -436,8 +425,8 @@ var::var(int iSize, var iVar) : var()
  */
 var& var::varderef()
 {
-    int index = -mIndex-1;
-    dataEnum type = mData.hp->type();
+    int index = ~mType;
+    ind type = mData.hp->type();
     if (type == TYPE_VAR)
     {
         return *mData.hp->ptr<var>(index);
@@ -564,7 +553,7 @@ int var::size() const
 }
 
 
-var::dataEnum var::type() const
+ind var::type() const
 {
     var v (*this);
     return v.mType;
@@ -918,7 +907,7 @@ int var::attach(varheap* iHeap)
         mData.hp = iHeap;
         return mData.hp->attach();
     }
-    if ((mType == TYPE_ARRAY) && mData.hp)
+    if ((mType <= TYPE_ARRAY) && mData.hp)
         return mData.hp->attach();
     return 0;
 }
@@ -933,13 +922,13 @@ int var::detach(varheap* iHeap)
 {
     if (iHeap)
         return iHeap->detach();
-    if ((mType == TYPE_ARRAY) && mData.hp)
+    if ((mType <= TYPE_ARRAY) && mData.hp)
         return mData.hp->detach();
     return 0;
 }
 
 
-const char* var::typeOf(dataEnum iType)
+const char* var::typeOf(ind iType)
 {
     switch (iType)
     {
@@ -1147,8 +1136,8 @@ varheap* var::heap() const
  */
 bool var::reference() const
 {
-    VDEBUG(std::cout << "var::reference(): " << mIndex << std::endl);
-    if ((mIndex < 0) && (mType == TYPE_ARRAY))
+    VDEBUG(std::cout << "var::reference(): " << mType << std::endl);
+    if (!mType)
         return true;
     return false;
 }
@@ -1164,7 +1153,7 @@ var var::reference(int iIndex) const
     if (type() != TYPE_ARRAY)
         throw std::runtime_error("var::reference: cannot reference non array");
     var v(*this);
-    v.mIndex = -iIndex-1;
+    v.mType = -iIndex-1;
     return v;
 }
 
@@ -1184,9 +1173,9 @@ var& var::dereference()
     var& r = varderef();
     if (&r != this)
     {
-        // Set mIndex to not-a-reference, then let operator=() do the
+        // Set mType to not-a-reference, then let operator=() do the
         // housekeeping
-        mIndex = 0;
+        mType = 0;
         *this = r;
         return r;
     }
@@ -1194,11 +1183,10 @@ var& var::dereference()
     {
         // Normal de-reference
         assert(mData.hp);
-        int index = -mIndex-1;
-        dataEnum type = mData.hp->type();
+        int index = ~mType;
+        ind type = mData.hp->type();
         varheap* tmp = mData.hp;
         mType = type;
-        mIndex = 0;
         switch (type)
         {
         case TYPE_CHAR:

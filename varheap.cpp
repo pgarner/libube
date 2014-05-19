@@ -59,7 +59,7 @@ template<> pair* varheap::ptr<pair>(int iIndex) const {
 }
 
 
-int sizeOf(var::dataEnum iType)
+int sizeOf(ind iType)
 {
     switch (iType)
     {
@@ -126,7 +126,7 @@ varheap::varheap(const varheap& iHeap, bool iAllocOnly) : varheap()
 }
 
 
-varheap::varheap(int iSize, var::dataEnum iType) : varheap()
+varheap::varheap(int iSize, ind iType) : varheap()
 {
     VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);

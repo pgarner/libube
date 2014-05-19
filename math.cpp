@@ -112,9 +112,9 @@ extern "C" {
  * Really should be in a base class, but that entails defining
  * var::dataEnum before class var
  */
-var::dataEnum type(var iVar)
+ind type(var iVar)
 {
-    var::dataEnum type = iVar.type();
+    ind type = iVar.type();
     if ((type == var::TYPE_ARRAY) &&
         (iVar.heap()->type() == var::TYPE_CDOUBLE))
         type = var::TYPE_CDOUBLE;

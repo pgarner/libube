@@ -41,13 +41,13 @@ public:
     template<class T> T* ptr(int iIndex=0) const;
 
     // Overloaded constructors
-    varheap(int iSize, var::dataEnum iType);
+    varheap(int iSize, ind iType);
     varheap(int iSize, const char* iData);
     varheap(int iSize, const int* iData);
     varheap(int iSize, const cdouble* iData);
 
     // Trivial accessors
-    var::dataEnum type() const { return mView ? mView->type() : mType; };
+    ind type() const { return mView ? mView->type() : mType; };
     int size() const;
     int dim() const { return mView ? (mSize-1) / 2 : 1; };
     int offset() const { return mView ? mData.ip[0] : 0; };
@@ -92,7 +92,7 @@ private:
     int mSize;      ///< The externally visible size
     int mCapacity ; ///< The allocation size
     int mRefCount;  ///< Reference count
-    var::dataEnum mType; ///< The data type
+    ind mType;      ///< The data type
     varheap* mView; ///< If this is a view, the real storage
 
     // Methods
