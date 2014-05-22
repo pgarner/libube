@@ -7,9 +7,9 @@
  *   Phil Garner, October 2013
  */
 
-#include <var>
 #include <fstream>
 #include <stdexcept>
+#include <var.h>
 
 class txtfile : public varfile
 {

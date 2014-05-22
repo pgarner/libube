@@ -7,9 +7,9 @@
  *   Phil Garner, November 2013
  */
 
-#include <var>
 #include <fstream>
 #include <stdexcept>
+#include <var.h>
 
 class inifile : public varfile
 {

@@ -7,8 +7,8 @@
  *   Phil Garner, December 2013
  */
 
-#include <var>
 #include <sndfile.h>
+#include <var.h>
 
 class sndfile : public varfile
 {

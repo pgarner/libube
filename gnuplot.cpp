@@ -7,10 +7,10 @@
  *   Phil Garner, November 2013
  */
 
-#include <var>
 #include <cstdio>
 #include <stdexcept>
 
+#include <var.h>
 #include "varheap.h"
 
 class gnuplot : public varfile

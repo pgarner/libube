@@ -20,7 +20,7 @@ find_package(Boost COMPONENTS regex REQUIRED)
 # add_definitions(-DVARBOSE)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
 
-set(HEADERS var.h var)
+set(HEADERS var.h ind.h)
 set(SOURCES
   var.cpp
   varheap.cpp
