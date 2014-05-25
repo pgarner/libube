@@ -38,7 +38,7 @@ public:
 protected:
     int mDim;
     virtual void broadcast(var iVar1, var* oVar) const;
-    virtual void array(var iVar, var* oVar, int iOffset) const;
+    virtual void array(var iVar, var* oVar, int iIndex) const;
 };
 
 
@@ -324,9 +324,11 @@ public:
 
     // Tensors
     var view(const std::initializer_list<int> iList, int iOffset=0);
+    var view(var iShape, int iOffset=0);
     int offset() const;
     var& offset(int iOffset);
     var& advance(int iAdvance) { return offset(offset() + iAdvance); };
+    var shape() const;
     int shape(int iDim) const;
     int stride(int iDim) const;
     void bounds(int iDim, int iIndex) const;
@@ -360,7 +362,15 @@ private:
     int detach(varheap* iHeap=0);
     const char* typeOf(ind iType);
     int binary(var iData) const;
+    void setStrides(var& iVar, int iSize, int iOffset);
 };
+
+
+/*
+ * Functions.  Should probably be in some namespace along with everything else.
+ */
+var view(const std::initializer_list<int> iShape, var iType=var::nil);
+var view(var iShape, var iType=var::nil);
 
 
 /**

@@ -1245,6 +1245,30 @@ int var::binary(var iData) const
 }
 
 
+/* Common parts of the view() initialiser methods */
+void var::setStrides(var& iVar, int iSize, int iOffset)
+{
+    // The second of each pair is the stride
+    int p = 1;
+    for (int i=iSize-1; i>=0; i--)
+    {
+        iVar[i*2+2] = p;
+        p *= iVar.heap()->viewRef(i*2+1);
+    }
+
+    // the p that drops out should be the overall size
+    if (!defined())
+        resize(p);
+    else
+        if (p+iOffset > size())
+            throw std::runtime_error("var::view(): Array too small for view");
+
+    // Tell the new heap object that it's a view of this
+    assert(mType == TYPE_ARRAY);
+    iVar.heap()->setView(heap());
+}
+
+
 /**
  * Assuming that *this is an array, returns a view of the array.  A
  * view is just another array, of type int, holding the dimensions of
@@ -1266,25 +1290,66 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
     }
 
     // The second of each pair is the stride
-    int p = 1;
-    for (int i=iList.size()-1; i>=0; i--)
-    {
-        v[i*2+2] = p;
-        p *= v.heap()->viewRef(i*2+1);
-    }
-
-    // the p that drops out should be the overall size
-    if (!defined())
-        resize(p);
-    else
-        if (p+iOffset > size())
-            throw std::runtime_error("var::view(): Array too small for view");
-
-    // Tell the new heap object that it's a view of this
-    assert(mType == TYPE_ARRAY);
-    v.heap()->setView(heap());
+    setStrides(v, iList.size(), iOffset);
 
     return v;
+}
+
+
+/**
+ * Assuming that *this is an array, returns a view of the array.  A
+ * view is just another array, of type int, holding the dimensions of
+ * the new view.
+ */
+var var::view(var iShape, int iOffset)
+{
+    var v;
+
+    // The first entry is the offset; remember to add on the current
+    // offset which could be non-zero if we are already a view
+    v.push(iOffset+offset());
+
+    // First entry of each subsequent pair is the dimension
+    for (int i=0; i<iShape.size(); i++)
+    {
+        v.push(iShape[i].get<int>());
+        v.push(0);
+    }
+
+    // The second of each pair is the stride
+    setStrides(v, iShape.size(), iOffset);
+
+    return v;
+}
+
+
+/**
+ * View initialiser function.  Allocates the underlying array as well as the
+ * view.
+ */
+var view(const std::initializer_list<int> iShape, var iType)
+{
+    int s = 1;
+    for (const int* it=begin(iShape); it!=end(iShape); ++it)
+        s *= *it;
+    var v = iType ? iType : 0.0f;
+    v.resize(s);
+    return v.view(iShape);
+}
+
+
+/**
+ * View initialiser function.  Allocates the underlying array as well as the
+ * view.
+ */
+var view(var iShape, var iType)
+{
+    int s = 1;
+    for (int i=0; i<iShape.size(); i++)
+        s *= iShape[i].cast<int>();
+    var v = iType ? iType : 0.0f;
+    v.resize(s);
+    return v.view(iShape);
 }
 
 
@@ -1314,6 +1379,22 @@ var& var::offset(int iOffset)
 }
 
 
+/**
+ * Returns a new array containing the shape of the view.
+ */
+var var::shape() const
+{
+    var s;
+    for (int i=0; i<dim(); i++)
+        s.push(shape(i));
+    return s;
+}
+
+
+/**
+ * Returns the size of the iDim'th dimension without allocating more memory for
+ * the whole shape vector.
+ */
 int var::shape(int iDim) const
 {
     if (!heap() || !heap()->view())

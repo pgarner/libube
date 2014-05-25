@@ -159,9 +159,9 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
         throw std::runtime_error("var::broadcast: op dimension too large");
 
     // If it didn't throw, then the array is broadcastable
-    // In this case, loop over iVar with different offsets
-    int s = iVar.stride(iDim-mDim);
-    for (int i=0; i<iVar.size(); i+=s)
+    // In this case, loop over iVar with different indexes
+    int s = iVar.size() / iVar.stride(iDim-mDim);
+    for (int i=0; i<s; i++)
         array(iVar, oVar, i);
 }
 
@@ -762,18 +762,22 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 }
 
 
-void ASum::array(var iVar, var* oVar, int iOffset) const
+void ASum::array(var iVar, var* oVar, int iIndex) const
 {
     assert(type(iVar) == var::TYPE_ARRAY);
     static int inc = 1;
     int size = iVar.size();
+    int iVarOffset = iVar.stride(iVar.dim()-mDim) * iIndex;
+    int oVarOffset = oVar->stride(oVar->dim()-mDim) * iIndex;
     switch(iVar.heap()->type())
     {
     case var::TYPE_FLOAT:
-        *oVar->ptr<float>() = sasum_(&size, iVar.ptr<float>()+iOffset, &inc);
+        *(oVar->ptr<float>() + oVarOffset) =
+            sasum_(&size, iVar.ptr<float>() + iVarOffset, &inc);
         break;
     case var::TYPE_DOUBLE:
-        *oVar->ptr<double>() = dasum_(&size, iVar.ptr<double>()+iOffset, &inc);
+        *(oVar->ptr<double>() + oVarOffset) =
+            dasum_(&size, iVar.ptr<double>() + iVarOffset, &inc);
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");

@@ -95,24 +95,27 @@ var DFT::operator ()(const var& iVar, var* oVar) const
     if (!oVar)
     {
         // Allocate an output array
+        var t;
         switch (mOType)
         {
         case var::TYPE_FLOAT:
-            r = 0.0f;
+            t = 0.0f;
             break;
         case var::TYPE_DOUBLE:
-            r = 0.0;
+            t = 0.0;
             break;
         case var::TYPE_CFLOAT:
-            r = std::complex<float>(0.0f, 0.0f);
+            t = std::complex<float>(0.0f, 0.0f);
             break;
         case var::TYPE_CDOUBLE:
-            r = std::complex<double>(0.0, 0.0);
+            t = std::complex<double>(0.0, 0.0);
             break;
         default:
             assert(0);
         }
-        r.resize(mOSize);
+        var s = iVar.shape();
+        s[s.size()-1] = mOSize;
+        r = view(s, t);
         oVar = &r;
     }
 
@@ -131,23 +134,27 @@ var DFT::operator ()(const var& iVar, var* oVar) const
     return *oVar;
 }
 
-void DFT::array(var iVar, var* oVar, int iOffset) const
+void DFT::array(var iVar, var* oVar, int iIndex) const
 {
     assert(oVar);
     MKL_LONG r;
+    int iVarOffset = iVar.stride(iVar.dim()-mDim) * iIndex;
+    int oVarOffset = oVar->stride(oVar->dim()-mDim) * iIndex;
     if (iVar.is(*oVar))
         if (mInverse)
-            r = DftiComputeBackward(mHandle, oVar->ptr<float>()+iOffset);
+            r = DftiComputeBackward(mHandle, oVar->ptr<float>()+oVarOffset);
         else
-            r = DftiComputeForward(mHandle, oVar->ptr<float>()+iOffset);
+            r = DftiComputeForward(mHandle, oVar->ptr<float>()+oVarOffset);
     else
         if (mInverse)
             r = DftiComputeBackward(
-                mHandle, iVar.ptr<float>()+iOffset, oVar->ptr<float>()+iOffset
+                mHandle,
+                iVar.ptr<float>()+iVarOffset, oVar->ptr<float>()+oVarOffset
             );
         else
             r = DftiComputeForward(
-                mHandle, iVar.ptr<float>()+iOffset, oVar->ptr<float>()+iOffset
+                mHandle,
+                iVar.ptr<float>()+iVarOffset, oVar->ptr<float>()+oVarOffset
             );
     dftiCheck(r);
 }

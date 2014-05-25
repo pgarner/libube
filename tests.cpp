@@ -256,6 +256,10 @@ int main(int argc, char** argv)
     t1(1,2) = 2.3f;
     cout << t1 << endl;
 
+    var t3 = ts.view(t1.shape());
+    cout << "Shape: " << t1.shape() << endl;
+    cout << "New view: " << t3 << endl;
+
     // BLAS
     var bt;
     bt = 1.0f, 1.2f, 0.8f, -2.0f;
@@ -402,9 +406,12 @@ int main(int argc, char** argv)
     cout << "dc: " << dc << endl;
 
     // DFT
-    var td;
+    var td = view({2, 10});
     for (int i=0; i<10; i++)
-        td.push(sinf(i));
+    {
+        td(0, i) = sinf(i);
+        td(1, i) = cosf(i);
+    }
     cout << "Sin: " << td << endl;
     if (vg)
     {
