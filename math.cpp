@@ -160,7 +160,7 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
 
     // If it didn't throw, then the array is broadcastable
     // In this case, loop over iVar with different indexes
-    int s = iVar.size() / iVar.stride(iDim-mDim);
+    int s = iVar.size() / iVar.stride(iDim-mDim-1);
     for (int i=0; i<s; i++)
         array(iVar, oVar, i);
 }

@@ -471,15 +471,14 @@ private:
 class DFT : public UnaryFunctor
 {
 public:
-    DFT(int iSize,
-        bool iInverse=false, bool iComplex=false, bool iDouble=false);
+    DFT(int iSize, var iForwardType=0.0f, bool iInverse=false);
     ~DFT();
     var operator ()(const var& iVar, var* oVar=0) const;
 private:
     void array(var iVar, var* oVar, int iOffset) const;
     DFTI_DESCRIPTOR_HANDLE mHandle;
-    var::dataEnum mIType;
-    var::dataEnum mOType;
+    var mForwardType;
+    var mInverseType;
     int mOSize;
     bool mInverse;
 };

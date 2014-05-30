@@ -412,7 +412,7 @@ int main(int argc, char** argv)
         td(0, i) = sinf(i);
         td(1, i) = cosf(i);
     }
-    cout << "Sin: " << td << endl;
+    cout << "Time: " << td << endl;
     if (vg)
     {
         DFT dft(10);
