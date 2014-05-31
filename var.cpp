@@ -560,6 +560,16 @@ ind var::type() const
 }
 
 
+ind var::atype() const
+{
+    if (!defined())
+        throw std::runtime_error("var::atype(): Undefined");
+    if (type() == TYPE_ARRAY)
+        return heap()->type();
+    return type();
+}
+
+
 template <class T>
 var Cast<T>::operator ()(const var& iVar, var* oVar) const
 {

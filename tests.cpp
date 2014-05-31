@@ -407,6 +407,7 @@ int main(int argc, char** argv)
 
     // DFT
     var td = view({2, 10});
+    var fd;
     for (int i=0; i<10; i++)
     {
         td(0, i) = sinf(i);
@@ -416,9 +417,12 @@ int main(int argc, char** argv)
     if (vg)
     {
         DFT dft(10);
-        var fd = dft(td);
+        fd = dft(td);
         cout << "Freq: " << fd << endl;
     }
+
+    var ab = var::abs(fd);
+    cout << "Abs: " << ab << endl;
 
     // Phil, leave this at the end!
     return 0;

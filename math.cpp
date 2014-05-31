@@ -149,7 +149,10 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
     {
         // This could be parallel!
         for (int i=0; i<iVar.size(); i++)
-            oVar->at(i) = operator ()(iVar.at(i));
+        {
+            var ref = oVar->at(i);
+            operator ()(iVar.at(i), &ref);
+        }
         return;
     }
 
@@ -271,7 +274,6 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
 
 
 CMATH_UNARY_FUNCTOR(Floor,floor)
-COMPLEX_UNARY_FUNCTOR(Abs,abs)
 COMPLEX_UNARY_FUNCTOR(Sin,sin)
 COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
@@ -306,6 +308,55 @@ var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
         break;
     default:
         throw std::runtime_error("Pow::operator(): Unknown type");
+    }
+
+    return *oVar;
+}
+
+
+var Abs::operator ()(const var& iVar, var* oVar) const
+{
+    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
+    // returns real.
+    var r;
+    if (!oVar)
+    {
+        // This probably ought to be a helper function.  The idea is to copy
+        // iVar, but change the type to the real version.
+        var s = iVar.shape();
+        switch (iVar.atype())
+        {
+        case var::TYPE_FLOAT:
+        case var::TYPE_CFLOAT:
+            r = view(s, 0.0f);
+            break;
+        case var::TYPE_DOUBLE:
+        case var::TYPE_CDOUBLE:
+            r = view(s, 0.0);
+            break;
+        }
+        oVar = &r;
+    }
+
+    switch (type(iVar))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case var::TYPE_FLOAT:
+        *oVar = std::abs(iVar.get<float>());
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar = std::abs(iVar.get<double>());
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar = std::abs(iVar.get<cfloat>());
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar = std::abs(iVar.get<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("Abs::operator(): Unknown type");
     }
 
     return *oVar;

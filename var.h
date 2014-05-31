@@ -270,6 +270,7 @@ public:
     bool defined() const;
     int size() const;
     ind type() const;
+    ind atype() const;
     varheap* heap() const;
     var pop();
     var top() { return at(size() - 1); };
