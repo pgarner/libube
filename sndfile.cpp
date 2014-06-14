@@ -10,17 +10,25 @@
 #include <sndfile.h>
 #include <var.h>
 
-class sndfile : public varfile
+namespace libvar
 {
-public:
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
-};
+    class sndfile : public varfile
+    {
+    public:
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
+    };
+}
 
-void factory(varfile** oFile)
+
+using namespace libvar;
+
+
+void libvar::factory(varfile** oFile)
 {
     *oFile = new sndfile;
 }
+
 
 var sndfile::read(const char* iFile)
 {

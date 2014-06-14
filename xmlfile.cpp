@@ -14,31 +14,37 @@
 #include "expat.h"
 
 
-/**
- * Class to wrap the expat library and callbacks.
- */
-class Expat : public varfile
+namespace libvar
 {
-public:
-    Expat();
-    ~Expat();
-    var parse(const char* iFile);
-    void startElementHandler(const XML_Char *iName, const XML_Char **iAtts);
-    void endElementHandler(const XML_Char *iName);
-    void characterDataHandler(const XML_Char *iStr, int iLen);
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
+    /**
+     * Class to wrap the expat library and callbacks.
+     */
+    class Expat : public varfile
+    {
+    public:
+        Expat();
+        ~Expat();
+        var parse(const char* iFile);
+        void startElementHandler(const XML_Char *iName, const XML_Char **iAtts);
+        void endElementHandler(const XML_Char *iName);
+        void characterDataHandler(const XML_Char *iStr, int iLen);
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
 
-private:
-    var mVar;            ///< Var to populate during parse
-    var mStack;          ///< Parse stack
-    XML_Parser mParser;  ///< The expat parser
+    private:
+        var mVar;            ///< Var to populate during parse
+        var mStack;          ///< Parse stack
+        XML_Parser mParser;  ///< The expat parser
 
-    var element();
-};
+        var element();
+    };
+}
 
 
-void factory(varfile** oFile)
+using namespace libvar;
+
+
+void libvar::factory(varfile** oFile)
 {
     *oFile = new Expat;
 }

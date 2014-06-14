@@ -12,6 +12,10 @@
 
 #include "var.h"
 
+
+using namespace libvar;
+
+
 vfile::vfile(const char* iType)
 {
     // Initialise

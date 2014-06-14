@@ -5,6 +5,7 @@
 #include <var.h>
 
 using namespace std;
+using namespace libvar;
 
 var getString()
 {
@@ -266,7 +267,7 @@ int main(int argc, char** argv)
     if (vg)
     {
         cout << bt << "  sums to " << bt.sum()  << endl;
-        cout << bt << " asums to " << bt.asum() << endl;
+        cout << bt << " asums to " << var::asum(bt) << endl;
     }
 
     // Stream

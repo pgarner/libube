@@ -11,17 +11,25 @@
 #include <stdexcept>
 #include <var.h>
 
-class txtfile : public varfile
+namespace libvar
 {
-public:
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
-};
+    class txtfile : public varfile
+    {
+    public:
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
+    };
+}
 
-void factory(varfile** oFile)
+
+using namespace libvar;
+
+
+void libvar::factory(varfile** oFile)
 {
     *oFile = new txtfile;
 }
+
 
 var txtfile::read(const char* iFile)
 {

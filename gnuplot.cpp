@@ -13,20 +13,24 @@
 #include <var.h>
 #include "varheap.h"
 
-class gnuplot : public varfile
+namespace libvar
 {
-public:
-    gnuplot();
-    ~gnuplot();
-    void puts(const char* iStr);
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
-private:
-    FILE* mStream;
-};
+    class gnuplot : public varfile
+    {
+    public:
+        gnuplot();
+        ~gnuplot();
+        void puts(const char* iStr);
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
+    private:
+        FILE* mStream;
+    };
+}
 
+using namespace libvar;
 
-void factory(varfile** oFile)
+void libvar::factory(varfile** oFile)
 {
     *oFile = new gnuplot;
 }

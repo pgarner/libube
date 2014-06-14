@@ -16,23 +16,31 @@
 #include "varheap.h"
 
 
-/*
- * The instantiations of the math and standard functors defined in this module.
- * They are declared static in the var class definition.
- */
-Abs var::abs;
-Sin var::sin;
-Cos var::cos;
-Tan var::tan;
-Floor var::floor;
-Sqrt var::sqrt;
+namespace libvar
+{
+    /*
+     * The instantiations of the math and standard functors defined in this
+     * module.  They are declared static in the var class definition.
+     */
+    Abs var::abs;
+    Sin var::sin;
+    Cos var::cos;
+    Tan var::tan;
+    Floor var::floor;
+    Sqrt var::sqrt;
 
-Pow var::pow;
-Set var::set;
-Add var::add;
-Sub var::sub;
-Mul var::mul;
-Div var::div;
+    Pow var::pow;
+    Set var::set;
+    Add var::add;
+    Sub var::sub;
+    Mul var::mul;
+    Div var::div;
+    ASum var::asum;
+}
+
+
+using namespace std;
+using namespace libvar;
 
 
 /*
@@ -784,7 +792,37 @@ var ASum::operator ()(const var& iVar, var* oVar) const
     var r;
     if (!oVar)
     {
-        r = iVar.copy(true);
+        if (iVar.dim() > 1)
+        {
+            // Allocate an output array
+            var s = iVar.shape();
+            s[s.size()-1] = 1;
+            switch (iVar.atype())
+            {
+            case var::TYPE_FLOAT:
+            case var::TYPE_CFLOAT:
+                r = view(s, 0.0f);
+                break;
+            case var::TYPE_DOUBLE:
+            case var::TYPE_CDOUBLE:
+                r = view(s, 0.0);
+                break;
+            }
+        }
+        else
+        {
+            switch (iVar.atype())
+            {
+            case var::TYPE_FLOAT:
+            case var::TYPE_CFLOAT:
+                r = 0.0f;
+                break;
+            case var::TYPE_DOUBLE:
+            case var::TYPE_CDOUBLE:
+                r = 0.0;
+                break;
+            }
+        }
         oVar = &r;
     }
 
@@ -818,8 +856,8 @@ void ASum::array(var iVar, var* oVar, int iIndex) const
     assert(type(iVar) == var::TYPE_ARRAY);
     static int inc = 1;
     int size = iVar.size();
-    int iVarOffset = iVar.stride(iVar.dim()-mDim) * iIndex;
-    int oVarOffset = oVar->stride(oVar->dim()-mDim) * iIndex;
+    int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
+    int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     switch(iVar.heap()->type())
     {
     case var::TYPE_FLOAT:
@@ -872,36 +910,3 @@ void varheap::mul(
     }
 }
 #endif
-
-
-var var::asum() const
-{
-    var asum;
-    if (type() == TYPE_ARRAY)
-        asum = heap()->asum();
-    else
-        asum = abs(*this);
-    return asum;
-}
-
-
-var varheap::asum()
-{
-    var sum;
-    int inc = 1;
-    switch (mType)
-    {
-    case var::TYPE_FLOAT:
-        sum = sasum_(&mSize, mData.fp, &inc);
-        break;
-    case var::TYPE_DOUBLE:
-        sum = dasum_(&mSize, mData.dp, &inc);
-        break;
-    default:
-        sum = 0L;
-        for (int i=0; i<mSize; i++)
-            sum += at(i);
-    }
-
-    return sum;
-}

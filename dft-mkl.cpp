@@ -12,6 +12,10 @@
 #include "var.h"
 #include "varheap.h" // for heap()->type()
 
+
+using namespace libvar;
+
+
 void dftiCheck(MKL_LONG iReturn)
 {
     if (iReturn == DFTI_NO_ERROR)

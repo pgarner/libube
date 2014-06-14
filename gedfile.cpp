@@ -11,69 +11,75 @@
 #include <var.h>
 
 
-/**
- * Ad-hoc parser for GEDCOM files.
- */
-class GEDCOM : public varfile
+namespace libvar
 {
-public:
-    GEDCOM();
-    var loadFile(const char* iFileName);
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
+    /**
+     * Ad-hoc parser for GEDCOM files.
+     */
+    class GEDCOM : public varfile
+    {
+    public:
+        GEDCOM();
+        var loadFile(const char* iFileName);
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
 
-private:
-    var individual();
-    var family();
-    int readLine();
-    bool knownToken(var iToken);
-    void doFile(int iLevel);
-    int doHeader(int iLevel);
-    int doSubmitter(int iLevel);
-    int doIndividual(int iLevel, var iInd);
-    int doFamily(int iLevel, var iFam);
-    int doBirth(int iLevel);
-    int doContinue(int iLevel, var iToken);
+    private:
+        var individual();
+        var family();
+        int readLine();
+        bool knownToken(var iToken);
+        void doFile(int iLevel);
+        int doHeader(int iLevel);
+        int doSubmitter(int iLevel);
+        int doIndividual(int iLevel, var iInd);
+        int doFamily(int iLevel, var iFam);
+        int doBirth(int iLevel);
+        int doContinue(int iLevel, var iToken);
 
-    var mVar;
-    std::ifstream mInStream;
-    var mField;
+        var mVar;
+        std::ifstream mInStream;
+        var mField;
 
-    enum tokenType {
-        CONT,
-        CONC,
-        HEAD,
-        TRLR,
-        INDI,
-        FAM,
-        SUBM,
-        NAME,
-        TITL,
-        SEX,
-        FAMC,
-        FAMS,
-        BIRT,
-        DEAT,
-        CHR,
-        BURI,
-        PLAC,
-        DATE,
-        OCCU,
-        NOTE,
-        HUSB,
-        WIFE,
-        CHIL,
-        MARR,
-        DIV,
-        REFN
+        enum tokenType {
+            CONT,
+            CONC,
+            HEAD,
+            TRLR,
+            INDI,
+            FAM,
+            SUBM,
+            NAME,
+            TITL,
+            SEX,
+            FAMC,
+            FAMS,
+            BIRT,
+            DEAT,
+            CHR,
+            BURI,
+            PLAC,
+            DATE,
+            OCCU,
+            NOTE,
+            HUSB,
+            WIFE,
+            CHIL,
+            MARR,
+            DIV,
+            REFN
+        };
+        var mTokenMap;
+        var mIndividualMap;
+        var mFamilyMap;
     };
-    var mTokenMap;
-    var mIndividualMap;
-    var mFamilyMap;
-};
+}
 
 
-void factory(varfile** oFile)
+using namespace libvar;
+
+
+void libvar::factory(varfile** oFile)
 {
     *oFile = new GEDCOM;
 }

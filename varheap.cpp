@@ -22,6 +22,9 @@
 #endif
 
 
+using namespace libvar;
+
+
 /*
  * Template specialisations (before any get used)
  *

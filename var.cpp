@@ -23,13 +23,32 @@
 #endif
 
 
-/**
- * The nil var
- *
- * Designed never to be touched, except when something needs to return
- * a reference to nil, or also to clear things.
- */
-const var var::nil;
+namespace libvar
+{
+    /**
+     * The nil var
+     *
+     * Designed never to be touched, except when something needs to return a
+     * reference to nil, or also to clear things.
+     */
+    const var var::nil;
+
+    /*
+     * These are the instantiations of the casters.  They are declared static
+     * in the var class.
+     */
+    Cast<char> var::castChar;
+    Cast<int> var::castInt;
+    Cast<long> var::castLong;
+    Cast<float> var::castFloat;
+    Cast<double> var::castDouble;
+    Cast<cfloat> var::castCFloat;
+    Cast<cdouble> var::castCDouble;
+}
+
+
+using namespace libvar;
+
 
 /*
  * Main data accessor
@@ -633,19 +652,6 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
 }
 
 
-/*
- * These are the instantiations of the casters.  They are declared static in
- * the var class.
- */
-Cast<char> var::castChar;
-Cast<int> var::castInt;
-Cast<long> var::castLong;
-Cast<float> var::castFloat;
-Cast<double> var::castDouble;
-Cast<cfloat> var::castCFloat;
-Cast<cdouble> var::castCDouble;
-
-
 /**
  * operator[int]
  *
@@ -663,6 +669,7 @@ var var::operator [](int iIndex)
         throw std::runtime_error("operator [int]: Negative index");
     if (iIndex >= v.size())
         v.resize(iIndex+1);
+    v.array();
     return v.reference(iIndex);
 }
 
@@ -866,10 +873,24 @@ var var::range(var iLo, var iHi, var iStep)
 }
 
 
-std::ostream& operator <<(std::ostream& iStream, var iVar)
+std::ostream& libvar::operator <<(std::ostream& iStream, var iVar)
 {
     iVar.format(iStream);
     return iStream;
+}
+
+
+var& var::array()
+{
+    var& v = dereference();
+    if (!v.heap())
+    {
+        var tmp = v;
+        v.mType = TYPE_ARRAY;
+        v.attach(new varheap(1, tmp.mType));
+        v.at(0) = tmp;
+    }
+    return *this;
 }
 
 
@@ -1274,7 +1295,7 @@ void var::setStrides(var& iVar, int iSize, int iOffset)
             throw std::runtime_error("var::view(): Array too small for view");
 
     // Tell the new heap object that it's a view of this
-    assert(mType == TYPE_ARRAY);
+    array();
     iVar.heap()->setView(heap());
 }
 
@@ -1337,7 +1358,7 @@ var var::view(var iShape, int iOffset)
  * View initialiser function.  Allocates the underlying array as well as the
  * view.
  */
-var view(const std::initializer_list<int> iShape, var iType)
+var libvar::view(const std::initializer_list<int> iShape, var iType)
 {
     int s = 1;
     for (const int* it=begin(iShape); it!=end(iShape); ++it)
@@ -1352,7 +1373,7 @@ var view(const std::initializer_list<int> iShape, var iType)
  * View initialiser function.  Allocates the underlying array as well as the
  * view.
  */
-var view(var iShape, var iType)
+var libvar::view(var iShape, var iType)
 {
     int s = 1;
     for (int i=0; i<iShape.size(); i++)

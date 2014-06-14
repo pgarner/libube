@@ -14,6 +14,7 @@
 #include <cassert>
 
 using namespace std;
+using namespace libvar;
 
 int main(int argc, char** argv)
 {

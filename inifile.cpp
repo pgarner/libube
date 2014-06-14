@@ -11,17 +11,25 @@
 #include <stdexcept>
 #include <var.h>
 
-class inifile : public varfile
+namespace libvar
 {
-public:
-    virtual var read(const char* iFile);
-    virtual void write(const char* iFile, var iVar);
-};
+    class inifile : public varfile
+    {
+    public:
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
+    };
+}
 
-void factory(varfile** oFile)
+
+using namespace libvar;
+
+
+void libvar::factory(varfile** oFile)
 {
     *oFile = new inifile;
 }
+
 
 var inifile::read(const char* iFile)
 {

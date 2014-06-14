@@ -16,6 +16,10 @@
 #include "var.h"
 #include "varheap.h"
 
+
+using namespace libvar;
+
+
 /**
  * Read a line from an istream
  */
