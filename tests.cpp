@@ -5,7 +5,10 @@
 #include <var.h>
 
 using namespace std;
-using namespace libvar;
+namespace lv = libvar;
+typedef lv::var var;
+typedef lv::vfile vfile;
+typedef lv::vstream vstream;
 
 var getString()
 {
@@ -56,7 +59,7 @@ int main(int argc, char** argv)
     w = 'w';
     x = 2;
     y = 3.14;
-    z = var::cos(y);
+    z = lv::cos(y);
     s = "Hello!";
     cout << (s ? "true" : "false") << endl;
     cout << (!s ? "true" : "false") << endl;
@@ -267,7 +270,7 @@ int main(int argc, char** argv)
     if (vg)
     {
         cout << bt << "  sums to " << bt.sum()  << endl;
-        cout << bt << " asums to " << var::asum(bt) << endl;
+        cout << bt << " asums to " << lv::asum(bt) << endl;
     }
 
     // Stream
@@ -307,9 +310,9 @@ int main(int argc, char** argv)
 
     // Exception
     try {
-        throw vruntime_error(bt);
+        throw lv::vruntime_error(bt);
     }
-    catch (vruntime_error e) {
+    catch (lv::vruntime_error e) {
         cout << "Caught: " << e.what() << endl;
     };
 
@@ -386,9 +389,9 @@ int main(int argc, char** argv)
     cout << "r4: " << r4 << endl;
 
     // Functors
-    Pow pow;
-    Tan tan;
-    cout << "Size: " << sizeof(Pow) << endl;
+    lv::Pow pow;
+    lv::Tan tan;
+    cout << "Size: " << sizeof(lv::Pow) << endl;
     cout << "Pow: " << pow(3.0, 2) << endl;
     cout << "Pow: " << pow(r6, 2) << endl;
     cout << "Tan: " << tan(r6) << endl;
@@ -407,7 +410,7 @@ int main(int argc, char** argv)
     cout << "dc: " << dc << endl;
 
     // DFT
-    var td = view({2, 10});
+    var td = lv::view({2, 10});
     var fd;
     for (int i=0; i<10; i++)
     {
@@ -417,12 +420,12 @@ int main(int argc, char** argv)
     cout << "Time: " << td << endl;
     if (vg)
     {
-        DFT dft(10);
+        lv::DFT dft(10);
         fd = dft(td);
         cout << "Freq: " << fd << endl;
     }
 
-    var ab = var::abs(fd);
+    var ab = lv::abs(fd);
     cout << "Abs: " << ab << endl;
 
     // Phil, leave this at the end!

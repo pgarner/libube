@@ -164,6 +164,36 @@ namespace libvar
     };
 
 
+    // Statics
+    extern const var nil;
+
+    // Casting functors
+    extern Cast<char> castChar;
+    extern Cast<int> castInt;
+    extern Cast<long> castLong;
+    extern Cast<float> castFloat;
+    extern Cast<double> castDouble;
+    extern Cast<cfloat> castCFloat;
+    extern Cast<cdouble> castCDouble;
+
+    // stdlib Functors
+    extern Abs abs;
+    extern Sin sin;
+    extern Cos cos;
+    extern Tan tan;
+    extern Floor floor;
+    extern Sqrt sqrt;
+    extern Pow pow;
+
+    // BLAS functors
+    extern Set set;
+    extern Add add;
+    extern Sub sub;
+    extern Mul mul;
+    extern Div div;
+    extern ASum asum;
+
+
     /**
      * Class with runtime type determination.
      *
@@ -187,34 +217,6 @@ namespace libvar
             TYPE_VAR,
             TYPE_PAIR
         };
-
-        // Statics
-        static const var nil;
-
-        // Functors
-        static Abs abs;
-        static Sin sin;
-        static Cos cos;
-        static Tan tan;
-        static Floor floor;
-        static Sqrt sqrt;
-        static Pow pow;
-
-        static Set set;
-        static Add add;
-        static Sub sub;
-        static Mul mul;
-        static Div div;
-        static ASum asum;
-
-        // Casting functors
-        static Cast<char> castChar;
-        static Cast<int> castInt;
-        static Cast<long> castLong;
-        static Cast<float> castFloat;
-        static Cast<double> castDouble;
-        static Cast<cfloat> castCFloat;
-        static Cast<cdouble> castCDouble;
 
         // Special member functions
         var();
@@ -369,8 +371,8 @@ namespace libvar
      * Functions
      */
     std::ostream& operator <<(std::ostream& iStream, var iVar);
-    var view(const std::initializer_list<int> iShape, var iType=var::nil);
-    var view(var iShape, var iType=var::nil);
+    var view(const std::initializer_list<int> iShape, var iType=nil);
+    var view(var iShape, var iType=nil);
 
 
     /**

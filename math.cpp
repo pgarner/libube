@@ -22,24 +22,23 @@ namespace libvar
      * The instantiations of the math and standard functors defined in this
      * module.  They are declared static in the var class definition.
      */
-    Abs var::abs;
-    Sin var::sin;
-    Cos var::cos;
-    Tan var::tan;
-    Floor var::floor;
-    Sqrt var::sqrt;
+    Abs abs;
+    Sin sin;
+    Cos cos;
+    Tan tan;
+    Floor floor;
+    Sqrt sqrt;
 
-    Pow var::pow;
-    Set var::set;
-    Add var::add;
-    Sub var::sub;
-    Mul var::mul;
-    Div var::div;
-    ASum var::asum;
+    Pow pow;
+    Set set;
+    Add add;
+    Sub sub;
+    Mul mul;
+    Div div;
+    ASum asum;
 }
 
 
-using namespace std;
 using namespace libvar;
 
 

@@ -31,19 +31,19 @@ namespace libvar
      * Designed never to be touched, except when something needs to return a
      * reference to nil, or also to clear things.
      */
-    const var var::nil;
+    const var nil;
 
     /*
-     * These are the instantiations of the casters.  They are declared static
+     * These are the instantiations of the casters.  They are declared extern
      * in the var class.
      */
-    Cast<char> var::castChar;
-    Cast<int> var::castInt;
-    Cast<long> var::castLong;
-    Cast<float> var::castFloat;
-    Cast<double> var::castDouble;
-    Cast<cfloat> var::castCFloat;
-    Cast<cdouble> var::castCDouble;
+    Cast<char> castChar;
+    Cast<int> castInt;
+    Cast<long> castLong;
+    Cast<float> castFloat;
+    Cast<double> castDouble;
+    Cast<cfloat> castCFloat;
+    Cast<cdouble> castCDouble;
 }
 
 
