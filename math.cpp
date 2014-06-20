@@ -28,6 +28,7 @@ namespace libvar
     Tan tan;
     Floor floor;
     Sqrt sqrt;
+    Log log;
 
     Pow pow;
     Set set;
@@ -285,6 +286,7 @@ COMPLEX_UNARY_FUNCTOR(Sin,sin)
 COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
 COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
+COMPLEX_UNARY_FUNCTOR(Log,log)
 
 
 var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const

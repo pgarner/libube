@@ -2,13 +2,9 @@
 #include <map>
 #include <fstream>
 
-#include <var.h>
+#include <lv.h>
 
 using namespace std;
-namespace lv = libvar;
-typedef lv::var var;
-typedef lv::vfile vfile;
-typedef lv::vstream vstream;
 
 var getString()
 {

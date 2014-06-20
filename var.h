@@ -83,6 +83,7 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Tan)
     BASIC_UNARY_FUNCTOR_DECL(Floor)
     BASIC_UNARY_FUNCTOR_DECL(Sqrt)
+    BASIC_UNARY_FUNCTOR_DECL(Log)
     BASIC_BINARY_FUNCTOR_DECL(Pow)
 
 
@@ -183,6 +184,7 @@ namespace libvar
     extern Tan tan;
     extern Floor floor;
     extern Sqrt sqrt;
+    extern Log log;
     extern Pow pow;
 
     // BLAS functors
@@ -306,6 +308,7 @@ namespace libvar
         var sin();
         var cos();
         var sqrt();
+        var log();
         var abs() const;
 #endif
 
