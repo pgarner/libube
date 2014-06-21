@@ -301,16 +301,13 @@ namespace libvar
         static var irange(var iHi) { return irange(iHi-iHi, iHi); };
         static var irange(var iLo, var iHi, var iStep=1);
 
-        // math.cpp
-#if 0
-        // These need to be in a different namespace to be methods
-        var floor() { return floor(*this, this); };
-        var sin();
-        var cos();
-        var sqrt();
-        var log();
-        var abs() const;
-#endif
+        // Methods for functors in math.cpp
+        var floor() { return libvar::floor(*this, this); };
+        var sin() { return libvar::sin(*this, this); };
+        var cos() { return libvar::cos(*this, this); };
+        var sqrt() { return libvar::sqrt(*this, this); };
+        var log() { return libvar::log(*this, this); };
+        var abs() { return libvar::abs(*this, this); };
 
         // string.cpp
         var& getline(std::istream& iStream);
