@@ -84,13 +84,13 @@ void gnuplot::write(const char* iFile, var iVar)
         str = iVar[i];
         switch (str.heap()->type())
         {
-        case var::TYPE_CHAR:
+        case TYPE_CHAR:
             puts(str.str());
             break;
-        case var::TYPE_INT:
-        case var::TYPE_LONG:
-        case var::TYPE_FLOAT:
-        case var::TYPE_DOUBLE:
+        case TYPE_INT:
+        case TYPE_LONG:
+        case TYPE_FLOAT:
+        case TYPE_DOUBLE:
             for (int j=0; j<str.size(); j++)
             {
                 vstream vs;

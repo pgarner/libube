@@ -25,6 +25,22 @@ namespace libvar
     class varheap;
     class var;
 
+    /**
+     * The possible var types
+     */
+    enum {
+        TYPE_ARRAY = 0,
+        TYPE_CHAR,
+        TYPE_INT,
+        TYPE_LONG,
+        TYPE_FLOAT,
+        TYPE_DOUBLE,
+        TYPE_CFLOAT,
+        TYPE_CDOUBLE,
+        TYPE_VAR,
+        TYPE_PAIR
+    };
+
 
     /**
      * Unary functor
@@ -219,20 +235,6 @@ namespace libvar
     class var
     {
     public:
-
-        /** The possible var types */
-        enum dataEnum {
-            TYPE_ARRAY = 0,
-            TYPE_CHAR,
-            TYPE_INT,
-            TYPE_LONG,
-            TYPE_FLOAT,
-            TYPE_DOUBLE,
-            TYPE_CFLOAT,
-            TYPE_CDOUBLE,
-            TYPE_VAR,
-            TYPE_PAIR
-        };
 
         // Special member functions
         var();

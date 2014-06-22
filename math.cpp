@@ -124,9 +124,9 @@ extern "C" {
 ind type(var iVar)
 {
     ind type = iVar.type();
-    if ((type == var::TYPE_ARRAY) &&
-        (iVar.heap()->type() == var::TYPE_CDOUBLE))
-        type = var::TYPE_CDOUBLE;
+    if ((type == TYPE_ARRAY) &&
+        (iVar.heap()->type() == TYPE_CDOUBLE))
+        type = TYPE_CDOUBLE;
     return type;
 }
 
@@ -231,13 +231,13 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
                                                                         \
         switch (type(iVar))                                             \
         {                                                               \
-        case var::TYPE_ARRAY:                                           \
+        case TYPE_ARRAY:                                           \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
-        case var::TYPE_FLOAT:                                           \
+        case TYPE_FLOAT:                                           \
             *oVar = std::f(iVar.get<float>());                          \
             break;                                                      \
-        case var::TYPE_DOUBLE:                                          \
+        case TYPE_DOUBLE:                                          \
             *oVar = std::f(iVar.get<double>());                         \
             break;                                                      \
         default:                                                        \
@@ -259,19 +259,19 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
                                                                         \
         switch (type(iVar))                                             \
         {                                                               \
-        case var::TYPE_ARRAY:                                           \
+        case TYPE_ARRAY:                                           \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
-        case var::TYPE_FLOAT:                                           \
+        case TYPE_FLOAT:                                           \
             *oVar = std::f(iVar.get<float>());                          \
             break;                                                      \
-        case var::TYPE_DOUBLE:                                          \
+        case TYPE_DOUBLE:                                          \
             *oVar = std::f(iVar.get<double>());                         \
             break;                                                      \
-        case var::TYPE_CFLOAT:                                          \
+        case TYPE_CFLOAT:                                          \
             *oVar = std::f(iVar.get<cfloat>());                         \
             break;                                                      \
-        case var::TYPE_CDOUBLE:                                         \
+        case TYPE_CDOUBLE:                                         \
             *oVar = std::f(iVar.get<cdouble>());                        \
             break;                                                      \
         default:                                                        \
@@ -301,19 +301,19 @@ var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(iVar1))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
         break;
     default:
@@ -336,12 +336,12 @@ var Abs::operator ()(const var& iVar, var* oVar) const
         var s = iVar.shape();
         switch (iVar.atype())
         {
-        case var::TYPE_FLOAT:
-        case var::TYPE_CFLOAT:
+        case TYPE_FLOAT:
+        case TYPE_CFLOAT:
             r = view(s, 0.0f);
             break;
-        case var::TYPE_DOUBLE:
-        case var::TYPE_CDOUBLE:
+        case TYPE_DOUBLE:
+        case TYPE_CDOUBLE:
             r = view(s, 0.0);
             break;
         }
@@ -350,19 +350,19 @@ var Abs::operator ()(const var& iVar, var* oVar) const
 
     switch (type(iVar))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar = std::abs(iVar.get<float>());
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar = std::abs(iVar.get<double>());
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar = std::abs(iVar.get<cfloat>());
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar = std::abs(iVar.get<cdouble>());
         break;
     default:
@@ -384,28 +384,28 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(*oVar))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar->ptr<char>() = iVar2.cast<char>();
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar->ptr<int>() = iVar2.cast<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar->ptr<long>() = iVar2.cast<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar2.cast<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar2.cast<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar2.cast<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar2.cast<cdouble>();
         break;
     default:
@@ -418,19 +418,19 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
 void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
-    assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(type(iVar1) == TYPE_ARRAY);
     static int one = 1;
     int size = iVar2.size();
     switch(iVar1.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
     {
         float* x = iVar2.ptr<float>();
         float* y = iVar1.ptr<float>()+iOffset;
         scopy_(&size, x, &one, y, &one);
         break;
     }
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
         double* y = iVar1.ptr<double>()+iOffset;
@@ -454,28 +454,28 @@ var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(iVar1))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar->ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar->ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
         break;
     default:
@@ -488,13 +488,13 @@ var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
 void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
-    assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
     switch(iVar1.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
     {
         static float alpha = 1.0f;
         float* x = iVar2.ptr<float>();
@@ -502,7 +502,7 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
     {
         static double alpha = 1.0;
         double* x = iVar2.ptr<double>();
@@ -527,28 +527,28 @@ var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(iVar1))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar->ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar->ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
         break;
     default:
@@ -561,13 +561,13 @@ var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
 void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
-    assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
     switch(iVar1.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
     {
         static float alpha = -1.0f;
         float* x = iVar2.ptr<float>();
@@ -575,7 +575,7 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
     {
         static double alpha = -1.0;
         double* x = iVar2.ptr<double>();
@@ -609,19 +609,19 @@ void Mul::broadcast(var iVar1, var iVar2, var* oVar) const
 
 void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
-    assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(type(iVar1) == TYPE_ARRAY);
     static int one = 1;
     int size = iVar1.size();
     switch(iVar1.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
     {
         float alpha = iVar2.cast<float>();
         float* x = iVar1.ptr<float>()+iOffset;
         sscal_(&size, &alpha, x, &one);
         break;
     }
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
     {
         double alpha = iVar2.cast<double>();
         double* x = iVar1.ptr<double>()+iOffset;
@@ -645,28 +645,28 @@ var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(iVar1))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar->ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar->ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
         break;
     default:
@@ -682,7 +682,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     // Elementwise multiplication is actually multiplication by a diagonal
     // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
     // superdiagonals.
-    assert(type(iVar1) == var::TYPE_ARRAY);
+    assert(type(iVar1) == TYPE_ARRAY);
     static int zero = 0;
     static int one = 1;
     static char uplo = 'U';
@@ -694,14 +694,14 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         static char diag = 'N';
         switch(iVar1.heap()->type())
         {
-        case var::TYPE_FLOAT:
+        case TYPE_FLOAT:
         {
             float* A = iVar2.ptr<float>();
             float* x = iVar1.ptr<float>()+iOffset;
             stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
             break;
         }
-        case var::TYPE_DOUBLE:
+        case TYPE_DOUBLE:
         {
             double* A = iVar2.ptr<double>();
             double* x = iVar1.ptr<double>()+iOffset;
@@ -717,7 +717,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         // xsbmv() (symmetric band) puts the result in a new location.
         switch(iVar1.heap()->type())
         {
-        case var::TYPE_FLOAT:
+        case TYPE_FLOAT:
         {
             static float alpha = 1.0f;
             static float beta = 0.0f;
@@ -728,7 +728,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
                    &alpha, A, &one, x, &one, &beta, y, &one);
             break;
         }
-        case var::TYPE_DOUBLE:
+        case TYPE_DOUBLE:
         {
             static double alpha = 1.0;
             static double beta = 0.0;
@@ -757,28 +757,28 @@ var Div::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 
     switch(type(iVar1))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar->ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar->ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar->ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
         break;
     default:
@@ -801,12 +801,12 @@ var ASum::operator ()(const var& iVar, var* oVar) const
             s[s.size()-1] = 1;
             switch (iVar.atype())
             {
-            case var::TYPE_FLOAT:
-            case var::TYPE_CFLOAT:
+            case TYPE_FLOAT:
+            case TYPE_CFLOAT:
                 r = view(s, 0.0f);
                 break;
-            case var::TYPE_DOUBLE:
-            case var::TYPE_CDOUBLE:
+            case TYPE_DOUBLE:
+            case TYPE_CDOUBLE:
                 r = view(s, 0.0);
                 break;
             }
@@ -815,12 +815,12 @@ var ASum::operator ()(const var& iVar, var* oVar) const
         {
             switch (iVar.atype())
             {
-            case var::TYPE_FLOAT:
-            case var::TYPE_CFLOAT:
+            case TYPE_FLOAT:
+            case TYPE_CFLOAT:
                 r = 0.0f;
                 break;
-            case var::TYPE_DOUBLE:
-            case var::TYPE_CDOUBLE:
+            case TYPE_DOUBLE:
+            case TYPE_CDOUBLE:
                 r = 0.0;
                 break;
             }
@@ -830,19 +830,19 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 
     switch(type(iVar))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = std::abs(iVar.get<float>());
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = std::abs(iVar.get<double>());
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = std::abs(iVar.get<cfloat>());
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = std::abs(iVar.get<cdouble>());
         break;
     default:
@@ -855,18 +855,18 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 
 void ASum::array(var iVar, var* oVar, int iIndex) const
 {
-    assert(type(iVar) == var::TYPE_ARRAY);
+    assert(type(iVar) == TYPE_ARRAY);
     static int inc = 1;
     int size = iVar.size();
     int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
     int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     switch(iVar.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *(oVar->ptr<float>() + oVarOffset) =
             sasum_(&size, iVar.ptr<float>() + iVarOffset, &inc);
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *(oVar->ptr<double>() + oVarOffset) =
             dasum_(&size, iVar.ptr<double>() + iVarOffset, &inc);
         break;
@@ -888,16 +888,16 @@ var Sum::operator ()(const var& iVar, var* oVar) const
             s[s.size()-1] = 1;
             switch (iVar.atype())
             {
-            case var::TYPE_FLOAT:
+            case TYPE_FLOAT:
                 r = view(s, 0.0f);
                 break;
-            case var::TYPE_DOUBLE:
+            case TYPE_DOUBLE:
                 r = view(s, 0.0);
                 break;
-            case var::TYPE_CFLOAT:
+            case TYPE_CFLOAT:
                 r = view(s, cfloat(0.0f, 0.0f));
                 break;
-            case var::TYPE_CDOUBLE:
+            case TYPE_CDOUBLE:
                 r = view(s, cdouble(0.0, 0.0));
                 break;
             }
@@ -906,16 +906,16 @@ var Sum::operator ()(const var& iVar, var* oVar) const
         {
             switch (iVar.atype())
             {
-            case var::TYPE_FLOAT:
+            case TYPE_FLOAT:
                 r = 0.0f;
                 break;
-            case var::TYPE_DOUBLE:
+            case TYPE_DOUBLE:
                 r = 0.0;
                 break;
-            case var::TYPE_CFLOAT:
+            case TYPE_CFLOAT:
                 r = cfloat(0.0f, 0.0f);
                 break;
-            case var::TYPE_CDOUBLE:
+            case TYPE_CDOUBLE:
                 r = cdouble(0.0, 0.0);
                 break;
             }
@@ -925,19 +925,19 @@ var Sum::operator ()(const var& iVar, var* oVar) const
 
     switch(type(iVar))
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar->ptr<float>() = iVar.get<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar->ptr<double>() = iVar.get<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar->ptr<cfloat>() = iVar.get<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar->ptr<cdouble>() = iVar.get<cdouble>();
         break;
     default:
@@ -960,25 +960,25 @@ T sumArray(int iSize, T* iPointer)
 
 void Sum::array(var iVar, var* oVar, int iIndex) const
 {
-    assert(type(iVar) == var::TYPE_ARRAY);
+    assert(type(iVar) == TYPE_ARRAY);
     int size = iVar.size();
     int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
     int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     switch(iVar.heap()->type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *(oVar->ptr<float>() + oVarOffset) =
             sumArray(size, iVar.ptr<float>() + iVarOffset);
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *(oVar->ptr<double>() + oVarOffset) =
             sumArray(size, iVar.ptr<double>() + iVarOffset);
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *(oVar->ptr<cfloat>() + oVarOffset) =
             sumArray(size, iVar.ptr<cfloat>() + iVarOffset);
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *(oVar->ptr<cdouble>() + oVarOffset) =
             sumArray(size, iVar.ptr<cdouble>() + iVarOffset);
         break;
@@ -1001,7 +1001,7 @@ void varheap::mul(
     int* k = &iK;
     switch(type())
     {
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
     {
         static float alpha = 1.0f;
         float* a = iHeapB->ptr<float>();
@@ -1010,7 +1010,7 @@ void varheap::mul(
         sgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;
     }
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
     {
         static double alpha = 1.0;
         double* a = iHeapB->ptr<double>();

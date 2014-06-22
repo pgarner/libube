@@ -611,7 +611,7 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
     }
 
     // Strings get converted
-    if (iVar.heap() && (iVar.heap()->type() == var::TYPE_CHAR))
+    if (iVar.heap() && (iVar.heap()->type() == TYPE_CHAR))
     {
         *oVar = static_cast<T>(iVar.heap()->strtold());
         return *oVar;
@@ -620,28 +620,28 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
     // Everything else gets cast<>ed
     switch (iVar.type())
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         *oVar = static_cast<T>(iVar.get<char>());
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         *oVar = static_cast<T>(iVar.get<int>());
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         *oVar = static_cast<T>(iVar.get<long>());
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         *oVar = static_cast<T>(iVar.get<float>());
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         *oVar = static_cast<T>(iVar.get<double>());
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         *oVar = static_cast<T>(iVar.get<cfloat>().real());
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         *oVar = static_cast<T>(iVar.get<cdouble>().real());
         break;
     default:
@@ -798,33 +798,33 @@ void var::format(std::ostream& iStream, int iIndent) const
 {
     switch (type())
     {
-    case var::TYPE_ARRAY:
+    case TYPE_ARRAY:
         if (heap())
             heap()->format(iStream, iIndent);
         else
             iStream << "nil";
         break;
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         iStream << "\'";
         iStream << get<char>();
         iStream << "\'";
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         iStream << get<int>();
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         iStream << get<long>();
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         iStream << get<float>();
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         iStream << get<double>();
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         iStream << get<cfloat>();
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         //iStream << get<cdouble>();
         throw std::runtime_error("var::format(): cdouble should be array");
         break;

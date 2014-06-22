@@ -66,13 +66,13 @@ int sizeOf(ind iType)
 {
     switch (iType)
     {
-    case var::TYPE_CHAR: return sizeof(char);
-    case var::TYPE_INT: return sizeof(int);
-    case var::TYPE_LONG: return sizeof(long);
-    case var::TYPE_FLOAT: return sizeof(float);
-    case var::TYPE_DOUBLE: return sizeof(double);
-    case var::TYPE_VAR: return sizeof(var);
-    case var::TYPE_PAIR: return sizeof(pair);
+    case TYPE_CHAR: return sizeof(char);
+    case TYPE_INT: return sizeof(int);
+    case TYPE_LONG: return sizeof(long);
+    case TYPE_FLOAT: return sizeof(float);
+    case TYPE_DOUBLE: return sizeof(double);
+    case TYPE_VAR: return sizeof(var);
+    case TYPE_PAIR: return sizeof(pair);
     default:
         throw std::runtime_error("sizeOf(): Unknown type");
     }
@@ -87,7 +87,7 @@ varheap::varheap()
     mSize = 0;
     mCapacity = 0;
     mRefCount = 0;
-    mType = var::TYPE_VAR;
+    mType = TYPE_VAR;
     mView = 0;
 }
 
@@ -133,7 +133,7 @@ varheap::varheap(int iSize, ind iType) : varheap()
 {
     VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
-    mType = (iType == var::TYPE_ARRAY) ? var::TYPE_VAR : iType;
+    mType = (iType == TYPE_ARRAY) ? TYPE_VAR : iType;
     resize(iSize);
 }
 
@@ -141,7 +141,7 @@ varheap::varheap(int iSize, const char* iData) : varheap()
 {
     VDEBUG(std::cout << " Ctor: " << iData << std::endl);
     assert(iSize >= 0);
-    mType = var::TYPE_CHAR;
+    mType = TYPE_CHAR;
     resize(iSize);
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
@@ -150,7 +150,7 @@ varheap::varheap(int iSize, const char* iData) : varheap()
 
 
 varheap::varheap(int iSize, const int* iData)
-    : varheap(iSize, var::TYPE_INT)
+    : varheap(iSize, TYPE_INT)
 {
     VDEBUG(std::cout << " Ctor(int*): " << iData << std::endl);
     for (int i=0; i<iSize; i++)
@@ -159,7 +159,7 @@ varheap::varheap(int iSize, const int* iData)
 
 
 varheap::varheap(int iSize, const cdouble* iData)
-    : varheap(iSize, var::TYPE_CDOUBLE)
+    : varheap(iSize, TYPE_CDOUBLE)
 {
     for (int i=0; i<iSize; i++)
         mData.cdp[i] = iData[i];
@@ -282,7 +282,7 @@ void varheap::resize(int iSize)
     mSize = iSize;
 
     // strings have an extra '\0'
-    if (mType == var::TYPE_CHAR)
+    if (mType == TYPE_CHAR)
         iSize += 1;
 
     // Unallocated
@@ -303,10 +303,10 @@ void varheap::resize(int iSize)
             dataType old = mData;
             alloc(newSize);
             int toCopy = std::min(mCapacity, newSize);
-            if (mType == var::TYPE_VAR)
+            if (mType == TYPE_VAR)
                 for (int i=0; i<toCopy; i++)
                     mData.vp[i] = old.vp[i];
-            else if (mType == var::TYPE_PAIR)
+            else if (mType == TYPE_PAIR)
                 for (int i=0; i<toCopy; i++)
                     mData.pp[i] = old.pp[i];
             else
@@ -317,7 +317,7 @@ void varheap::resize(int iSize)
     }
 
     // Put in the null terminator
-    if (mType == var::TYPE_CHAR)
+    if (mType == TYPE_CHAR)
         mData.cp[mSize] = 0;
         
     return;
@@ -335,26 +335,26 @@ void varheap::copy(const varheap* iHeap, int iSize)
 {
     switch(mType)
     {
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         memcpy(mData.cp, iHeap->mData.cp, mSize*sizeof(char));
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         memcpy(mData.ip, iHeap->mData.ip, mSize*sizeof(int));
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         memcpy(mData.lp, iHeap->mData.lp, mSize*sizeof(long));
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         memcpy(mData.fp, iHeap->mData.fp, mSize*sizeof(float));
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         memcpy(mData.dp, iHeap->mData.dp, mSize*sizeof(double));
         break;
-    case var::TYPE_VAR:
+    case TYPE_VAR:
         for (int i=0; i<mSize; i++)
             mData.vp[i] = iHeap->mData.vp[i];
         break;
-    case var::TYPE_PAIR:
+    case TYPE_PAIR:
         for (int i=0; i<mSize; i++)
             mData.pp[i] = iHeap->mData.pp[i];
         break;
@@ -369,31 +369,31 @@ void varheap::alloc(int iSize)
     assert(iSize >= 0);
     switch (mType)
     {
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         mData.cp = new char[iSize];
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         mData.ip = new int[iSize];
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         mData.lp = new long[iSize];
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         mData.fp = new float[iSize];
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         mData.dp = new double[iSize];
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         mData.cfp = new cfloat[iSize];
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         mData.cdp = new cdouble[iSize];
         break;
-    case var::TYPE_VAR:
+    case TYPE_VAR:
         mData.vp = new var[iSize];
         break;
-    case var::TYPE_PAIR:
+    case TYPE_PAIR:
         mData.pp = new pair[iSize];
         break;
     default:
@@ -405,31 +405,31 @@ void varheap::dealloc(dataType iData)
 {
     switch (mType)
     {
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         delete [] iData.cp;
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         delete [] iData.ip;
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         delete [] iData.lp;
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         delete [] iData.fp;
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         delete [] iData.dp;
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         delete [] iData.cfp;
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         delete [] iData.cdp;
         break;
-    case var::TYPE_VAR:
+    case TYPE_VAR:
         delete [] iData.vp;
         break;
-    case var::TYPE_PAIR:
+    case TYPE_PAIR:
         delete [] iData.pp;
         break;
     default:
@@ -460,12 +460,12 @@ void varheap::format(std::ostream& iStream, int iIndent)
 
     switch (type())
     {
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         iStream << "\"";
         iStream << mData.cp;
         iStream << "\"";
         break;
-    case var::TYPE_PAIR:
+    case TYPE_PAIR:
         iStream << "{\n";
         for (int i=0; i<mSize; i++)
         {
@@ -479,7 +479,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
             iStream << " ";
         iStream << "}";
         break;
-    case var::TYPE_VAR:
+    case TYPE_VAR:
         iStream << "{\n";
         for (int i=0; i<mSize; i++)
         {
@@ -494,7 +494,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
             iStream << " ";
         iStream << "}";
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         // Don't call at(); it will just create more arrays & loop
         if (size() == 1)
             iStream << *ptr<cdouble>(0);
@@ -531,7 +531,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
 void varheap::formatView(std::ostream& iStream)
 {
     assert(mData.vp); // Any of the pointers
-    assert(mType == var::TYPE_INT);
+    assert(mType == TYPE_INT);
 
     // Output shape if it's more than a matrix
     int nDim = dim();
@@ -599,31 +599,31 @@ var varheap::at(int iIndex, bool iKey) const
     var r;
     switch (mType)
     {
-    case var::TYPE_CHAR:
+    case TYPE_CHAR:
         r = mData.cp[iIndex];
         break;
-    case var::TYPE_INT:
+    case TYPE_INT:
         r = mData.ip[iIndex];
         break;
-    case var::TYPE_LONG:
+    case TYPE_LONG:
         r = mData.lp[iIndex];
         break;
-    case var::TYPE_FLOAT:
+    case TYPE_FLOAT:
         r = mData.fp[iIndex];
         break;
-    case var::TYPE_DOUBLE:
+    case TYPE_DOUBLE:
         r = mData.dp[iIndex];
         break;
-    case var::TYPE_CFLOAT:
+    case TYPE_CFLOAT:
         r = mData.cfp[iIndex];
         break;
-    case var::TYPE_CDOUBLE:
+    case TYPE_CDOUBLE:
         r = mData.cdp[iIndex];
         break;
-    case var::TYPE_VAR:
+    case TYPE_VAR:
         r = mData.vp[iIndex];
         break;
-    case var::TYPE_PAIR:
+    case TYPE_PAIR:
         r = iKey ? mData.pp[iIndex].key : mData.pp[iIndex].val;
         break;
     default:
@@ -637,7 +637,7 @@ var varheap::at(int iIndex, bool iKey) const
 
 var& varheap::key(int iIndex)
 {
-    if (mType != var::TYPE_PAIR)
+    if (mType != TYPE_PAIR)
         throw std::runtime_error("varheap::key(): Not a key:value pair");
     if ( (iIndex < 0) || (iIndex >= mSize) )
         throw std::range_error("varheap::at(): index out of bounds");
@@ -656,7 +656,7 @@ bool varheap::neq(varheap* iHeap)
 
 bool varheap::lt(varheap* iHeap)
 {
-    if ( (mType == var::TYPE_CHAR) && (iHeap->mType == var::TYPE_CHAR) )
+    if ( (mType == TYPE_CHAR) && (iHeap->mType == TYPE_CHAR) )
         return (std::strcmp(ptr<char>(), iHeap->ptr<char>()) < 0);
     for (int i=0; i<std::min(size(), iHeap->size()); i++)
         if (at(i) < iHeap->at(i))
