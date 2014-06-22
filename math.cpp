@@ -20,7 +20,7 @@ namespace libvar
 {
     /*
      * The instantiations of the math and standard functors defined in this
-     * module.  They are declared static in the var class definition.
+     * module.  They are declared extern in var.h
      */
     Abs abs;
     Sin sin;
@@ -37,6 +37,7 @@ namespace libvar
     Mul mul;
     Div div;
     ASum asum;
+    Sum sum;
 }
 
 
@@ -871,6 +872,118 @@ void ASum::array(var iVar, var* oVar, int iIndex) const
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");
+    }
+}
+
+
+var Sum::operator ()(const var& iVar, var* oVar) const
+{
+    var r;
+    if (!oVar)
+    {
+        if (iVar.dim() > 1)
+        {
+            // Allocate an output array
+            var s = iVar.shape();
+            s[s.size()-1] = 1;
+            switch (iVar.atype())
+            {
+            case var::TYPE_FLOAT:
+                r = view(s, 0.0f);
+                break;
+            case var::TYPE_DOUBLE:
+                r = view(s, 0.0);
+                break;
+            case var::TYPE_CFLOAT:
+                r = view(s, cfloat(0.0f, 0.0f));
+                break;
+            case var::TYPE_CDOUBLE:
+                r = view(s, cdouble(0.0, 0.0));
+                break;
+            }
+        }
+        else
+        {
+            switch (iVar.atype())
+            {
+            case var::TYPE_FLOAT:
+                r = 0.0f;
+                break;
+            case var::TYPE_DOUBLE:
+                r = 0.0;
+                break;
+            case var::TYPE_CFLOAT:
+                r = cfloat(0.0f, 0.0f);
+                break;
+            case var::TYPE_CDOUBLE:
+                r = cdouble(0.0, 0.0);
+                break;
+            }
+        }
+        oVar = &r;
+    }
+
+    switch(type(iVar))
+    {
+    case var::TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case var::TYPE_FLOAT:
+        *oVar->ptr<float>() = iVar.get<float>();
+        break;
+    case var::TYPE_DOUBLE:
+        *oVar->ptr<double>() = iVar.get<double>();
+        break;
+    case var::TYPE_CFLOAT:
+        *oVar->ptr<cfloat>() = iVar.get<cfloat>();
+        break;
+    case var::TYPE_CDOUBLE:
+        *oVar->ptr<cdouble>() = iVar.get<cdouble>();
+        break;
+    default:
+        throw std::runtime_error("Sum::operator(): Unknown type");
+    }
+
+    return *oVar;
+}
+
+
+template<class T>
+T sumArray(int iSize, T* iPointer)
+{
+    T sum = (T)0;
+    for (int i=0; i<iSize; i++)
+        sum += iPointer[i];
+    return sum;
+}
+
+
+void Sum::array(var iVar, var* oVar, int iIndex) const
+{
+    assert(type(iVar) == var::TYPE_ARRAY);
+    int size = iVar.size();
+    int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
+    int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
+    switch(iVar.heap()->type())
+    {
+    case var::TYPE_FLOAT:
+        *(oVar->ptr<float>() + oVarOffset) =
+            sumArray(size, iVar.ptr<float>() + iVarOffset);
+        break;
+    case var::TYPE_DOUBLE:
+        *(oVar->ptr<double>() + oVarOffset) =
+            sumArray(size, iVar.ptr<double>() + iVarOffset);
+        break;
+    case var::TYPE_CFLOAT:
+        *(oVar->ptr<cfloat>() + oVarOffset) =
+            sumArray(size, iVar.ptr<cfloat>() + iVarOffset);
+        break;
+    case var::TYPE_CDOUBLE:
+        *(oVar->ptr<cdouble>() + oVarOffset) =
+            sumArray(size, iVar.ptr<cdouble>() + iVarOffset);
+        break;
+    default:
+        throw std::runtime_error("Sum::array: Unknown type");
     }
 }
 

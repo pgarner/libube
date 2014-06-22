@@ -1132,25 +1132,6 @@ var& var::presize(int iSize)
 }
 
 
-var var::sum() const
-{
-    var sum = 0.0;
-    for (int i=0; i<size(); i++)
-        sum += at(i);
-    return sum;
-}
-
-
-/* Quite likely to be unstable in general */
-var var::prod() const
-{
-    var prod = 1.0;
-    for (int i=0; i<size(); i++)
-        prod *= at(i);
-    return prod;
-}
-
-
 /**
  * Usable both as a boolean (if this var uses a heap allocation) and
  * as a means to get the pointer.

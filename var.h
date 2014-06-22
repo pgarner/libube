@@ -15,7 +15,7 @@
 #include <initializer_list>
 #include <complex>
 
-#include "ind.h"
+#include <ind.h>
 
 namespace libvar
 {
@@ -165,6 +165,19 @@ namespace libvar
     };
 
 
+    /**
+     * Basic sum functor
+     */
+    class Sum : public UnaryFunctor
+    {
+    public:
+        Sum() { mDim = 1; };
+        var operator ()(const var& iVar, var* oVar=0) const;
+    protected:
+        void array(var iVar, var* oVar, int iOffset) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -194,6 +207,7 @@ namespace libvar
     extern Mul mul;
     extern Div div;
     extern ASum asum;
+    extern Sum sum;
 
 
     /**
@@ -293,8 +307,6 @@ namespace libvar
         var& array();
         var& resize(int iSize);
         var& presize(int iSize);
-        var sum() const;
-        var prod() const;
         void format(std::ostream& iStream, int iIndent = 0) const;
         static var range(var iHi) { return range(iHi-iHi+1, iHi); };
         static var range(var iLo, var iHi, var iStep=1);

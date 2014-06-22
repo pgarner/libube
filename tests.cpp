@@ -265,7 +265,7 @@ int main(int argc, char** argv)
     bt = 1.0f, 1.2f, 0.8f, -2.0f;
     if (vg)
     {
-        cout << bt << "  sums to " << bt.sum()  << endl;
+        cout << bt << "  sums to " << lv::sum(bt)  << endl;
         cout << bt << " asums to " << lv::asum(bt) << endl;
     }
 
