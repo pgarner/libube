@@ -31,7 +31,7 @@ void dftiCheck(MKL_LONG iReturn)
  * precision real transform.  The output type is always complex; in the case of
  * a real transform the size of the complex output is iSize/2+1.
  */
-DFT::DFT(int iSize, var iForwardType, bool iInverse)
+DFT::DFT(int iSize, bool iInverse, var iForwardType)
 {
     // It's a 1 dimensional thing (for now)
     mDim = 1;

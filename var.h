@@ -487,7 +487,7 @@ namespace libvar
     class DFT : public UnaryFunctor
     {
     public:
-        DFT(int iSize, var iForwardType=0.0f, bool iInverse=false);
+        DFT(int iSize, bool iInverse=false, var iForwardType=0.0f);
         ~DFT();
         var operator ()(const var& iVar, var* oVar=0) const;
     private:
