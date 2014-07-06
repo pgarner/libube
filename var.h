@@ -94,6 +94,8 @@ namespace libvar
     };
 
     BASIC_UNARY_FUNCTOR_DECL(Abs)
+    BASIC_UNARY_FUNCTOR_DECL(Norm)
+    BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
     BASIC_UNARY_FUNCTOR_DECL(Cos)
     BASIC_UNARY_FUNCTOR_DECL(Tan)
@@ -208,6 +210,8 @@ namespace libvar
 
     // stdlib Functors
     extern Abs abs;
+    extern Norm norm;
+    extern NormC normc;
     extern Sin sin;
     extern Cos cos;
     extern Tan tan;
@@ -294,6 +298,8 @@ namespace libvar
         int size() const;
         ind type() const;
         ind atype() const;
+        var typeStr() const;
+        var atypeStr() const;
         varheap* heap() const;
         var pop();
         var top() { return at(size() - 1); };
@@ -317,6 +323,7 @@ namespace libvar
 
         // Methods for functors in math.cpp
         var abs() { return libvar::abs(*this, this); };
+        var norm() { return libvar::normc(*this, this); };
         var floor() { return libvar::floor(*this, this); };
         var sin() { return libvar::sin(*this, this); };
         var cos() { return libvar::cos(*this, this); };
@@ -349,8 +356,6 @@ namespace libvar
         int stride(int iDim) const;
         void bounds(int iDim, int iIndex) const;
         int dim() const;
-        var typeStr() const;
-        var atypeStr() const;
 
     private:
 

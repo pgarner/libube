@@ -419,10 +419,9 @@ int main(int argc, char** argv)
         lv::DFT dft(10);
         fd = dft(td);
         cout << "Freq: " << fd << endl;
+        var ab = lv::abs(fd);
+        cout << "Abs: " << ab << endl;
     }
-
-    var ab = lv::abs(fd);
-    cout << "Abs: " << ab << endl;
 
     // Phil, leave this at the end!
     return 0;

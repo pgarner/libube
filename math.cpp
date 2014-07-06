@@ -22,6 +22,8 @@ namespace libvar
      * module.  They are declared extern in var.h
      */
     Abs abs;
+    Norm norm;
+    NormC normc;
     Sin sin;
     Cos cos;
     Tan tan;
@@ -287,6 +289,7 @@ COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
 COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
 COMPLEX_UNARY_FUNCTOR(Log,log)
+COMPLEX_UNARY_FUNCTOR(NormC,norm)
 
 
 var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
@@ -363,6 +366,55 @@ var Abs::operator ()(const var& iVar, var* oVar) const
         break;
     case TYPE_CDOUBLE:
         *oVar = std::abs(iVar.get<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("Abs::operator(): Unknown type");
+    }
+
+    return *oVar;
+}
+
+
+var Norm::operator ()(const var& iVar, var* oVar) const
+{
+    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
+    // returns real.
+    var r;
+    if (!oVar)
+    {
+        // This probably ought to be a helper function.  The idea is to copy
+        // iVar, but change the type to the real version.
+        var s = iVar.shape();
+        switch (iVar.atype())
+        {
+        case TYPE_FLOAT:
+        case TYPE_CFLOAT:
+            r = view(s, 0.0f);
+            break;
+        case TYPE_DOUBLE:
+        case TYPE_CDOUBLE:
+            r = view(s, 0.0);
+            break;
+        }
+        oVar = &r;
+    }
+
+    switch (type(iVar))
+    {
+    case TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case TYPE_FLOAT:
+        *oVar = std::norm(iVar.get<float>());
+        break;
+    case TYPE_DOUBLE:
+        *oVar = std::norm(iVar.get<double>());
+        break;
+    case TYPE_CFLOAT:
+        *oVar = std::norm(iVar.get<cfloat>());
+        break;
+    case TYPE_CDOUBLE:
+        *oVar = std::norm(iVar.get<cdouble>());
         break;
     default:
         throw std::runtime_error("Abs::operator(): Unknown type");
