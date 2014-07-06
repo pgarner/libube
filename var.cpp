@@ -572,6 +572,10 @@ int var::size() const
 }
 
 
+/**
+ * var::type() dereferences but does not indirect to the heap, so it can return
+ * TYPE_ARRAY but will never return TYPE_VAR.
+ */
 ind var::type() const
 {
     var v (*this);
@@ -579,6 +583,10 @@ ind var::type() const
 }
 
 
+/**
+ * var::atype() dereferences and indirects to the heap if it exists, so it will
+ * never return TYPE_ARRAY, but can return TYPE_VAR.
+ */
 ind var::atype() const
 {
     if (!defined())
@@ -611,7 +619,7 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
     }
 
     // Strings get converted
-    if (iVar.heap() && (iVar.heap()->type() == TYPE_CHAR))
+    if (iVar.heap() && (iVar.atype() == TYPE_CHAR))
     {
         *oVar = static_cast<T>(iVar.heap()->strtold());
         return *oVar;
@@ -692,7 +700,7 @@ var var::operator [](var iVar)
         v.attach(new varheap(0, TYPE_PAIR));
     }
     else
-        if (v.heap() && (v.heap()->type() != TYPE_PAIR))
+        if (v.heap() && (v.atype() != TYPE_PAIR))
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = v.binary(iVar);
@@ -780,7 +788,7 @@ var var::at(var iVar) const
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     else
-        if (heap() && (heap()->type() != TYPE_PAIR))
+        if (heap() && (atype() != TYPE_PAIR))
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = binary(iVar);
@@ -959,7 +967,11 @@ int var::detach(varheap* iHeap)
 }
 
 
-const char* var::typeOf(ind iType)
+/**
+ * Maps types to strings.  Cannot be a method as it should handle
+ * heap()->type() style calls too.
+ */
+const char* libvar::typeStr(ind iType)
 {
     switch (iType)
     {
@@ -974,20 +986,36 @@ const char* var::typeOf(ind iType)
     case TYPE_VAR: return "var";
     case TYPE_PAIR: return "pair";
     default:
-        throw std::runtime_error("typeOf(): Unknown type");
+        throw std::runtime_error("libvar::typeStr(): Unknown type");
     }
 }
 
 
-var var::typeOf()
+/**
+ * typeStr() returns a var being the string representation of the type.  It
+ * does not indirect (cf. type()), so the type may be just "array", and will
+ * never be "var" or "pair".
+ */
+var var::typeStr() const
 {
-    if (mType == TYPE_ARRAY)
+    return libvar::typeStr(type());
+}
+
+
+/**
+ * atypeStr() returns a var being the string representation of the type.  In
+ * the case of arrays, it indirects to the heap (cf. atype()), giving a more
+ * informative string.
+ */
+var var::atypeStr() const
+{
+    if (type() == TYPE_ARRAY)
     {
         vstream s;
-        s << "array[" << typeOf(heap()->type()) << "]";
+        s << "array[" << libvar::typeStr(heap()->type()) << "]";
         return s.var();
     }
-    return typeOf(mType);
+    return typeStr();
 }
 
 
@@ -1042,7 +1070,7 @@ var& var::insert(var iVar, int iIndex)
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
 
-    if (heap() && (heap()->type() == TYPE_VAR))
+    if (heap() && (atype() == TYPE_VAR))
     {
         // Implies array; insert a single var
         resize(size()+1);
@@ -1050,7 +1078,7 @@ var& var::insert(var iVar, int iIndex)
             at(i) = at(i-1);
         at(iIndex) = iVar;
     }
-    else if (heap() && (heap()->type() == TYPE_PAIR))
+    else if (heap() && (atype() == TYPE_PAIR))
     {
         // Implies array; insert a single pair
         resize(size()+1);
@@ -1243,7 +1271,7 @@ int var::binary(var iData) const
     int lo = 0;
     int hi = size();
     bool pair =  // index on key rather than value
-        (heap() && (heap()->type() == TYPE_PAIR));
+        (heap() && (atype() == TYPE_PAIR));
     while (lo != hi)
     {
         int pos = (hi-lo)/2 + lo;

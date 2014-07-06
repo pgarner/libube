@@ -316,12 +316,13 @@ namespace libvar
         static var irange(var iLo, var iHi, var iStep=1);
 
         // Methods for functors in math.cpp
+        var abs() { return libvar::abs(*this, this); };
         var floor() { return libvar::floor(*this, this); };
         var sin() { return libvar::sin(*this, this); };
         var cos() { return libvar::cos(*this, this); };
         var sqrt() { return libvar::sqrt(*this, this); };
         var log() { return libvar::log(*this, this); };
-        var abs() { return libvar::abs(*this, this); };
+        var pow(var iPow) { return libvar::pow(*this, iPow, this); };
 
         // string.cpp
         var& getline(std::istream& iStream);
@@ -348,7 +349,8 @@ namespace libvar
         int stride(int iDim) const;
         void bounds(int iDim, int iIndex) const;
         int dim() const;
-        var typeOf();
+        var typeStr() const;
+        var atypeStr() const;
 
     private:
 
@@ -375,7 +377,6 @@ namespace libvar
         var& dereference();
         int attach(varheap* iHeap=0);
         int detach(varheap* iHeap=0);
-        const char* typeOf(ind iType);
         int binary(var iData) const;
         void setStrides(var& iVar, int iSize, int iOffset);
     };
@@ -387,6 +388,7 @@ namespace libvar
     std::ostream& operator <<(std::ostream& iStream, var iVar);
     var view(const std::initializer_list<int> iShape, var iType=nil);
     var view(var iShape, var iType=nil);
+    const char* typeStr(ind iType);
 
 
     /**

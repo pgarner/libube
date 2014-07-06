@@ -13,7 +13,6 @@
 #include <stdexcept>
 
 #include "var.h"
-#include "varheap.h"
 
 
 namespace libvar
@@ -125,7 +124,7 @@ ind type(var iVar)
 {
     ind type = iVar.type();
     if ((type == TYPE_ARRAY) &&
-        (iVar.heap()->type() == TYPE_CDOUBLE))
+        (iVar.atype() == TYPE_CDOUBLE))
         type = TYPE_CDOUBLE;
     return type;
 }
@@ -203,7 +202,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
     // Check that the two arrays are broadcastable
     if (dim2 > dim1)
         throw std::runtime_error("var::broadcast: input dimension too large");
-    if (iVar1.heap()->type() != iVar2.heap()->type())
+    if (iVar1.atype() != iVar2.atype())
         throw std::runtime_error("var::broadcast: types must match (for now)");
     for (int i=0; i>dim2; i++)
     {
@@ -421,7 +420,7 @@ void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     assert(type(iVar1) == TYPE_ARRAY);
     static int one = 1;
     int size = iVar2.size();
-    switch(iVar1.heap()->type())
+    switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
@@ -492,7 +491,7 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
-    switch(iVar1.heap()->type())
+    switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
@@ -565,7 +564,7 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     assert(iVar1.is(*oVar));
     static int one = 1;
     int size = iVar2.size();
-    switch(iVar1.heap()->type())
+    switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
@@ -612,7 +611,7 @@ void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
     assert(type(iVar1) == TYPE_ARRAY);
     static int one = 1;
     int size = iVar1.size();
-    switch(iVar1.heap()->type())
+    switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
@@ -692,7 +691,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         // xtbmv() (triangular band) overwrites the current location.
         static char trans = 'T';
         static char diag = 'N';
-        switch(iVar1.heap()->type())
+        switch(iVar1.atype())
         {
         case TYPE_FLOAT:
         {
@@ -715,7 +714,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     else
     {
         // xsbmv() (symmetric band) puts the result in a new location.
-        switch(iVar1.heap()->type())
+        switch(iVar1.atype())
         {
         case TYPE_FLOAT:
         {
@@ -860,7 +859,7 @@ void ASum::array(var iVar, var* oVar, int iIndex) const
     int size = iVar.size();
     int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
     int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
-    switch(iVar.heap()->type())
+    switch(iVar.atype())
     {
     case TYPE_FLOAT:
         *(oVar->ptr<float>() + oVarOffset) =
@@ -964,7 +963,7 @@ void Sum::array(var iVar, var* oVar, int iIndex) const
     int size = iVar.size();
     int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
     int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
-    switch(iVar.heap()->type())
+    switch(iVar.atype())
     {
     case TYPE_FLOAT:
         *(oVar->ptr<float>() + oVarOffset) =

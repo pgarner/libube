@@ -11,7 +11,6 @@
 #include <stdexcept>
 
 #include <var.h>
-#include "varheap.h"
 
 namespace libvar
 {
@@ -82,7 +81,7 @@ void gnuplot::write(const char* iFile, var iVar)
     for (int i=0; i<iVar.size(); i++)
     {
         str = iVar[i];
-        switch (str.heap()->type())
+        switch (str.atype())
         {
         case TYPE_CHAR:
             puts(str.str());

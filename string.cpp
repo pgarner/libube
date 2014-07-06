@@ -14,7 +14,6 @@
 #include <boost/regex.hpp>
 
 #include "var.h"
-#include "varheap.h"
 
 
 using namespace libvar;
@@ -110,7 +109,7 @@ var var::join(const char* iStr) const
 var var::strip()
 {
     var v(*this);
-    if (v.heap()->type() != TYPE_CHAR)
+    if (v.atype() != TYPE_CHAR)
         return *this;
 
     char* ptr = v.ptr<char>();
@@ -164,7 +163,7 @@ var& var::sprintf(const char* iFormat, ...)
  */
 bool var::search(var iRE)
 {
-    if (heap()->type() != TYPE_CHAR)
+    if (atype() != TYPE_CHAR)
         throw std::runtime_error("var::search(): Not a string");
     boost::regex rgx(iRE.ptr<char>());
     bool r = boost::regex_search(ptr<char>(), rgx);
@@ -190,7 +189,7 @@ bool var::match(var iRE)
  */
 var var::replace(var iRE, var iStr)
 {
-    if (heap()->type() != TYPE_CHAR)
+    if (atype() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
 
     std::string str = ptr<char>();

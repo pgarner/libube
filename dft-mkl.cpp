@@ -10,7 +10,6 @@
 #include <cassert>
 #include <mkl.h>
 #include "var.h"
-#include "varheap.h" // for heap()->type()
 
 
 using namespace libvar;
@@ -99,11 +98,9 @@ var DFT::operator ()(const var& iVar, var* oVar) const
         throw std::runtime_error("DFT::operator(): DFT input must be vector");
     if (oVar->type() != TYPE_ARRAY)
         throw std::runtime_error("DFT::operator(): DFT output must be vector");
-    if (iVar.heap()->type() !=
-        (mInverse ? mInverseType.type() : mForwardType.type()))
+    if (iVar.atype() != (mInverse ? mInverseType.type() : mForwardType.type()))
         throw std::runtime_error("DFT::operator(): wrong input type");
-    if (oVar->heap()->type() !=
-        (mInverse ? mForwardType.type() : mInverseType.type()))
+    if (oVar->atype() != (mInverse ? mForwardType.type() : mInverseType.type()))
         throw std::runtime_error("DFT::operator(): wrong output type");
 
     // DFT always broadcasts to array()
