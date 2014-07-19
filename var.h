@@ -196,6 +196,19 @@ namespace libvar
     };
 
 
+    /**
+     * Transpose functor
+     */
+    class Transpose : public UnaryFunctor
+    {
+    public:
+        Transpose() { mDim = 2; };
+        var operator ()(const var& iVar, var* oVar=0) const;
+    protected:
+        void array(var iVar, var* oVar, int iOffset) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -229,6 +242,8 @@ namespace libvar
     extern ASum asum;
     extern Sum sum;
 
+    // BLAS-like
+    extern Transpose transpose;
 
     /**
      * Class with runtime type determination.
@@ -264,7 +279,7 @@ namespace libvar
 
         // Data accessor
         template<class T> T get() const;
-        template<class T> T* ptr();
+        template<class T> T* ptr(ind iIndex=0);
         const char* str();
 
         // Operators
@@ -283,6 +298,7 @@ namespace libvar
         var operator *(var iVar) const { return mul(*this, iVar); };
         var operator /(var iVar) const { return div(*this, iVar); };
         var operator [](int iIndex);
+        var operator [](int iIndex) const { return at(iIndex); };
         var operator [](var iVar);
         var operator ()(int iFirst, ...);
         explicit operator bool() const { return defined(); };

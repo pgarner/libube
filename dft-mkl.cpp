@@ -118,15 +118,15 @@ void DFT::array(var iVar, var* oVar, int iIndex) const
     {
         throw std::runtime_error("DFT::array(): not implemented");
         if (mInverse)
-            r = DftiComputeBackward(mHandle, oVar->ptr<float>()+oVarOffset);
+            r = DftiComputeBackward(mHandle, oVar->ptr<float>(oVarOffset));
         else
-            r = DftiComputeForward(mHandle, oVar->ptr<float>()+oVarOffset);
+            r = DftiComputeForward(mHandle, oVar->ptr<float>(oVarOffset));
     }
     else
         if (mInverse)
             r = DftiComputeBackward(
                 mHandle,
-                iVar.ptr<float>()+iVarOffset, oVar->ptr<float>()+oVarOffset
+                iVar.ptr<float>(iVarOffset), oVar->ptr<float>(oVarOffset)
             );
         else
             switch (mForwardType.type())
@@ -134,29 +134,29 @@ void DFT::array(var iVar, var* oVar, int iIndex) const
             case TYPE_FLOAT:
                 r = DftiComputeForward(
                     mHandle,
-                    iVar.ptr<float>() + iVarOffset,
-                    oVar->ptr<cfloat>() + oVarOffset
+                    iVar.ptr<float>(iVarOffset),
+                    oVar->ptr<cfloat>(oVarOffset)
                 );
                 break;
             case TYPE_DOUBLE:
                 r = DftiComputeForward(
                     mHandle,
-                    iVar.ptr<double>() + iVarOffset,
-                    oVar->ptr<cdouble>() + oVarOffset
+                    iVar.ptr<double>(iVarOffset),
+                    oVar->ptr<cdouble>(oVarOffset)
                 );
                 break;
             case TYPE_CFLOAT:
                 r = DftiComputeForward(
                     mHandle,
-                    iVar.ptr<cfloat>() + iVarOffset,
-                    oVar->ptr<cfloat>() + oVarOffset
+                    iVar.ptr<cfloat>(iVarOffset),
+                    oVar->ptr<cfloat>(oVarOffset)
                 );
                 break;
             case TYPE_CDOUBLE:
                 r = DftiComputeForward(
                     mHandle,
-                    iVar.ptr<cdouble>() + iVarOffset,
-                    oVar->ptr<cdouble>() + oVarOffset
+                    iVar.ptr<cdouble>(iVarOffset),
+                    oVar->ptr<cdouble>(oVarOffset)
                 );
                 break;
             default:

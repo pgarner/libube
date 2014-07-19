@@ -477,14 +477,14 @@ void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     case TYPE_FLOAT:
     {
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>()+iOffset;
+        float* y = iVar1.ptr<float>(iOffset);
         scopy_(&size, x, &one, y, &one);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>()+iOffset;
+        double* y = iVar1.ptr<double>(iOffset);
         dcopy_(&size, x, &one, y, &one);
         break;
     }
@@ -549,7 +549,7 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         static float alpha = 1.0f;
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>()+iOffset;
+        float* y = iVar1.ptr<float>(iOffset);
         saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
@@ -557,7 +557,7 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         static double alpha = 1.0;
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>()+iOffset;
+        double* y = iVar1.ptr<double>(iOffset);
         daxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
@@ -622,7 +622,7 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         static float alpha = -1.0f;
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>()+iOffset;
+        float* y = iVar1.ptr<float>(iOffset);
         saxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
@@ -630,7 +630,7 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         static double alpha = -1.0;
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>()+iOffset;
+        double* y = iVar1.ptr<double>(iOffset);
         daxpy_(&size, &alpha, x, &one, y, &one);
         break;
     }
@@ -668,14 +668,14 @@ void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
     case TYPE_FLOAT:
     {
         float alpha = iVar2.cast<float>();
-        float* x = iVar1.ptr<float>()+iOffset;
+        float* x = iVar1.ptr<float>(iOffset);
         sscal_(&size, &alpha, x, &one);
         break;
     }
     case TYPE_DOUBLE:
     {
         double alpha = iVar2.cast<double>();
-        double* x = iVar1.ptr<double>()+iOffset;
+        double* x = iVar1.ptr<double>(iOffset);
         dscal_(&size, &alpha, x, &one);
         break;
     }
@@ -748,14 +748,14 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         case TYPE_FLOAT:
         {
             float* A = iVar2.ptr<float>();
-            float* x = iVar1.ptr<float>()+iOffset;
+            float* x = iVar1.ptr<float>(iOffset);
             stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
             break;
         }
         case TYPE_DOUBLE:
         {
             double* A = iVar2.ptr<double>();
-            double* x = iVar1.ptr<double>()+iOffset;
+            double* x = iVar1.ptr<double>(iOffset);
             dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
             break;
         }
@@ -773,8 +773,8 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
             static float alpha = 1.0f;
             static float beta = 0.0f;
             float* A = iVar2.ptr<float>();
-            float* x = iVar1.ptr<float>()+iOffset;
-            float* y = oVar->ptr<float>()+iOffset;
+            float* x = iVar1.ptr<float>(iOffset);
+            float* y = oVar->ptr<float>(iOffset);
             ssbmv_(&uplo, &size, &zero,
                    &alpha, A, &one, x, &one, &beta, y, &one);
             break;
@@ -784,8 +784,8 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
             static double alpha = 1.0;
             static double beta = 0.0;
             double* A = iVar2.ptr<double>();
-            double* x = iVar1.ptr<double>()+iOffset;
-            double* y = oVar->ptr<double>()+iOffset;
+            double* x = iVar1.ptr<double>(iOffset);
+            double* y = oVar->ptr<double>(iOffset);
             dsbmv_(&uplo, &size, &zero,
                    &alpha, A, &one, x, &one, &beta, y, &one);
             break;
@@ -914,12 +914,12 @@ void ASum::array(var iVar, var* oVar, int iIndex) const
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>() + oVarOffset) =
-            sasum_(&size, iVar.ptr<float>() + iVarOffset, &inc);
+        *(oVar->ptr<float>(oVarOffset)) =
+            sasum_(&size, iVar.ptr<float>(iVarOffset), &inc);
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>() + oVarOffset) =
-            dasum_(&size, iVar.ptr<double>() + iVarOffset, &inc);
+        *(oVar->ptr<double>(oVarOffset)) =
+            dasum_(&size, iVar.ptr<double>(iVarOffset), &inc);
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");
@@ -1018,20 +1018,20 @@ void Sum::array(var iVar, var* oVar, int iIndex) const
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>() + oVarOffset) =
-            sumArray(size, iVar.ptr<float>() + iVarOffset);
+        *(oVar->ptr<float>(oVarOffset)) =
+            sumArray(size, iVar.ptr<float>(iVarOffset));
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>() + oVarOffset) =
-            sumArray(size, iVar.ptr<double>() + iVarOffset);
+        *(oVar->ptr<double>(oVarOffset)) =
+            sumArray(size, iVar.ptr<double>(iVarOffset));
         break;
     case TYPE_CFLOAT:
-        *(oVar->ptr<cfloat>() + oVarOffset) =
-            sumArray(size, iVar.ptr<cfloat>() + iVarOffset);
+        *(oVar->ptr<cfloat>(oVarOffset)) =
+            sumArray(size, iVar.ptr<cfloat>(iVarOffset));
         break;
     case TYPE_CDOUBLE:
-        *(oVar->ptr<cdouble>() + oVarOffset) =
-            sumArray(size, iVar.ptr<cdouble>() + iVarOffset);
+        *(oVar->ptr<cdouble>(oVarOffset)) =
+            sumArray(size, iVar.ptr<cdouble>(iVarOffset));
         break;
     default:
         throw std::runtime_error("Sum::array: Unknown type");
@@ -1056,7 +1056,7 @@ void varheap::mul(
     {
         static float alpha = 1.0f;
         float* a = iHeapB->ptr<float>();
-        float* b = iVarA.ptr<float>()+iOffsetA;
+        float* b = iVarA.ptr<float>(iOffsetA);
         float* c = ptr<float>(iOffset);
         sgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;
@@ -1065,7 +1065,7 @@ void varheap::mul(
     {
         static double alpha = 1.0;
         double* a = iHeapB->ptr<double>();
-        double* b = iVarA.ptr<double>()+iOffsetA;
+        double* b = iVarA.ptr<double>(iOffsetA);
         double* c = ptr<double>(iOffset);
         dgemm_(&trans, &trans, m, n, k, &alpha, a, k, b, m, &alpha, c, m);
         break;

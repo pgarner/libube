@@ -385,22 +385,23 @@ int main(int argc, char** argv)
     cout << "r4: " << r4 << endl;
 
     // Functors
-    lv::Pow pow;
-    lv::Tan tan;
     cout << "Size: " << sizeof(lv::Pow) << endl;
-    cout << "Pow: " << pow(3.0, 2) << endl;
-    cout << "Pow: " << pow(r6, 2) << endl;
-    cout << "Tan: " << tan(r6) << endl;
+    cout << "Pow: " << lv::pow(3.0, 2) << endl;
+    cout << "Pow: " << lv::pow(r6, 2) << endl;
+    cout << "Tan: " << lv::tan(r6) << endl;
+
+    // Transpose
+    //cout << "Transpose: " << lv::transpose(r6) << endl;
 
     // Complex
     var fc = complex<float>(0.5, 0.7);
     cout << "fc: " << fc << endl;
-    cout << "pow(fc,2): " << pow(fc, 2) << endl;
-    cout << "tan(fc): " << tan(fc) << endl;
+    cout << "pow(fc,2): " << lv::pow(fc, 2) << endl;
+    cout << "tan(fc): " << lv::tan(fc) << endl;
     var dc = complex<double>(0.2, 0.8);
     cout << "dc: " << dc << endl;
-    cout << "pow(dc,2): " << pow(dc, 2) << endl;
-    cout << "tan(dc): " << tan(dc) << endl;
+    cout << "pow(dc,2): " << lv::pow(dc, 2) << endl;
+    cout << "tan(dc): " << lv::tan(dc) << endl;
     var dd = complex<double>(1.0, 1.2);
     dc += dd;
     cout << "dc: " << dc << endl;

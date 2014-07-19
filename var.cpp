@@ -76,61 +76,67 @@ template<> cdouble var::get<cdouble>() const {
 }
 
 
-template<> char* var::ptr<char>()
+/**
+ * The pointer methods are rather basic in that they do not do any type or
+ * range checking.  So, if you ask for index 10 of something that is not an
+ * array then the index is ignored.  Maybe this will get fixed one day.
+ */
+
+template<> char* var::ptr<char>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.c : mData.hp->ptr<char>(~mType);
     }
-    return heap() ? heap()->ptr<char>() : &mData.c;
+    return heap() ? heap()->ptr<char>(iIndex) : &mData.c;
 }
-template<> int* var::ptr<int>()
+template<> int* var::ptr<int>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.i : mData.hp->ptr<int>(~mType);
     }
-    return heap() ? heap()->ptr<int>() : &mData.i;
+    return heap() ? heap()->ptr<int>(iIndex) : &mData.i;
 }
-template<> long* var::ptr<long>()
+template<> long* var::ptr<long>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.l : mData.hp->ptr<long>(~mType);
     }
-    return heap() ? heap()->ptr<long>() : &mData.l;
+    return heap() ? heap()->ptr<long>(iIndex) : &mData.l;
 }
-template<> float* var::ptr<float>()
+template<> float* var::ptr<float>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.f : mData.hp->ptr<float>(~mType);
     }
-    return heap() ? heap()->ptr<float>() : &mData.f;
+    return heap() ? heap()->ptr<float>(iIndex) : &mData.f;
 }
-template<> double* var::ptr<double>()
+template<> double* var::ptr<double>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.d : mData.hp->ptr<double>(~mType);
     }
-    return heap() ? heap()->ptr<double>() : &mData.d;
+    return heap() ? heap()->ptr<double>(iIndex) : &mData.d;
 }
-template<> cfloat* var::ptr<cfloat>()
+template<> cfloat* var::ptr<cfloat>(ind iIndex)
 {
     if (reference())
     {
         var& r = varderef();
         return (&r != this) ? &r.mData.cf : mData.hp->ptr<cfloat>(~mType);
     }
-    return heap() ? heap()->ptr<cfloat>() : &mData.cf;
+    return heap() ? heap()->ptr<cfloat>(iIndex) : &mData.cf;
 }
-template<> cdouble* var::ptr<cdouble>()
+template<> cdouble* var::ptr<cdouble>(ind iIndex)
 {
     if (reference())
     {
@@ -138,7 +144,7 @@ template<> cdouble* var::ptr<cdouble>()
         assert(&r == this);
         return mData.hp->ptr<cdouble>(~mType);
     }
-    return mData.hp->ptr<cdouble>(0);
+    return mData.hp->ptr<cdouble>(iIndex);
 }
 
 

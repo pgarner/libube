@@ -11,6 +11,7 @@ cmake_minimum_required(VERSION 2.8)
 # Package information
 project(libvar)
 set(VERSION 0.1)
+# enable_language(Fortran)
 
 # Package stuff
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
@@ -28,6 +29,7 @@ set(SOURCES
   math.cpp
   string.cpp
   dft-mkl.cpp
+  transpose-mkl.cpp
   )
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
