@@ -56,7 +56,8 @@ namespace libvar
     protected:
         int mDim;
         virtual void broadcast(var iVar1, var* oVar) const;
-        virtual void array(var iVar, var* oVar, int iIndex) const;
+        virtual void
+        array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
     };
 
 
@@ -179,7 +180,7 @@ namespace libvar
         ASum() { mDim = 1; };
         var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, var* oVar, int iOffset) const;
+        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
     };
 
 
@@ -192,7 +193,7 @@ namespace libvar
         Sum() { mDim = 1; };
         var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, var* oVar, int iOffset) const;
+        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
     };
 
 
@@ -205,7 +206,7 @@ namespace libvar
         Transpose() { mDim = 2; };
         var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, var* oVar, int iOffset) const;
+        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
     };
 
 
@@ -305,6 +306,7 @@ namespace libvar
         var operator ,(var iVar) { return push(iVar); };
 
         // Methods
+        var& dereference();
         template<class T> T cast() const;
         bool is(var& iVar) const;
         var at(int iIndex) const;
@@ -347,6 +349,9 @@ namespace libvar
         var log() { return libvar::log(*this, this); };
         var pow(var iPow) { return libvar::pow(*this, iPow, this); };
 
+        // Other functors
+        var transpose() { return libvar::transpose(*this, this); };
+
         // string.cpp
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
@@ -362,6 +367,7 @@ namespace libvar
         var& write(const char* iFile, const char* iType);
 
         // Tensors
+        bool view() const;
         var view(const std::initializer_list<int> iList, int iOffset=0);
         var view(var iShape, int iOffset=0);
         int offset() const;
@@ -395,7 +401,6 @@ namespace libvar
         var& varderef();
         bool reference() const;
         var reference(int iIndex) const;
-        var& dereference();
         int attach(varheap* iHeap=0);
         int detach(varheap* iHeap=0);
         int binary(var iData) const;
@@ -514,7 +519,7 @@ namespace libvar
         ~DFT();
         var operator ()(const var& iVar, var* oVar=0) const;
     private:
-        void array(var iVar, var* oVar, int iOffset) const;
+        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
         DFTI_DESCRIPTOR_HANDLE mHandle;
         var mForwardType;
         var mInverseType;

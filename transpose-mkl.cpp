@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 by Idiap Research Institute, http://www.idiap.ch
+ * Copyright 2014 by Philip N. Garner
  *
  * See the file COPYING for the licence associated with this software.
  *
@@ -10,9 +10,11 @@
 #include <cassert>
 #include <mkl.h>
 #include "var.h"
+#include "varheap.h" // for the view transpose
 
 namespace libvar
 {
+    // The instantiation of the class
     Transpose transpose;
 }
 
@@ -20,6 +22,10 @@ using namespace libvar;
 
 var Transpose::operator ()(const var& iVar, var* oVar) const
 {
+    // Note that we need to transpose the view too.  If it's allocated, it's
+    // transposed at allocation; if it's supplied it's assumed to be correct
+    // already.  This leaves the in-place case; this happens after the
+    // operation.
     var r;
     if (!oVar)
     {
@@ -28,7 +34,12 @@ var Transpose::operator ()(const var& iVar, var* oVar) const
         int dim = s.size();
         if (dim < 2)
             throw std::runtime_error("Transpose::operator(): dimension < 2");
-        var tmp = s[dim-1];
+
+        // This is a gotcha: Without the dereference(), s[dim-1] is an lvalue
+        // so tmp will use the move semantic.  This means it will remain a
+        // reference; this swap is exactly when you don't want it to be one.
+        // The other option is use get<int>(), which may even be quicker.
+        var tmp = s[dim-1].dereference();
         s[dim-1] = s[dim-2];
         s[dim-2] = tmp;
         r = view(s, iVar.at(0));
@@ -37,15 +48,30 @@ var Transpose::operator ()(const var& iVar, var* oVar) const
 
     // Transpose always broadcasts to array()
     broadcast(iVar, oVar);
+
+    // Transpose view if necessary
+    if (iVar.is(*oVar))
+    {
+        // Swap the trailing dimensions
+        int d = iVar.dim();
+        varheap* h = iVar.heap();
+        int& str1 = h->stride(d-1);
+        int& shp1 = h->shape(d-1);
+        int& str2 = h->stride(d-2);
+        int& shp2 = h->shape(d-2);
+        int tmp = shp1;
+        shp1 = shp2;
+        shp2 = tmp;
+        str2 = shp1 * str1;
+    }
+
     return *oVar;
 }
 
 
-void Transpose::array(var iVar, var* oVar, int iIndex) const
+void Transpose::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
 {
     assert(oVar);
-    int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
-    int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     int dim = iVar.dim();
     ind rows = iVar.shape(dim-2);
     ind cols = iVar.shape(dim-1);
@@ -56,7 +82,13 @@ void Transpose::array(var iVar, var* oVar, int iIndex) const
         case TYPE_FLOAT:
             mkl_simatcopy (
                 'r', 't', rows, cols, 1.0f,
-                oVar->ptr<float>(oVarOffset), cols, rows
+                oVar->ptr<float>(iOffsetO), cols, rows
+            );
+            break;
+        case TYPE_DOUBLE:
+            mkl_dimatcopy (
+                'r', 't', rows, cols, 1.0,
+                oVar->ptr<double>(iOffsetO), cols, rows
             );
             break;
         default:
@@ -69,11 +101,18 @@ void Transpose::array(var iVar, var* oVar, int iIndex) const
         case TYPE_FLOAT:
             mkl_somatcopy (
                 'r', 't', rows, cols, 1.0f,
-                iVar.ptr<float>(iVarOffset), cols,
-                oVar->ptr<float>(oVarOffset), rows
+                iVar.ptr<float>(iOffsetI), cols,
+                oVar->ptr<float>(iOffsetO), rows
+            );
+            break;
+        case TYPE_DOUBLE:
+            mkl_domatcopy (
+                'r', 't', rows, cols, 1.0,
+                iVar.ptr<double>(iOffsetI), cols,
+                oVar->ptr<double>(iOffsetO), rows
             );
             break;
         default:
-            throw std::runtime_error("Transpose::array(): unknown type");            
+            throw std::runtime_error("Transpose::array(): unknown type");
         }
 }

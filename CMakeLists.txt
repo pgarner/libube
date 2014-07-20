@@ -19,7 +19,7 @@ find_package(BLAS REQUIRED)
 find_package(Boost COMPONENTS regex REQUIRED)
 
 # add_definitions(-DVARBOSE)
-set(CMAKE_CXX_FLAGS "-Wall -std=c++11")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++11")
 
 set(HEADERS var.h ind.h lv.h)
 set(SOURCES

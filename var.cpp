@@ -1299,7 +1299,7 @@ void var::setStrides(var& iVar, int iSize, int iOffset)
     for (int i=iSize-1; i>=0; i--)
     {
         iVar[i*2+2] = p;
-        p *= iVar.heap()->viewRef(i*2+1);
+        p *= iVar[i*2+1].get<int>();
     }
 
     // the p that drops out should be the overall size
@@ -1399,9 +1399,15 @@ var libvar::view(var iShape, var iType)
 }
 
 
+bool var::view() const
+{
+    return heap() && heap()->view();
+};
+
+
 int var::dim() const
 {
-    if (!heap() || !heap()->view())
+    if (!view())
         // It's not an array, or it's an array but not a view
         return 1;
     return heap()->dim();
@@ -1410,7 +1416,7 @@ int var::dim() const
 
 int var::offset() const
 {
-    if (!heap() || !heap()->view())
+    if (!view())
         return 0;
     return heap()->offset();
 }
@@ -1418,7 +1424,7 @@ int var::offset() const
 
 var& var::offset(int iOffset)
 {
-    if (!heap() || !heap()->view())
+    if (!view())
         throw std::runtime_error("var::offset(): not a view");
     heap()->offset(iOffset);
     return *this;
@@ -1443,27 +1449,21 @@ var var::shape() const
  */
 int var::shape(int iDim) const
 {
-    if (!heap() || !heap()->view())
-    {
-        if (iDim > 0)
-            throw std::runtime_error("var::shape(): dimension too large");
-        else
-            return size();
-    }
-    return heap()->shape(iDim);
+    if (view())
+        return heap()->shape(iDim);
+    if (iDim > 0)
+        throw std::runtime_error("var::shape(): dimension too large");
+    return size();
 }
 
 
 int var::stride(int iDim) const
 {
-    if (!heap() || !heap()->view())
-    {
-        if (iDim > 0)
-            throw std::runtime_error("var::stride(): dimension too large");
-        else
-            return size();
-    }
-    return heap()->stride(iDim);
+    if (view())
+        return heap()->stride(iDim);
+    if (iDim > 0)
+        throw std::runtime_error("var::stride(): dimension too large");
+    return 1;
 }
 
 

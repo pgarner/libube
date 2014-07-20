@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 by Idiap Research Institute, http://www.idiap.ch
+ * Copyright 2013 by Philip N. Garner
  *
  * See the file COPYING for the licence associated with this software.
  *
@@ -53,8 +53,8 @@ namespace libvar
         int dim() const { return mView ? (mSize-1) / 2 : 1; };
         int offset() const { return mView ? mData.ip[0] : 0; };
         int offset(int iOffset);
-        int shape(int iDim) const;
-        int stride(int iDim) const;
+        int& shape(int iDim) const;
+        int& stride(int iDim) const;
 
         // Methods
         int attach();
@@ -67,8 +67,7 @@ namespace libvar
         bool neq(varheap* iHeap);
         bool lt(varheap* iHeap);
         void setView(varheap* iVarHeap);
-        bool view() { return mView; };
-        int& viewRef(int iIndex);
+        bool view() const { return mView; };
         bool copyable(varheap* iHeap);
 
     private:

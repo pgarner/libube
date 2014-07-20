@@ -391,7 +391,8 @@ int main(int argc, char** argv)
     cout << "Tan: " << lv::tan(r6) << endl;
 
     // Transpose
-    //cout << "Transpose: " << lv::transpose(r6) << endl;
+    cout << "oTranspose:\n" << lv::transpose(r6) << endl << r6 << endl;
+    cout << "iTranspose:\n" << r6.transpose() << endl << r6 << endl;
 
     // Complex
     var fc = complex<float>(0.5, 0.7);

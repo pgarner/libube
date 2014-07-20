@@ -177,33 +177,25 @@ int varheap::offset(int iOffset)
 }
 
 
-int varheap::shape(int iDim) const
+int& varheap::shape(int iDim) const
 {
-    if (mView)
-    {
-        int index = iDim*2 + 1;
-        if ((index < 0) || (index >= mSize))
-            throw std::range_error("varheap::shape(): dimension out of bounds");
-        return mData.ip[index];
-    }
-    if (iDim > 0)
-        throw std::range_error("varheap::shape(): not view and dimension > 0");
-    return size();
+    if (!view())
+        throw std::runtime_error("varheap::shape(): not a view");
+    int index = iDim*2 + 1;
+    if ((index < 0) || (index >= mSize))
+        throw std::range_error("varheap::shape(): dimension out of bounds");
+    return mData.ip[index];
 }
 
 
-int varheap::stride(int iDim) const
+int& varheap::stride(int iDim) const
 {
-    if (mView)
-    {
-        int index = iDim*2 + 2;
-        if ((index < 0) || (index >= mSize))
-            throw std::range_error("varheap::stride(): dimension out of bounds");
-        return mData.ip[index];
-    }
-    if (iDim > 0)
-        throw std::range_error("varheap::stride(): not view and dimension > 0");
-    return 1;
+    if (!view())
+        throw std::runtime_error("varheap::stride(): not a view");
+    int index = iDim*2 + 2;
+    if ((index < 0) || (index >= mSize))
+        throw std::range_error("varheap::stride(): dimension out of bounds");
+    return mData.ip[index];
 }
 
 
@@ -231,6 +223,8 @@ bool varheap::copyable(varheap* iHeap)
         return false;
     if (dim() != iHeap->dim())
         return false;
+    if (dim() == 1)
+        return (size() == iHeap->size());
     for (int i=0; i<dim(); i++)
         if (shape(i) != iHeap->shape(i))
             return false;
@@ -671,12 +665,4 @@ void varheap::setView(varheap* iVarHeap)
         mView->detach();
     mView = iVarHeap->mView ? iVarHeap->mView : iVarHeap;
     mView->attach();
-}
-
-
-int& varheap::viewRef(int iIndex)
-{
-    if (!mView)
-        std::runtime_error("varheap::viewRef(): Not a view");
-    return mData.ip[iIndex];
 }

@@ -132,7 +132,7 @@ ind type(var iVar)
 }
 
 
-void UnaryFunctor::array(var iVar, var* oVar, int iOffset) const
+void UnaryFunctor::array(var iVar, ind iIOffset, var* oVar, ind iOOffset) const
 {
     throw std::runtime_error("UnaryFunctor: not an array operation");
 }
@@ -172,10 +172,13 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
         throw std::runtime_error("var::broadcast: op dimension too large");
 
     // If it didn't throw, then the array is broadcastable
-    // In this case, loop over iVar with different indexes
-    int s = iVar.size() / iVar.stride(iDim-mDim-1);
-    for (int i=0; i<s; i++)
-        array(iVar, oVar, i);
+    // In this case, loop over iVar (and oVar) with different offsets
+    int oDim = oVar->dim();
+    int stepI = iDim-mDim > 0 ? iVar.stride(iDim-mDim-1) : iVar.size();
+    int stepO = oDim-mDim > 0 ? oVar->stride(oDim-mDim-1) : oVar->size();
+    int nOps = iVar.size() / stepI;
+    for (int i=0; i<nOps; i++)
+        array(iVar, stepI*i, oVar, stepO*i);
 }
 
 
@@ -904,22 +907,20 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 }
 
 
-void ASum::array(var iVar, var* oVar, int iIndex) const
+void ASum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
     static int inc = 1;
     int size = iVar.size();
-    int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
-    int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>(oVarOffset)) =
-            sasum_(&size, iVar.ptr<float>(iVarOffset), &inc);
+        *(oVar->ptr<float>(iOffsetO)) =
+            sasum_(&size, iVar.ptr<float>(iOffsetI), &inc);
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>(oVarOffset)) =
-            dasum_(&size, iVar.ptr<double>(iVarOffset), &inc);
+        *(oVar->ptr<double>(iOffsetO)) =
+            dasum_(&size, iVar.ptr<double>(iOffsetI), &inc);
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");
@@ -1009,29 +1010,27 @@ T sumArray(int iSize, T* iPointer)
 }
 
 
-void Sum::array(var iVar, var* oVar, int iIndex) const
+void Sum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
     int size = iVar.size();
-    int iVarOffset = iVar.stride(iVar.dim()-mDim-1) * iIndex;
-    int oVarOffset = oVar->stride(oVar->dim()-mDim-1) * iIndex;
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>(oVarOffset)) =
-            sumArray(size, iVar.ptr<float>(iVarOffset));
+        *(oVar->ptr<float>(iOffsetO)) =
+            sumArray(size, iVar.ptr<float>(iOffsetI));
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>(oVarOffset)) =
-            sumArray(size, iVar.ptr<double>(iVarOffset));
+        *(oVar->ptr<double>(iOffsetO)) =
+            sumArray(size, iVar.ptr<double>(iOffsetI));
         break;
     case TYPE_CFLOAT:
-        *(oVar->ptr<cfloat>(oVarOffset)) =
-            sumArray(size, iVar.ptr<cfloat>(iVarOffset));
+        *(oVar->ptr<cfloat>(iOffsetO)) =
+            sumArray(size, iVar.ptr<cfloat>(iOffsetI));
         break;
     case TYPE_CDOUBLE:
-        *(oVar->ptr<cdouble>(oVarOffset)) =
-            sumArray(size, iVar.ptr<cdouble>(iVarOffset));
+        *(oVar->ptr<cdouble>(iOffsetO)) =
+            sumArray(size, iVar.ptr<cdouble>(iOffsetI));
         break;
     default:
         throw std::runtime_error("Sum::array: Unknown type");
