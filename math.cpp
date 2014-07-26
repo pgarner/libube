@@ -96,7 +96,9 @@ void UnaryFunctor::array(var iVar, ind iIOffset, var* oVar, ind iOOffset) const
 }
 
 
-void BinaryFunctor::array(var iVar1, var iVar2, var* oVar, int iOffset) const
+void BinaryFunctor::array(
+    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+) const
 {
     throw std::runtime_error("BinaryFunctor: not an array operation");
 }
@@ -176,8 +178,12 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
 
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
-    for (int i=0; i<iVar1.size(); i+=iVar2.size())
-        array(iVar1, iVar2, oVar, i);
+    int oDim = oVar->dim();
+    int step1 = dim1-dim2 > 0 ? iVar1.stride(dim1-dim2-1) : iVar1.size();
+    int stepO = oDim-dim2 > 0 ? oVar->stride(oDim-dim2-1) : oVar->size();
+    int nOps = iVar1.size() / step1;
+    for (int i=0; i<nOps; i++)
+        array(iVar1, step1*i, iVar2, oVar, stepO*i);
 }
 
 
@@ -428,7 +434,9 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
+void Set::array(
+    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar2.size();
@@ -437,14 +445,14 @@ void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     case TYPE_FLOAT:
     {
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>(iOffset);
+        float* y = iVar1.ptr<float>(iOffset1);
         cblas_scopy(size, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>(iOffset);
+        double* y = iVar1.ptr<double>(iOffset1);
         cblas_dcopy(size, x, 1, y, 1);
         break;
     }
@@ -497,7 +505,9 @@ var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
+void Add::array(
+    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
@@ -507,14 +517,14 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     case TYPE_FLOAT:
     {
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>(iOffset);
+        float* y = iVar1.ptr<float>(iOffset1);
         cblas_saxpy(size, 1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>(iOffset);
+        double* y = iVar1.ptr<double>(iOffset1);
         cblas_daxpy(size, 1.0, x, 1, y, 1);
         break;
     }
@@ -567,7 +577,9 @@ var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
+void Sub::array(
+    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
@@ -577,14 +589,14 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     case TYPE_FLOAT:
     {
         float* x = iVar2.ptr<float>();
-        float* y = iVar1.ptr<float>(iOffset);
+        float* y = iVar1.ptr<float>(iOffset1);
         cblas_saxpy(size, -1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
-        double* y = iVar1.ptr<double>(iOffset);
+        double* y = iVar1.ptr<double>(iOffset1);
         cblas_daxpy(size, -1.0, x, 1, y, 1);
         break;
     }
@@ -681,7 +693,9 @@ var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 }
 
 
-void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
+void Mul::array(
+    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
     // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
@@ -696,7 +710,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         case TYPE_FLOAT:
         {
             float* A = iVar2.ptr<float>();
-            float* x = iVar1.ptr<float>(iOffset);
+            float* x = iVar1.ptr<float>(iOffset1);
             cblas_stbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                         size, 0, A, 1, x, 1);
             break;
@@ -704,7 +718,7 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         case TYPE_DOUBLE:
         {
             double* A = iVar2.ptr<double>();
-            double* x = iVar1.ptr<double>(iOffset);
+            double* x = iVar1.ptr<double>(iOffset1);
             cblas_dtbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                         size, 0, A, 1, x, 1);
             break;
@@ -721,8 +735,8 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         case TYPE_FLOAT:
         {
             float* A = iVar2.ptr<float>();
-            float* x = iVar1.ptr<float>(iOffset);
-            float* y = oVar->ptr<float>(iOffset);
+            float* x = iVar1.ptr<float>(iOffset1);
+            float* y = oVar->ptr<float>(iOffsetO);
             cblas_ssbmv(CblasRowMajor, CblasUpper, size, 0,
                         1.0f, A, 1, x, 1, 0.0f, y, 1);
             break;
@@ -730,8 +744,8 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         case TYPE_DOUBLE:
         {
             double* A = iVar2.ptr<double>();
-            double* x = iVar1.ptr<double>(iOffset);
-            double* y = oVar->ptr<double>(iOffset);
+            double* x = iVar1.ptr<double>(iOffset1);
+            double* y = oVar->ptr<double>(iOffsetO);
             cblas_dsbmv(CblasRowMajor, CblasUpper, size, 0,
                         1.0, A, 1, x, 1, 0.0, y, 1);
             break;

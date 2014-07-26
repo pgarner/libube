@@ -56,8 +56,9 @@ namespace libvar
     protected:
         int mDim;
         virtual void broadcast(var iVar1, var* oVar) const;
-        virtual void
-        array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
+        virtual void array(
+            var iVar, ind iOffsetI, var* oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -70,11 +71,14 @@ namespace libvar
     {
     public:
         virtual ~BinaryFunctor() {};
-        virtual var operator ()(const var& iVar1, const var& iVar2, var* oVar=0)
-            const = 0;
+        virtual var operator ()(
+            const var& iVar1, const var& iVar2, var* oVar=0
+        ) const = 0;
     protected:
         virtual void broadcast(var iVar1, var iVar2, var* oVar) const;
-        virtual void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        virtual void array(
+            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -118,7 +122,9 @@ namespace libvar
     public:
         var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        void array(
+            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -130,7 +136,9 @@ namespace libvar
     public:
         var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        void array(
+            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -142,7 +150,9 @@ namespace libvar
     public:
         var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        void array(
+            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -155,7 +165,9 @@ namespace libvar
         var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
         void broadcast(var iVar1, var iVar2, var* oVar) const;
-        void array(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        void array(
+            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        ) const;
         void scale(var iVar1, var iVar2, var* oVar, int iOffset) const;
     };
 
