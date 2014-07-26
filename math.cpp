@@ -12,6 +12,7 @@
 #include <cstring>
 #include <stdexcept>
 
+#include <mkl.h>
 #include "var.h"
 
 
@@ -43,49 +44,6 @@ namespace libvar
 
 
 using namespace libvar;
-
-
-/*
- * In some sense it would be best to use cblas.  Netlib defines it,
- * MKL defines it, but OpenBLAS and the like don't necessarily include
- * it.  Sadly, there seems to be no standard header for the fortran
- * versions.  MKL has mkl.h, OpenBLAS has f77blas.h.  However, given
- * that the interface is rather standard, we can just reproduce the
- * ones we use here.
- */
-extern "C" {
-    // Actually FORTRAN calling convention
-    void   scopy_ (int *, float  *, int *, float  *, int *);
-    void   dcopy_ (int *, double *, int *, double *, int *);
-    float  sasum_ (int *, float  *, int *);
-    double dasum_ (int *, double *, int *);
-    void   saxpy_ (int *, float  *, float  *, int *, float  *, int *);
-    void   daxpy_ (int *, double *, double *, int *, double *, int *);
-    void   sscal_ (int *,  float  *, float  *, int *);
-    void   dscal_ (int *,  double *, double *, int *);
-    void   stbmv_ (
-        char *, char *, char *, int *, int *, float  *, int *, float  *, int *
-    );
-    void   dtbmv_ (
-        char *, char *, char *, int *, int *, double *, int *, double *, int *
-    );
-    void   ssbmv_ (
-        char *, int *, int *, float  *, float  *, int *,
-        float  *, int *, float  *, float  *, int *
-    );
-    void   dsbmv_ (
-        char *, int *, int *, double *, double *, int *,
-        double *, int *, double *, double *, int *
-    );
-    void   sgemm_ (
-        char *, char *, int *, int *, int *, float *,
-        float  *, int *, float  *, int *, float  *, float  *, int *
-    );
-    void   dgemm_ (
-        char *, char *, int *, int *, int *, double *,
-        double *, int *, double *, int *, double *, double *, int *
-    );
-}
 
 
 /**
@@ -235,13 +193,13 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
                                                                         \
         switch (type(iVar))                                             \
         {                                                               \
-        case TYPE_ARRAY:                                           \
+        case TYPE_ARRAY:                                                \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
-        case TYPE_FLOAT:                                           \
+        case TYPE_FLOAT:                                                \
             *oVar = std::f(iVar.get<float>());                          \
             break;                                                      \
-        case TYPE_DOUBLE:                                          \
+        case TYPE_DOUBLE:                                               \
             *oVar = std::f(iVar.get<double>());                         \
             break;                                                      \
         default:                                                        \
@@ -263,19 +221,19 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
                                                                         \
         switch (type(iVar))                                             \
         {                                                               \
-        case TYPE_ARRAY:                                           \
+        case TYPE_ARRAY:                                                \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
-        case TYPE_FLOAT:                                           \
+        case TYPE_FLOAT:                                                \
             *oVar = std::f(iVar.get<float>());                          \
             break;                                                      \
-        case TYPE_DOUBLE:                                          \
+        case TYPE_DOUBLE:                                               \
             *oVar = std::f(iVar.get<double>());                         \
             break;                                                      \
-        case TYPE_CFLOAT:                                          \
+        case TYPE_CFLOAT:                                               \
             *oVar = std::f(iVar.get<cfloat>());                         \
             break;                                                      \
-        case TYPE_CDOUBLE:                                         \
+        case TYPE_CDOUBLE:                                              \
             *oVar = std::f(iVar.get<cdouble>());                        \
             break;                                                      \
         default:                                                        \
@@ -473,7 +431,6 @@ var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
 void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
-    static int one = 1;
     int size = iVar2.size();
     switch(iVar1.atype())
     {
@@ -481,14 +438,14 @@ void Set::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         float* x = iVar2.ptr<float>();
         float* y = iVar1.ptr<float>(iOffset);
-        scopy_(&size, x, &one, y, &one);
+        cblas_scopy(size, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar2.ptr<double>();
         double* y = iVar1.ptr<double>(iOffset);
-        dcopy_(&size, x, &one, y, &one);
+        cblas_dcopy(size, x, 1, y, 1);
         break;
     }
     default:
@@ -544,24 +501,21 @@ void Add::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
-    static int one = 1;
     int size = iVar2.size();
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
-        static float alpha = 1.0f;
         float* x = iVar2.ptr<float>();
         float* y = iVar1.ptr<float>(iOffset);
-        saxpy_(&size, &alpha, x, &one, y, &one);
+        cblas_saxpy(size, 1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
-        static double alpha = 1.0;
         double* x = iVar2.ptr<double>();
         double* y = iVar1.ptr<double>(iOffset);
-        daxpy_(&size, &alpha, x, &one, y, &one);
+        cblas_daxpy(size, 1.0, x, 1, y, 1);
         break;
     }
     default:
@@ -617,24 +571,21 @@ void Sub::array(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     assert(iVar1.is(*oVar));
-    static int one = 1;
     int size = iVar2.size();
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
     {
-        static float alpha = -1.0f;
         float* x = iVar2.ptr<float>();
         float* y = iVar1.ptr<float>(iOffset);
-        saxpy_(&size, &alpha, x, &one, y, &one);
+        cblas_saxpy(size, -1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
-        static double alpha = -1.0;
         double* x = iVar2.ptr<double>();
         double* y = iVar1.ptr<double>(iOffset);
-        daxpy_(&size, &alpha, x, &one, y, &one);
+        cblas_daxpy(size, -1.0, x, 1, y, 1);
         break;
     }
     default:
@@ -664,7 +615,6 @@ void Mul::broadcast(var iVar1, var iVar2, var* oVar) const
 void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
-    static int one = 1;
     int size = iVar1.size();
     switch(iVar1.atype())
     {
@@ -672,14 +622,14 @@ void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
     {
         float alpha = iVar2.cast<float>();
         float* x = iVar1.ptr<float>(iOffset);
-        sscal_(&size, &alpha, x, &one);
+        cblas_sscal(size, alpha, x, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double alpha = iVar2.cast<double>();
         double* x = iVar1.ptr<double>(iOffset);
-        dscal_(&size, &alpha, x, &one);
+        cblas_dscal(size, alpha, x, 1);
         break;
     }
     default:
@@ -737,29 +687,26 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
     // matrix.  In BLAS speak, a diagonal matrix is a band matrix with no
     // superdiagonals.
     assert(type(iVar1) == TYPE_ARRAY);
-    static int zero = 0;
-    static int one = 1;
-    static char uplo = 'U';
     int size = iVar2.size();
     if (iVar1.is(*oVar))
     {
         // xtbmv() (triangular band) overwrites the current location.
-        static char trans = 'T';
-        static char diag = 'N';
         switch(iVar1.atype())
         {
         case TYPE_FLOAT:
         {
             float* A = iVar2.ptr<float>();
             float* x = iVar1.ptr<float>(iOffset);
-            stbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
+            cblas_stbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                        size, 0, A, 1, x, 1);
             break;
         }
         case TYPE_DOUBLE:
         {
             double* A = iVar2.ptr<double>();
             double* x = iVar1.ptr<double>(iOffset);
-            dtbmv_(&uplo, &trans, &diag, &size, &zero, A, &one, x, &one);
+            cblas_dtbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
+                        size, 0, A, 1, x, 1);
             break;
         }
         default:
@@ -773,24 +720,20 @@ void Mul::array(var iVar1, var iVar2, var* oVar, int iOffset) const
         {
         case TYPE_FLOAT:
         {
-            static float alpha = 1.0f;
-            static float beta = 0.0f;
             float* A = iVar2.ptr<float>();
             float* x = iVar1.ptr<float>(iOffset);
             float* y = oVar->ptr<float>(iOffset);
-            ssbmv_(&uplo, &size, &zero,
-                   &alpha, A, &one, x, &one, &beta, y, &one);
+            cblas_ssbmv(CblasRowMajor, CblasUpper, size, 0,
+                        1.0f, A, 1, x, 1, 0.0f, y, 1);
             break;
         }
         case TYPE_DOUBLE:
         {
-            static double alpha = 1.0;
-            static double beta = 0.0;
             double* A = iVar2.ptr<double>();
             double* x = iVar1.ptr<double>(iOffset);
             double* y = oVar->ptr<double>(iOffset);
-            dsbmv_(&uplo, &size, &zero,
-                   &alpha, A, &one, x, &one, &beta, y, &one);
+            cblas_dsbmv(CblasRowMajor, CblasUpper, size, 0,
+                        1.0, A, 1, x, 1, 0.0, y, 1);
             break;
         }
         default:
@@ -910,17 +853,16 @@ var ASum::operator ()(const var& iVar, var* oVar) const
 void ASum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
-    static int inc = 1;
     int size = iVar.size();
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
         *(oVar->ptr<float>(iOffsetO)) =
-            sasum_(&size, iVar.ptr<float>(iOffsetI), &inc);
+            cblas_sasum(size, iVar.ptr<float>(iOffsetI), 1);
         break;
     case TYPE_DOUBLE:
         *(oVar->ptr<double>(iOffsetO)) =
-            dasum_(&size, iVar.ptr<double>(iOffsetI), &inc);
+            cblas_dasum(size, iVar.ptr<double>(iOffsetI), 1);
         break;
     default:
         throw std::runtime_error("ASum::array: Unknown type");
