@@ -520,10 +520,14 @@ namespace libvar
     };
 
 
+    struct DFTImpl;
     /**
      * DFT functor
+     *
+     * Uses the "pimpl" pattern: pointer to implementation.  This means the
+     * implementation can be dependent upon whichever library is available at
+     * compile time.
      */
-#include <mkl_dfti.h>
     class DFT : public UnaryFunctor
     {
     public:
@@ -532,11 +536,7 @@ namespace libvar
         var operator ()(const var& iVar, var* oVar=0) const;
     private:
         void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
-        DFTI_DESCRIPTOR_HANDLE mHandle;
-        var mForwardType;
-        var mInverseType;
-        int mOSize;
-        bool mInverse;
+        DFTImpl* mImpl;
     };
 }
 

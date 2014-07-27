@@ -8,8 +8,22 @@
  */
 
 #include <cassert>
-#include <mkl.h>
+#include <mkl_dfti.h>
+
 #include "var.h"
+
+
+/**
+ * The MKL DFT implementation (aka DFTI)
+ */
+struct libvar::DFTImpl
+{
+    DFTI_DESCRIPTOR_HANDLE handle;
+    var forwardType;
+    var inverseType;
+    int oSize;
+    bool inverse;
+};
 
 
 using namespace libvar;
@@ -32,35 +46,45 @@ void dftiCheck(MKL_LONG iReturn)
  */
 DFT::DFT(int iSize, bool iInverse, var iForwardType)
 {
+    mImpl = new DFTImpl;
+
     // It's a 1 dimensional thing (for now)
     mDim = 1;
-    mHandle = 0;
-    mInverse = iInverse;
-    mForwardType = iForwardType; 
+    mImpl->handle = 0;
+    mImpl->inverse = iInverse;
+    mImpl->forwardType = iForwardType;
 
     // Set the input and output types for a forward transform
     MKL_LONG r;
-    switch (mForwardType.type())
+    switch (mImpl->forwardType.type())
     {
     case TYPE_FLOAT:
-        mInverseType = cfloat(0.0f, 0.0f);
-        mOSize = iInverse ? iSize : iSize / 2 + 1;
-        r = DftiCreateDescriptor(&mHandle, DFTI_SINGLE, DFTI_REAL, 1, iSize);
+        mImpl->inverseType = cfloat(0.0f, 0.0f);
+        mImpl->oSize = iInverse ? iSize : iSize / 2 + 1;
+        r = DftiCreateDescriptor(
+            &mImpl->handle, DFTI_SINGLE, DFTI_REAL, 1, iSize
+        );
         break;
     case TYPE_DOUBLE:
-        mInverseType = cdouble(0.0, 0.0);
-        mOSize = iInverse ? iSize : iSize / 2 + 1;
-        r = DftiCreateDescriptor(&mHandle, DFTI_DOUBLE, DFTI_REAL, 1, iSize);
+        mImpl->inverseType = cdouble(0.0, 0.0);
+        mImpl->oSize = iInverse ? iSize : iSize / 2 + 1;
+        r = DftiCreateDescriptor(
+            &mImpl->handle, DFTI_DOUBLE, DFTI_REAL, 1, iSize
+        );
         break;
     case TYPE_CFLOAT:
-        mInverseType = cfloat(0.0f, 0.0f);
-        mOSize = iSize;
-        r = DftiCreateDescriptor(&mHandle, DFTI_SINGLE, DFTI_COMPLEX, 1, iSize);
+        mImpl->inverseType = cfloat(0.0f, 0.0f);
+        mImpl->oSize = iSize;
+        r = DftiCreateDescriptor(
+            &mImpl->handle, DFTI_SINGLE, DFTI_COMPLEX, 1, iSize
+        );
         break;
     case TYPE_CDOUBLE:
-        mInverseType = cdouble(0.0, 0.0);
-        mOSize = iSize;
-        r = DftiCreateDescriptor(&mHandle, DFTI_DOUBLE, DFTI_COMPLEX, 1, iSize);
+        mImpl->inverseType = cdouble(0.0, 0.0);
+        mImpl->oSize = iSize;
+        r = DftiCreateDescriptor(
+            &mImpl->handle, DFTI_DOUBLE, DFTI_COMPLEX, 1, iSize
+        );
         break;
     default:
         throw std::runtime_error("DFT::DFT: Unknown type");
@@ -68,17 +92,19 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
     dftiCheck(r);
 
     // Default is to overwrite the input
-    r = DftiSetValue(mHandle, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
+    r = DftiSetValue(mImpl->handle, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
     dftiCheck(r);
 
-    r = DftiCommitDescriptor(mHandle);
+    r = DftiCommitDescriptor(mImpl->handle);
     dftiCheck(r);
 }
 
 DFT::~DFT()
 {
-    MKL_LONG r = DftiFreeDescriptor(&mHandle);
+    MKL_LONG r = DftiFreeDescriptor(&mImpl->handle);
     dftiCheck(r);
+    delete mImpl;
+    mImpl = 0;
 }
 
 var DFT::operator ()(const var& iVar, var* oVar) const
@@ -88,8 +114,8 @@ var DFT::operator ()(const var& iVar, var* oVar) const
     {
         // Allocate an output array
         var s = iVar.shape();
-        s[s.size()-1] = mOSize;
-        r = view(s, mInverse ? mForwardType : mInverseType);
+        s[s.size()-1] = mImpl->oSize;
+        r = view(s, mImpl->inverse ? mImpl->forwardType : mImpl->inverseType);
         oVar = &r;
     }
 
@@ -98,9 +124,15 @@ var DFT::operator ()(const var& iVar, var* oVar) const
         throw std::runtime_error("DFT::operator(): DFT input must be vector");
     if (oVar->type() != TYPE_ARRAY)
         throw std::runtime_error("DFT::operator(): DFT output must be vector");
-    if (iVar.atype() != (mInverse ? mInverseType.type() : mForwardType.type()))
+    if (iVar.atype() != (mImpl->inverse
+                         ? mImpl->inverseType.type()
+                         : mImpl->forwardType.type()
+        ))
         throw std::runtime_error("DFT::operator(): wrong input type");
-    if (oVar->atype() != (mInverse ? mForwardType.type() : mInverseType.type()))
+    if (oVar->atype() != (mImpl->inverse
+                          ? mImpl->forwardType.type()
+                          : mImpl->inverseType.type()
+        ))
         throw std::runtime_error("DFT::operator(): wrong output type");
 
     // DFT always broadcasts to array()
@@ -115,44 +147,44 @@ void DFT::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
     if (iVar.is(*oVar))
     {
         throw std::runtime_error("DFT::array(): not implemented");
-        if (mInverse)
-            r = DftiComputeBackward(mHandle, oVar->ptr<float>(iOffsetO));
+        if (mImpl->inverse)
+            r = DftiComputeBackward(mImpl->handle, oVar->ptr<float>(iOffsetO));
         else
-            r = DftiComputeForward(mHandle, oVar->ptr<float>(iOffsetO));
+            r = DftiComputeForward(mImpl->handle, oVar->ptr<float>(iOffsetO));
     }
     else
-        if (mInverse)
+        if (mImpl->inverse)
             r = DftiComputeBackward(
-                mHandle,
+                mImpl->handle,
                 iVar.ptr<float>(iOffsetI), oVar->ptr<float>(iOffsetO)
             );
         else
-            switch (mForwardType.type())
+            switch (mImpl->forwardType.type())
             {
             case TYPE_FLOAT:
                 r = DftiComputeForward(
-                    mHandle,
+                    mImpl->handle,
                     iVar.ptr<float>(iOffsetI),
                     oVar->ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_DOUBLE:
                 r = DftiComputeForward(
-                    mHandle,
+                    mImpl->handle,
                     iVar.ptr<double>(iOffsetI),
                     oVar->ptr<cdouble>(iOffsetO)
                 );
                 break;
             case TYPE_CFLOAT:
                 r = DftiComputeForward(
-                    mHandle,
+                    mImpl->handle,
                     iVar.ptr<cfloat>(iOffsetI),
                     oVar->ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_CDOUBLE:
                 r = DftiComputeForward(
-                    mHandle,
+                    mImpl->handle,
                     iVar.ptr<cdouble>(iOffsetI),
                     oVar->ptr<cdouble>(iOffsetO)
                 );
