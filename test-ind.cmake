@@ -8,9 +8,9 @@
 #
 
 # Set up the test to compare reference and output files
-set(CMD ./tests one two three)
-set(REF tests-ref.txt)
-set(OUT tests-out.txt)
+set(CMD ./test-ind)
+set(REF test-ind-ref.txt)
+set(OUT test-ind-out.txt)
 
 # Run the test
 execute_process(

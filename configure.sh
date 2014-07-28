@@ -25,7 +25,7 @@ if [ ! -e arctic_a0001.wav ]
 then
     arctic=http://www.speech.cs.cmu.edu/cmu_arctic
     wget $arctic/cmu_us_bdl_arctic/wav/arctic_a0001.wav
-    ln -s arctic_a0001.wav tests.wav
+    ln -s arctic_a0001.wav test.wav
 fi
 
 # Build the static library?

@@ -1,6 +1,5 @@
 #include <cassert>
 #include <map>
-#include <fstream>
 
 #include <lv.h>
 
@@ -42,11 +41,6 @@ int main(int argc, char** argv)
         cout << "There's a -f" << endl;
     else
         cout << "There's no -f" << endl;
-
-    // Given command line working, set a flag for valgrind
-    bool vg = true;
-    if (arg.index("-vg"))
-        vg = false;
 
     // Basic numerical tests
     var s, w, x, y, z, dummy;
@@ -140,19 +134,6 @@ int main(int argc, char** argv)
     cout << map.count("Zero") << endl;
     cout << map.count("One") << endl;
 
-    // Read a small file
-    var f;
-    var t;
-    ifstream is("tests.txt", ifstream::in);
-    if (is.fail())
-        cout << "Open failed" << endl;
-    while (f.getline(is))
-    {
-        cout << f << endl;
-        t.push(f.copy());
-    }
-    cout << t << endl;
-
     // Shallow copy
     var c1 = arg;
     c1.push("extra");
@@ -210,37 +191,6 @@ int main(int argc, char** argv)
     wmap["one"]["four"] = "five";
     cout << "wmap is " << wmap << endl;
 
-    // Init from comma separated list
-    var ai;
-    ai = 5,4,3,2,1;
-    cout << "ai is: " << ai << endl;
-
-    // Read a text file via a dynamic library
-    if (vg)
-    {
-        vfile txtf("txt");
-        var txt = txtf.read("tests.txt");
-        cout << "Loaded: " << txt << endl;
-    }
-
-    // Read a .ini file via a dynamic library
-    if (vg)
-    {
-        vfile inif("ini");
-        var ini = inif.read("tests.ini");
-        cout << "Loaded: " << ini << endl;
-    }
-
-    // Plot something with gnuplot
-    if (vg)
-    {
-        var gnu;
-        gnu.push("plot sin(x), \"-\"");
-        gnu.push(ai);
-        vfile gnuf("gnuplot");
-        gnuf.write("tests.eps", gnu);
-    }
-
     // Tensors
     var ts = 0.0f;
     ts.resize(16);
@@ -260,15 +210,6 @@ int main(int argc, char** argv)
     cout << "Shape: " << t1.shape() << endl;
     cout << "New view: " << t3 << endl;
 
-    // BLAS
-    var bt;
-    bt = 1.0f, 1.2f, 0.8f, -2.0f;
-    if (vg)
-    {
-        cout << bt << "  sums to " << lv::sum(bt)  << endl;
-        cout << bt << " asums to " << lv::asum(bt) << endl;
-    }
-
     // Stream
     vstream vstr;
     float fl = 23e-1f;
@@ -277,36 +218,9 @@ int main(int argc, char** argv)
     vstr << "ello: " << fl;
     cout << vstr.var() << endl;
 
-    // gedcom
-    if (vg)
-    {
-        vfile gedf("ged");
-        var ged = gedf.read("tests.ged");
-        cout << "Loaded: " << ged << endl;
-    }
-
-    // XML
-    if (vg)
-    {
-        vfile xmlf("xml");
-        var xml = xmlf.read("tests.xml");
-        cout << "Loaded: " << xml << endl;
-    }
-
-    // wav
-    if (vg)
-    {
-        vfile wavf("snd");
-        var wav = wavf.read("tests.wav");
-        cout << "Loaded wav file:" << endl;
-        cout << " rate:     " << wav["rate"] << endl;
-        cout << " frames:   " << wav["data"].shape(0) << endl;
-        cout << " channels: " << wav["data"].shape(1) << endl;
-    }
-
     // Exception
     try {
-        throw lv::vruntime_error(bt);
+        throw lv::vruntime_error(ts);
     }
     catch (lv::vruntime_error e) {
         cout << "Caught: " << e.what() << endl;
@@ -337,62 +251,9 @@ int main(int argc, char** argv)
     cout << "Zeros: " << zeros << endl;
     cout << "Ones:  " << ones << endl;
 
-    // Broadcasting scalars
-    t1 += 1;
-    cout << "t1: " << t1 << endl;
-    t1 *= 1.5;
-    cout << "t1: " << t1 << endl;
-    t1 += t1;
-    cout << "t1: " << t1 << endl;
-    t1 -= t1 - 1;
-    cout << "t1: " << t1 << endl;
-
     // Because it works
     var cv = var::range('a', 'z').view({2,13});
     cout << "cv:\n" << cv << endl;
-
-    // Sub-views
-    var r12 = var::irange(0.1, 12.1);
-    cout << "r12: " << r12 << endl;
-    var sv = r12.view({4}, 4);
-    cout << "sv: " << sv << endl;
-    cout << "sv(0): " << sv(0) << endl;
-    sv += 1;
-    cout << "r12: " << r12 << endl;
-    var rv;
-    rv = -1.0, -2.0, -3.0, -4.0;
-    cout << "rv: " << rv << endl;
-    sv.offset(8);
-    sv = rv;
-    cout << "r12: " << r12 << endl;
-
-    // Broadcasting tensors
-    var r6 = var::irange(6.0).view({3,2});
-    var r2;
-    r2 = 1.0, 2.0;
-    cout << "r2: " << r2 << endl;
-    cout << "r6: " << r6 << endl;
-    r6 += r2;
-    cout << "r6: " << r6 << endl;
-    r6 *= r2;
-    cout << "r6: " << r6 << endl;
-    cout << "r6*r6: " << r6 * r6 << endl;
-
-    // View of a view
-    var r3 = r6.view({2}, 0);
-    var r4 = sv.view({2}, 0);
-    cout << "r3: " << r3 << endl;
-    cout << "r4: " << r4 << endl;
-
-    // Functors
-    cout << "Size: " << sizeof(lv::Pow) << endl;
-    cout << "Pow: " << lv::pow(3.0, 2) << endl;
-    cout << "Pow: " << lv::pow(r6, 2) << endl;
-    cout << "Tan: " << lv::tan(r6) << endl;
-
-    // Transpose
-    cout << "oTranspose:\n" << lv::transpose(r6) << endl << r6 << endl;
-    cout << "iTranspose:\n" << r6.transpose() << endl << r6 << endl;
 
     // Complex
     var fc = complex<float>(0.5, 0.7);
@@ -406,24 +267,6 @@ int main(int argc, char** argv)
     var dd = complex<double>(1.0, 1.2);
     dc += dd;
     cout << "dc: " << dc << endl;
-
-    // DFT
-    var td = lv::view({2, 10});
-    var fd;
-    for (int i=0; i<10; i++)
-    {
-        td(0, i) = sinf(i);
-        td(1, i) = cosf(i);
-    }
-    cout << "Time: " << td << endl;
-    if (vg)
-    {
-        lv::DFT dft(10);
-        fd = dft(td);
-        cout << "Freq: " << fd << endl;
-        var ab = lv::abs(fd);
-        cout << "Abs: " << ab << endl;
-    }
 
     // Phil, leave this at the end!
     return 0;

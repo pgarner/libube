@@ -131,18 +131,33 @@ endif (EXPAT_FOUND)
 # The tests get built here, but they are run from a different cmake
 # file.  This lets us compare output with a reference output rather
 # than just test that something runs.
-add_executable(tests tests.cpp)
-add_executable(test-ind test-ind.cpp)
-target_link_libraries(tests shared-lib)
-
 enable_testing()
+
+add_executable(test-ind test-ind.cpp)
 add_test(
   NAME ind
-  COMMAND test-ind
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-ind.cmake
   )
+
+add_executable(test-var test-var.cpp)
+target_link_libraries(test-var shared-lib)
 add_test(
   NAME var
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests.cmake
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-var.cmake
+  )
+
+add_executable(test-file test-file.cpp)
+target_link_libraries(test-file shared-lib)
+add_test(
+  NAME file
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-file.cmake
+  )
+
+add_executable(test-math test-math.cpp)
+target_link_libraries(test-math shared-lib)
+add_test(
+  NAME math
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-math.cmake
   )
 
 # Normal install path for the library
