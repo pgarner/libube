@@ -252,7 +252,7 @@ int main(int argc, char** argv)
     cout << "Ones:  " << ones << endl;
 
     // Because it works
-    var cv = var::range('a', 'z').view({2,13});
+    var cv = lv::range('a', 'z').view({2,13});
     cout << "cv:\n" << cv << endl;
 
     // Complex

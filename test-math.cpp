@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     cout << bt << " asums to " << lv::asum(bt) << endl;
 
     // Broadcasting scalars
-    var t1 = var::irange(16.0f).view({4, 4});
+    var t1 = lv::irange(16.0f).view({4, 4});
     t1(1,2) = 2.3f;
     t1 += 1;
     cout << "t1: " << t1 << endl;
@@ -23,7 +23,7 @@ int main(int argc, char** argv)
     cout << "t1: " << t1 << endl;
 
     // Sub-views
-    var r12 = var::irange(0.1, 12.1);
+    var r12 = lv::irange(0.1, 12.1);
     cout << "r12: " << r12 << endl;
     var sv = r12.view({4}, 4);
     cout << "sv: " << sv << endl;
@@ -38,7 +38,7 @@ int main(int argc, char** argv)
     cout << "r12: " << r12 << endl;
 
     // Broadcasting tensors
-    var r6 = var::irange(6.0).view({3,2});
+    var r6 = lv::irange(6.0).view({3,2});
     var r2;
     r2 = 1.0, 2.0;
     cout << "r2: " << r2 << endl;

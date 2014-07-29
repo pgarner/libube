@@ -854,7 +854,7 @@ void var::format(std::ostream& iStream, int iIndent) const
  * starts at 0 if the lower value is omitted.  To start at 1 and
  * include the higher value, use range().
  */
-var var::irange(var iLo, var iHi, var iStep)
+var libvar::irange(var iLo, var iHi, var iStep)
 {
     var r;
     while (iLo < iHi)
@@ -863,6 +863,12 @@ var var::irange(var iLo, var iHi, var iStep)
         iLo += iStep;
     }
     return r;
+}
+
+
+var libvar::irange(var iHi)
+{
+    return libvar::irange(iHi-iHi, iHi);
 }
 
 
@@ -875,7 +881,7 @@ var var::irange(var iLo, var iHi, var iStep)
  * so you tend to want {0,1,2,3}; in C++, loops use the traditional
  * for (i=0; i<N, i++) syntax, so irange() is less useful.
  */
-var var::range(var iLo, var iHi, var iStep)
+var libvar::range(var iLo, var iHi, var iStep)
 {
     var r;
     while (iLo <= iHi)
@@ -884,6 +890,12 @@ var var::range(var iLo, var iHi, var iStep)
         iLo += iStep;
     }
     return r;
+}
+
+
+var libvar::range(var iHi)
+{
+    return libvar::range(iHi-iHi+1, iHi);
 }
 
 

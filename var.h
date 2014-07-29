@@ -346,10 +346,6 @@ namespace libvar
         var& resize(int iSize);
         var& presize(int iSize);
         void format(std::ostream& iStream, int iIndent = 0) const;
-        static var range(var iHi) { return range(iHi-iHi+1, iHi); };
-        static var range(var iLo, var iHi, var iStep=1);
-        static var irange(var iHi) { return irange(iHi-iHi, iHi); };
-        static var irange(var iLo, var iHi, var iStep=1);
 
         // Methods for functors in math.cpp
         var abs() { return libvar::abs(*this, this); };
@@ -427,6 +423,10 @@ namespace libvar
     var view(const std::initializer_list<int> iShape, var iType=nil);
     var view(var iShape, var iType=nil);
     const char* typeStr(ind iType);
+    var range(var iLo, var iHi, var iStep=1);
+    var range(var iHi);
+    var irange(var iLo, var iHi, var iStep=1);
+    var irange(var iHi);
 
 
     /**
