@@ -435,7 +435,7 @@ namespace libvar
     class varbuf : public std::streambuf
     {
     public:
-        varbuf();
+        varbuf(var iVar);
         class var var() const { return mVar; };
     protected:
         virtual int_type overflow(int_type iInt = traits_type::eof());
@@ -452,7 +452,7 @@ namespace libvar
     class vstream : public std::iostream
     {
     public:
-        vstream();
+        vstream(var iVar = nil);
         class var var() const { return mVarBuf.var(); };
         const char* str() { return mVarBuf.var().str(); };
     private:

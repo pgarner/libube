@@ -219,9 +219,9 @@ int main(int argc, char** argv)
     cout << vstr.var() << endl;
 
     // vstream as iostream
-    vstream iostr;
+    vstream iostr("1");
     iostr.exceptions(ios_base::badbit | ios_base::failbit);
-    iostr << "1 2 3.4";
+    iostr << " 2 3.4";
     iostr << " end";
     cout << iostr.var() << endl;
     int ioi;

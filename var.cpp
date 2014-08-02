@@ -627,7 +627,11 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
     // Strings get converted
     if (iVar.heap() && (iVar.atype() == TYPE_CHAR))
     {
-        *oVar = static_cast<T>(iVar.heap()->strtold());
+        T t;
+        vstream s(iVar);
+        s.exceptions(std::ios_base::badbit | std::ios_base::failbit);
+        s >> t;
+        *oVar = t;
         return *oVar;
     }
 
@@ -1491,11 +1495,16 @@ void var::bounds(int iDim, int iIndex) const
  *
  * Initialises a bufferless connection to a var of type char
  */
-varbuf::varbuf()
+varbuf::varbuf(class var iVar)
 {
     // Type char; ensure it's on the heap
-    mVar = "";
-    mVar.array();
+    if (iVar)
+        mVar = iVar.array();
+    else
+    {
+        mVar = "";
+        mVar.array();
+    }
 
     // Set the pointers meaning the buffer has zero size.  This will cause the
     // iostream machinery to call overflow() on every write and underflow() or
@@ -1531,7 +1540,8 @@ varbuf::int_type varbuf::underflow()
     return traits_type::eof();
 }
 
-vstream::vstream()
+vstream::vstream(class var iVar)
+    : mVarBuf(iVar)
 {
     // Tell the base class to use the buffer in the derived class
     rdbuf(&mVarBuf);

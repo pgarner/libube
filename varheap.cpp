@@ -431,20 +431,6 @@ void varheap::dealloc(dataType iData)
     }
 }
 
-long double varheap::strtold()
-{
-    // Assume we have a char*
-    char* endPtr;
-    errno = 0;
-    long double ld = std::strtold(mData.cp, &endPtr);
-    if (endPtr == mData.cp)
-        throw std::runtime_error("strtold(): Cannot convert string");
-    if (errno)
-        throw std::runtime_error("strtold(): errno set");
-    return ld;
-}
-
-
 void varheap::format(std::ostream& iStream, int iIndent)
 {
     assert(mData.vp); // Any of the pointers

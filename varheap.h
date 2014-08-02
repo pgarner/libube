@@ -60,7 +60,6 @@ namespace libvar
         int attach();
         int detach();
         void resize(int iSize);
-        long double strtold();
         void format(std::ostream& iStream, int iIndent = 0);
         var at(int iIndex, bool iKey=false) const;
         var& key(int iIndex);
