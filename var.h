@@ -437,24 +437,24 @@ namespace libvar
     public:
         varbuf();
         class var var() const { return mVar; };
-
+    protected:
+        virtual int_type overflow(int_type iInt = traits_type::eof());
+        virtual int_type uflow();
+        virtual int_type underflow();
     private:
-        virtual int_type overflow(int_type iInt);
-
-        class var mVar;    ///< The actual buffer
+        class var mVar; ///< The var being accessed
     };
 
 
     /**
      * An ostream that uses a var as the buffer
      */
-    class vstream : public std::ostream
+    class vstream : public std::iostream
     {
     public:
         vstream();
         class var var() const { return mVarBuf.var(); };
         const char* str() { return mVarBuf.var().str(); };
-
     private:
         class varbuf mVarBuf;
     };
@@ -468,7 +468,6 @@ namespace libvar
     public:
         vruntime_error(var iVar);
         virtual const char* what() const noexcept;
-
     private:
         class var mVar;
         char* mStr;
@@ -513,7 +512,6 @@ namespace libvar
         void write(const char* iFile, var iVar) {
             return mVarFile->write(iFile, iVar);
         };
-
     private:
         void* mHandle;     ///< Handle for dynamic library
         varfile* mVarFile; ///< Pointer to instance of file handler

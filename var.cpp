@@ -1489,33 +1489,47 @@ void var::bounds(int iDim, int iIndex) const
 /**
  * Basic constructor
  *
- * Initialises a var of type char as the buffer
+ * Initialises a bufferless connection to a var of type char
  */
 varbuf::varbuf()
 {
     // Type char; ensure it's on the heap
     mVar = "";
-    mVar.presize(2);
+    mVar.array();
 
-    // Set the pointers meaning the buffer has zero size.  This will
-    // cause the ostream machinery to call overflow() on every write
-    char* str = mVar.ptr<char>();
-    setp(str, str);
+    // Set the pointers meaning the buffer has zero size.  This will cause the
+    // iostream machinery to call overflow() on every write and underflow() or
+    // uflow() on every read
+    setp(0, 0);
+    setg(0, 0, 0);
 }
 
 
-/**
- * Catch buffer overflows
- *
- * In fact, this gets called on every write
- */
 varbuf::int_type varbuf::overflow(int_type iInt)
 {
+    // Called for every write
     if (iInt != traits_type::eof())
         mVar.push(iInt);
     return iInt;
 }
 
+varbuf::int_type varbuf::uflow()
+{
+    // If there were an intermediate buffer, there would be no need to
+    // implement uflow() as the default implementation calls underflow().  It
+    // works here as it maps to a specific var method.
+    if (mVar.size() > 0)
+        return mVar.shift().get<char>();
+    return traits_type::eof();
+}
+
+varbuf::int_type varbuf::underflow()
+{
+    // Called for reads, if not uflow().
+    if (mVar.size() > 0)
+        return mVar[0].get<char>();
+    return traits_type::eof();
+}
 
 vstream::vstream()
 {

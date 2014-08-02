@@ -218,6 +218,24 @@ int main(int argc, char** argv)
     vstr << "ello: " << fl;
     cout << vstr.var() << endl;
 
+    // vstream as iostream
+    vstream iostr;
+    iostr.exceptions(ios_base::badbit | ios_base::failbit);
+    iostr << "1 2 3.4";
+    iostr << " end";
+    cout << iostr.var() << endl;
+    int ioi;
+    float iof;
+    iostr >> ioi;
+    cout << iostr.var() << endl;
+    cout << ioi << endl;
+    iostr >> ioi;
+    cout << iostr.var() << endl;
+    cout << ioi << endl;
+    iostr >> iof;
+    cout << iostr.var() << endl;
+    cout << iof << endl;
+
     // Exception
     try {
         throw lv::vruntime_error(ts);
