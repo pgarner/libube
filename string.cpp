@@ -24,26 +24,24 @@ using namespace libvar;
  */
 var& var::getline(std::istream& iStream)
 {
-    // Start off as a zero length string
-    if (type() != TYPE_CHAR)
+    // Peek ahead to set eof if necessary, return nil if done
+    iStream.peek();
+    if (iStream.eof())
+        return clear();
+
+    // Start off as a zero length string as an array; re-use the existing array
+    // if possible
+    if (!defined() || (atype() != TYPE_CHAR))
         *this = "";
     else
         resize(0);
+    array();
 
-    // sgetc()  return this character
-    // sbumpc() return this character & advance
-    // snextc() advance & return next character
-    std::streambuf* buf = iStream.rdbuf();
-    if (buf->sgetc() == EOF)
+    // Read it
+    while (!iStream.eof())
     {
-        // The stream is finished; return undef
-        return clear();
-    }
-
-    while (buf->sgetc() != EOF)
-    {
-        char c = buf->sbumpc();
-        if (c == '\n') // Unix specific!
+        char c = iStream.get();
+        if (c == '\n') // Unix specific?
             break;
         push(c);
     }
