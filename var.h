@@ -59,6 +59,7 @@ namespace libvar
         virtual void array(
             var iVar, ind iOffsetI, var* oVar, ind iOffsetO
         ) const;
+        virtual void array(var iVar, var* oVar) const;
     };
 
 
@@ -378,6 +379,7 @@ namespace libvar
         bool view() const;
         var view(const std::initializer_list<int> iList, int iOffset=0);
         var view(var iShape, int iOffset=0);
+        var subview(int iDim, ind iOffset);
         int offset() const;
         var& offset(int iOffset);
         var& advance(int iAdvance) { return offset(offset() + iAdvance); };

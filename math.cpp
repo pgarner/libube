@@ -90,7 +90,23 @@ ind type(var iVar)
 }
 
 
+/**
+ * This array() is called by broadcast() without allocating any memory.
+ * Overriding it is the most efficient way to implement array operations.
+ *
+ * This default implementation encodes the offsets into views and calls the
+ * array() form without offsets.  This allocates memory, but means that the
+ * implementation can be more var-like.
+ */
 void UnaryFunctor::array(var iVar, ind iIOffset, var* oVar, ind iOOffset) const
+{
+    var iv = iVar.subview(mDim, iIOffset);
+    var ov = oVar->subview(mDim, iOOffset);
+    array(iv, &ov);
+}
+
+
+void UnaryFunctor::array(var iVar, var* oVar) const
 {
     throw std::runtime_error("UnaryFunctor: not an array operation");
 }

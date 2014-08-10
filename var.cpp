@@ -1421,6 +1421,20 @@ bool var::view() const
 };
 
 
+/**
+ * Yields a subview of dimension iDim, e.g., a row of a matrix, as a view given
+ * offset iOffset into the original view.
+ */
+var var::subview(int iDim, ind iOffset)
+{
+    var is = shape();
+    for (int i=dim()-iDim; i>0; --i)
+        is.shift();
+    var iv = view(is, iOffset);
+    return iv;
+}
+
+
 int var::dim() const
 {
     if (!view())
