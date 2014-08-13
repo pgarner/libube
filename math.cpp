@@ -76,9 +76,6 @@ using namespace libvar;
  *
  * This avoids an infinite loop where arrays are always broadcasted,
  * and broadcasting calls the original unary operator again.
- *
- * Really should be in a base class, but that entails defining
- * var::dataEnum before class var
  */
 ind type(var iVar)
 {

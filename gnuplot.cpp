@@ -37,7 +37,7 @@ void libvar::factory(varfile** oFile)
 
 gnuplot::gnuplot()
 {
-    mStream = popen("gnuplot", "w");
+    mStream = popen("gnuplot -p", "w");
     if (!mStream)
         throw std::runtime_error("gnuplot: Open failed");
 }
@@ -67,36 +67,60 @@ var gnuplot::read(const char* iFile)
 
 void gnuplot::write(const char* iFile, var iVar)
 {
-    var str;
+    var line;
     if (iFile)
     {
-        // Default to whatever gnuplot's default is, but if a file is
-        // supplied then write eps to it.
+        // Default to whatever gnuplot's default is, but if a file is supplied
+        // then write eps to it.
         puts("set term post eps");
-        str.sprintf("set output \"%s\"", iFile);
-        puts(str.str());
+        line.sprintf("set output \"%s\"", iFile);
+        puts(line.str());
     }
 
-    // Loop over the input var assuming it's an array of strings
+    // Loop over the input var assuming it's an array of vars
     for (int i=0; i<iVar.size(); i++)
     {
-        str = iVar[i];
-        switch (str.atype())
+        line = iVar[i];
+        switch (line.atype())
         {
         case TYPE_CHAR:
-            puts(str.str());
+            // It's a string; a gnuplot command
+            puts(line.str());
             break;
         case TYPE_INT:
         case TYPE_LONG:
         case TYPE_FLOAT:
         case TYPE_DOUBLE:
-            for (int j=0; j<str.size(); j++)
+            switch (line.dim())
             {
+            case 0:
+            case 1:
+                // It's a vector of some description; data for the plot
+                for (int j=0; j<line.size(); j++)
+                {
+                    vstream vs;
+                    vs << line.at(j);
+                    puts(vs.str());
+                }
+                puts("e");
+                break;
+            case 2:
+            {
+                // It's a matrix
                 vstream vs;
-                vs << str.at(j);
+                for (int i=0; i<line.shape(0); i++)
+                {
+                    for (int j=0; j<line.shape(1); j++)
+                        vs << " " << line(i, j);
+                    vs << "\n";
+                }
                 puts(vs.str());
+                puts("e");
+                puts("e");
             }
-            puts("e");
+            default:
+                throw std::runtime_error("gnuplot::write(): Unknown dimension");
+            }
             break;
         default:
             throw std::runtime_error("gnuplot::write(): Unknown data type");
