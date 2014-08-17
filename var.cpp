@@ -300,7 +300,7 @@ var& var::operator =(var iVar)
     {
         // Not a reference, but we are a copyable view.
         // This is the broadcastable set(); could use varheap::copy() instead?
-        set(*this, iVar, this);
+        set(*this, iVar, *this);
     }
     else
     {

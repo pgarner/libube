@@ -72,13 +72,20 @@ namespace libvar
     {
     public:
         virtual ~BinaryFunctor() {};
-        virtual var operator ()(
-            const var& iVar1, const var& iVar2, var* oVar=0
-        ) const = 0;
+        var operator ()(
+            const var& iVar1, const var& iVar2
+        ) const;
+        var operator ()(
+            const var& iVar1, const var& iVar2, var& oVar
+        ) const;
     protected:
-        virtual void broadcast(var iVar1, var iVar2, var* oVar) const;
-        virtual void array(
-            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        virtual void broadcast(var iVar1, var iVar2, var oVar) const;
+        virtual var alloc(var iVar) const;
+        virtual void scalar(
+            const var& iVar1, const var& iVar2, var& oVar
+        ) const;
+        virtual void vector(
+            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
         ) const;
     };
 
@@ -94,8 +101,8 @@ namespace libvar
     class f : public BinaryFunctor                              \
     {                                                           \
     public:                                                     \
-        var operator ()(                                        \
-            const var& iVar1, const var& iVar2, var* oVar=0     \
+        void scalar(                                            \
+            const var& iVar1, const var& iVar2, var& oVar       \
         ) const;                                                \
     };
 
@@ -120,11 +127,10 @@ namespace libvar
      */
     class Set : public BinaryFunctor
     {
-    public:
-        var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(
-            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
+        void vector(
+            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
         ) const;
     };
 
@@ -134,11 +140,10 @@ namespace libvar
      */
     class Add : public BinaryFunctor
     {
-    public:
-        var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(
-            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
+        void vector(
+            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
         ) const;
     };
 
@@ -148,11 +153,10 @@ namespace libvar
      */
     class Sub : public BinaryFunctor
     {
-    public:
-        var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void array(
-            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
+        void vector(
+            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
         ) const;
     };
 
@@ -162,14 +166,13 @@ namespace libvar
      */
     class Mul : public BinaryFunctor
     {
-    public:
-        var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
     protected:
-        void broadcast(var iVar1, var iVar2, var* oVar) const;
-        void array(
-            var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+        void broadcast(var iVar1, var iVar2, var oVar) const;
+        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
+        void vector(
+            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
         ) const;
-        void scale(var iVar1, var iVar2, var* oVar, int iOffset) const;
+        void scale(var iVar1, var iVar2, var oVar, int iOffset) const;
     };
 
 
@@ -179,8 +182,8 @@ namespace libvar
      */
     class Div : public BinaryFunctor
     {
-    public:
-        var operator ()(const var& iVar1, const var& iVar2, var* oVar=0) const;
+    protected:
+        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
     };
 
 
@@ -303,10 +306,10 @@ namespace libvar
         bool operator >(var iVar) const { return iVar < *this; };
         bool operator <=(var iVar) const { return !(*this > iVar); };
         bool operator >=(var iVar) const { return !(*this < iVar); };
-        var& operator +=(var iVar) { add(*this, iVar, this); return *this; };
-        var& operator -=(var iVar) { sub(*this, iVar, this); return *this; };
-        var& operator *=(var iVar) { mul(*this, iVar, this); return *this; };
-        var& operator /=(var iVar) { div(*this, iVar, this); return *this; };
+        var& operator +=(var iVar) { add(*this, iVar, *this); return *this; };
+        var& operator -=(var iVar) { sub(*this, iVar, *this); return *this; };
+        var& operator *=(var iVar) { mul(*this, iVar, *this); return *this; };
+        var& operator /=(var iVar) { div(*this, iVar, *this); return *this; };
         var operator +(var iVar) const { return add(*this, iVar); };
         var operator -(var iVar) const { return sub(*this, iVar); };
         var operator *(var iVar) const { return mul(*this, iVar); };
@@ -356,7 +359,7 @@ namespace libvar
         var cos() { return libvar::cos(*this, this); };
         var sqrt() { return libvar::sqrt(*this, this); };
         var log() { return libvar::log(*this, this); };
-        var pow(var iPow) { return libvar::pow(*this, iPow, this); };
+        var pow(var iPow) { return libvar::pow(*this, iPow, *this); };
 
         // Other functors
         var transpose() { return libvar::transpose(*this, this); };

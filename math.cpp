@@ -105,15 +105,50 @@ void UnaryFunctor::array(var iVar, ind iIOffset, var* oVar, ind iOOffset) const
 
 void UnaryFunctor::array(var iVar, var* oVar) const
 {
-    throw std::runtime_error("UnaryFunctor: not an array operation");
+    throw std::runtime_error("UnaryFunctor: not a vector operation");
 }
 
 
-void BinaryFunctor::array(
-    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+var BinaryFunctor::alloc(var iVar) const
+{
+    var r;
+    r = iVar.copy(true);
+    return r;
+}
+
+
+var BinaryFunctor::operator ()(
+    const var& iVar1, const var& iVar2
 ) const
 {
-    throw std::runtime_error("BinaryFunctor: not an array operation");
+    var v = alloc(iVar1);
+    scalar(iVar1, iVar2, v);
+    return v;
+}
+
+
+var BinaryFunctor::operator ()(
+    const var& iVar1, const var& iVar2, var& oVar
+) const
+{
+    scalar(iVar1, iVar2, oVar);
+    return oVar;
+}
+
+
+void BinaryFunctor::scalar(
+    const var& iVar1, const var& iVar2, var& oVar
+) const
+{
+    broadcast(iVar1, iVar2, oVar);
+}
+
+
+void BinaryFunctor::vector(
+    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+) const
+{
+    throw std::runtime_error("BinaryFunctor: not a vector operation");
 }
 
 
@@ -161,7 +196,7 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
  * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
  * is the rvalue.
  */
-void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
+void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
 {
     int dim1 = iVar1.dim();
     int dim2 = iVar2.dim();
@@ -172,7 +207,10 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
     {
         // This could be parallel!
         for (int i=0; i<iVar1.size(); i++)
-            oVar->at(i) = operator ()(iVar1.at(i), iVar2);
+        {
+            var tmp = oVar.at(i);
+            scalar(iVar1.at(i), iVar2, tmp);
+        }
         return;
     }
 
@@ -191,12 +229,12 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var* oVar) const
 
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
-    int oDim = oVar->dim();
+    int oDim = oVar.dim();
     int step1 = dim1-dim2 > 0 ? iVar1.stride(dim1-dim2-1) : iVar1.size();
-    int stepO = oDim-dim2 > 0 ? oVar->stride(oDim-dim2-1) : oVar->size();
+    int stepO = oDim-dim2 > 0 ? oVar.stride(oDim-dim2-1) : oVar.size();
     int nOps = iVar1.size() / step1;
     for (int i=0; i<nOps; i++)
-        array(iVar1, step1*i, iVar2, oVar, stepO*i);
+        vector(iVar1, step1*i, iVar2, oVar, stepO*i);
 }
 
 
@@ -272,37 +310,28 @@ COMPLEX_UNARY_FUNCTOR(Log,log)
 COMPLEX_UNARY_FUNCTOR(NormC,norm)
 
 
-var Pow::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
     switch(type(iVar1))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_FLOAT:
-        *oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
+        oVar = std::pow(iVar1.get<float>(), iVar2.cast<float>());
         break;
     case TYPE_DOUBLE:
-        *oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
+        oVar = std::pow(iVar1.get<double>(), iVar2.cast<double>());
         break;
     case TYPE_CFLOAT:
-        *oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
+        oVar = std::pow(iVar1.get<cfloat>(), iVar2.cast<cfloat>());
         break;
     case TYPE_CDOUBLE:
-        *oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
+        oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
         break;
     default:
-        throw std::runtime_error("Pow::operator(): Unknown type");
+        throw std::runtime_error("Pow::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 
@@ -404,51 +433,42 @@ var Norm::operator ()(const var& iVar, var* oVar) const
 }
 
 
-var Set::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Set::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
-    switch(type(*oVar))
+    switch(type(oVar))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_CHAR:
-        *oVar->ptr<char>() = iVar2.cast<char>();
+        *oVar.ptr<char>() = iVar2.cast<char>();
         break;
     case TYPE_INT:
-        *oVar->ptr<int>() = iVar2.cast<int>();
+        *oVar.ptr<int>() = iVar2.cast<int>();
         break;
     case TYPE_LONG:
-        *oVar->ptr<long>() = iVar2.cast<long>();
+        *oVar.ptr<long>() = iVar2.cast<long>();
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar2.cast<float>();
+        *oVar.ptr<float>() = iVar2.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar2.cast<double>();
+        *oVar.ptr<double>() = iVar2.cast<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar2.cast<cfloat>();
+        *oVar.ptr<cfloat>() = iVar2.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar2.cast<cdouble>();
+        *oVar.ptr<cdouble>() = iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Set::operator(): Unknown type");
+        throw std::runtime_error("Set::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 
-void Set::array(
-    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+void Set::vector(
+    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -475,55 +495,46 @@ void Set::array(
 }
 
 
-var Add::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Add::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
     switch(type(iVar1))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_CHAR:
-        *oVar->ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
+        *oVar.ptr<char>() = iVar1.get<char>() + iVar2.cast<char>();
         break;
     case TYPE_INT:
-        *oVar->ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
+        *oVar.ptr<int>() = iVar1.get<int>() + iVar2.cast<int>();
         break;
     case TYPE_LONG:
-        *oVar->ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
+        *oVar.ptr<long>() = iVar1.get<long>() + iVar2.cast<long>();
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
+        *oVar.ptr<float>() = iVar1.get<float>() + iVar2.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
+        *oVar.ptr<double>() = iVar1.get<double>() + iVar2.cast<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() + iVar2.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Add::operator(): Unknown type");
+        throw std::runtime_error("Add::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 
-void Add::array(
-    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+void Add::vector(
+    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
-    assert(iVar1.is(*oVar));
+    assert(iVar1.is(oVar));
     int size = iVar2.size();
     switch(iVar1.atype())
     {
@@ -542,60 +553,51 @@ void Add::array(
         break;
     }
     default:
-        throw std::runtime_error("Add::array: Unknown type");
+        throw std::runtime_error("Add::vector: Unknown type");
     }
 }
 
 
-var Sub::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Sub::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
     switch(type(iVar1))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_CHAR:
-        *oVar->ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
+        *oVar.ptr<char>() = iVar1.get<char>() - iVar2.cast<char>();
         break;
     case TYPE_INT:
-        *oVar->ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
+        *oVar.ptr<int>() = iVar1.get<int>() - iVar2.cast<int>();
         break;
     case TYPE_LONG:
-        *oVar->ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
+        *oVar.ptr<long>() = iVar1.get<long>() - iVar2.cast<long>();
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
+        *oVar.ptr<float>() = iVar1.get<float>() - iVar2.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
+        *oVar.ptr<double>() = iVar1.get<double>() - iVar2.cast<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() - iVar2.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Sub::operator(): Unknown type");
+        throw std::runtime_error("Sub::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 
-void Sub::array(
-    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+void Sub::vector(
+    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
-    assert(iVar1.is(*oVar));
+    assert(iVar1.is(oVar));
     int size = iVar2.size();
     switch(iVar1.atype())
     {
@@ -614,7 +616,7 @@ void Sub::array(
         break;
     }
     default:
-        throw std::runtime_error("Sub::array: Unknown type");
+        throw std::runtime_error("Sub::vector: Unknown type");
     }
 }
 
@@ -623,7 +625,7 @@ void Sub::array(
  * Overload of broadcast() for multiplication.  This catches the case where
  * just scaling is being done, meaning a different BLAS call is necessary.
  */
-void Mul::broadcast(var iVar1, var iVar2, var* oVar) const
+void Mul::broadcast(var iVar1, var iVar2, var oVar) const
 {
     // If iVar2 has size 1, call scale rather than let the base class broadcast
     // it over the unary operator.
@@ -637,7 +639,7 @@ void Mul::broadcast(var iVar1, var iVar2, var* oVar) const
 }
 
 
-void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
+void Mul::scale(var iVar1, var iVar2, var oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar1.size();
@@ -663,51 +665,42 @@ void Mul::scale(var iVar1, var iVar2, var* oVar, int iOffset) const
 }
 
 
-var Mul::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Mul::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
     switch(type(iVar1))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_CHAR:
-        *oVar->ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
+        *oVar.ptr<char>() = iVar1.get<char>() * iVar2.cast<char>();
         break;
     case TYPE_INT:
-        *oVar->ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
+        *oVar.ptr<int>() = iVar1.get<int>() * iVar2.cast<int>();
         break;
     case TYPE_LONG:
-        *oVar->ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
+        *oVar.ptr<long>() = iVar1.get<long>() * iVar2.cast<long>();
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
+        *oVar.ptr<float>() = iVar1.get<float>() * iVar2.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
+        *oVar.ptr<double>() = iVar1.get<double>() * iVar2.cast<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() * iVar2.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Mul::operator(): Unknown type");
+        throw std::runtime_error("Mul::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 
-void Mul::array(
-    var iVar1, ind iOffset1, var iVar2, var* oVar, ind iOffsetO
+void Mul::vector(
+    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
 ) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
@@ -715,7 +708,7 @@ void Mul::array(
     // superdiagonals.
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar2.size();
-    if (iVar1.is(*oVar))
+    if (iVar1.is(oVar))
     {
         // xtbmv() (triangular band) overwrites the current location.
         switch(iVar1.atype())
@@ -737,7 +730,7 @@ void Mul::array(
             break;
         }
         default:
-            throw std::runtime_error("Mul::array: Unknown type");
+            throw std::runtime_error("Mul::vector: Unknown type");
         }
     }
     else
@@ -749,7 +742,7 @@ void Mul::array(
         {
             float* A = iVar2.ptr<float>();
             float* x = iVar1.ptr<float>(iOffset1);
-            float* y = oVar->ptr<float>(iOffsetO);
+            float* y = oVar.ptr<float>(iOffsetO);
             cblas_ssbmv(CblasRowMajor, CblasUpper, size, 0,
                         1.0f, A, 1, x, 1, 0.0f, y, 1);
             break;
@@ -758,58 +751,49 @@ void Mul::array(
         {
             double* A = iVar2.ptr<double>();
             double* x = iVar1.ptr<double>(iOffset1);
-            double* y = oVar->ptr<double>(iOffsetO);
+            double* y = oVar.ptr<double>(iOffsetO);
             cblas_dsbmv(CblasRowMajor, CblasUpper, size, 0,
                         1.0, A, 1, x, 1, 0.0, y, 1);
             break;
         }
         default:
-            throw std::runtime_error("Mul::array: Unknown type");
+            throw std::runtime_error("Mul::vector: Unknown type");
         }
     }
 }
 
 
-var Div::operator ()(const var& iVar1, const var& iVar2, var* oVar) const
+void Div::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
-    var r;
-    if (!oVar)
-    {
-        r = iVar1.copy(true);
-        oVar = &r;
-    }
-
     switch(type(iVar1))
     {
     case TYPE_ARRAY:
         broadcast(iVar1, iVar2, oVar);
         break;
     case TYPE_CHAR:
-        *oVar->ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
+        *oVar.ptr<char>() = iVar1.get<char>() / iVar2.cast<char>();
         break;
     case TYPE_INT:
-        *oVar->ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
+        *oVar.ptr<int>() = iVar1.get<int>() / iVar2.cast<int>();
         break;
     case TYPE_LONG:
-        *oVar->ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
+        *oVar.ptr<long>() = iVar1.get<long>() / iVar2.cast<long>();
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
+        *oVar.ptr<float>() = iVar1.get<float>() / iVar2.cast<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
+        *oVar.ptr<double>() = iVar1.get<double>() / iVar2.cast<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
+        *oVar.ptr<cfloat>() = iVar1.get<cfloat>() / iVar2.cast<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
+        *oVar.ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Div::operator(): Unknown type");
+        throw std::runtime_error("Div::scalar: Unknown type");
     }
-
-    return *oVar;
 }
 
 

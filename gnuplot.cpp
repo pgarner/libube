@@ -116,7 +116,7 @@ void gnuplot::write(const char* iFile, var iVar)
                 }
                 puts(vs.str());
                 puts("e");
-                puts("e");
+                break;
             }
             default:
                 throw std::runtime_error("gnuplot::write(): Unknown dimension");
