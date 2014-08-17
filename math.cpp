@@ -55,18 +55,17 @@ using namespace libvar;
  *
  * 2. We want the operation to allocate new storage, e.g., y = x + 1
  *
- * 3. We want the result in existing storage, e.g., y[0] = x + 1 This
- * would also happen in case 2 if y were a view.
+ * 3. We want the result in existing storage, e.g., y[0] = x + 1 This would
+ * also happen in case 2 if y were a view.
  *
- * Going into existing storage via operator=() can be wasteful if it's
- * a view, i.e., there is a temporary.  The solution seems to be to
- * define all vector operations to take the target storage as an
- * argument.  If it's not defined we have case 1, if it's defined
- * ahead we have case 2, and in general we have case 3.  All are
- * methods, but case 2 can be a (static) function.
+ * Going into existing storage via operator=() can be wasteful if it's a view,
+ * i.e., there is a temporary.  The solution seems to be to define all vector
+ * operations to take the target storage as an argument.  If it's not defined
+ * we have case 1, if it's defined ahead we have case 2, and in general we have
+ * case 3.  All are methods, but case 2 can be a (static) function.
  *
- * That said, for some BLAS operations, the natural operation is to
- * overwrite.  In this case, the BLAS wrapper can allocate or not.
+ * That said, for some BLAS operations, the natural operation is to overwrite.
+ * In this case, the BLAS wrapper can allocate or not.
  */
 
 
@@ -87,23 +86,52 @@ ind type(var iVar)
 }
 
 
-/**
- * This array() is called by broadcast() without allocating any memory.
- * Overriding it is the most efficient way to implement array operations.
- *
- * This default implementation encodes the offsets into views and calls the
- * array() form without offsets.  This allocates memory, but means that the
- * implementation can be more var-like.
- */
-void UnaryFunctor::array(var iVar, ind iIOffset, var* oVar, ind iOOffset) const
+var UnaryFunctor::alloc(var iVar) const
 {
-    var iv = iVar.subview(mDim, iIOffset);
-    var ov = oVar->subview(mDim, iOOffset);
-    array(iv, &ov);
+    var r;
+    r = iVar.copy(true);
+    return r;
 }
 
 
-void UnaryFunctor::array(var iVar, var* oVar) const
+var UnaryFunctor::operator ()(const var& iVar) const
+{
+    var v = alloc(iVar);
+    scalar(iVar, v);
+    return v;
+}
+
+
+var UnaryFunctor::operator ()(const var& iVar, var& oVar) const
+{
+    scalar(iVar, oVar);
+    return oVar;
+}
+
+
+void UnaryFunctor::scalar(const var& iVar, var& oVar) const
+{
+    broadcast(iVar, oVar);
+}
+
+
+/**
+ * This vector() is called by broadcast() without allocating any memory.
+ * Overriding it is the most efficient way to implement vector operations.
+ *
+ * This default implementation encodes the offsets into views and calls the
+ * vector() form without offsets.  This allocates memory, but means that the
+ * implementation can be more var-like.
+ */
+void UnaryFunctor::vector(var iVar, ind iIOffset, var& oVar, ind iOOffset) const
+{
+    var iv = iVar.subview(mDim, iIOffset);
+    var ov = oVar.subview(mDim, iOOffset);
+    vector(iv, ov);
+}
+
+
+void UnaryFunctor::vector(var iVar, var& oVar) const
 {
     throw std::runtime_error("UnaryFunctor: not a vector operation");
 }
@@ -145,7 +173,7 @@ void BinaryFunctor::scalar(
 
 
 void BinaryFunctor::vector(
-    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
 ) const
 {
     throw std::runtime_error("BinaryFunctor: not a vector operation");
@@ -157,7 +185,7 @@ void BinaryFunctor::vector(
  *
  * Broadcasts the operation against iVar.
  */
-void UnaryFunctor::broadcast(var iVar, var* oVar) const
+void UnaryFunctor::broadcast(var iVar, var& oVar) const
 {
     int iDim = iVar.dim();
 
@@ -168,8 +196,8 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
         // This could be parallel!
         for (int i=0; i<iVar.size(); i++)
         {
-            var ref = oVar->at(i);
-            operator ()(iVar.at(i), &ref);
+            var ref = oVar.at(i);
+            scalar(iVar.at(i), ref);
         }
         return;
     }
@@ -181,12 +209,12 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
 
     // If it didn't throw, then the array is broadcastable
     // In this case, loop over iVar (and oVar) with different offsets
-    int oDim = oVar->dim();
+    int oDim = oVar.dim();
     int stepI = iDim-mDim > 0 ? iVar.stride(iDim-mDim-1) : iVar.size();
-    int stepO = oDim-mDim > 0 ? oVar->stride(oDim-mDim-1) : oVar->size();
+    int stepO = oDim-mDim > 0 ? oVar.stride(oDim-mDim-1) : oVar.size();
     int nOps = iVar.size() / stepI;
     for (int i=0; i<nOps; i++)
-        array(iVar, stepI*i, oVar, stepO*i);
+        vector(iVar, stepI*i, oVar, stepO*i);
 }
 
 
@@ -196,7 +224,7 @@ void UnaryFunctor::broadcast(var iVar, var* oVar) const
  * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
  * is the rvalue.
  */
-void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
+void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
     int dim1 = iVar1.dim();
     int dim2 = iVar2.dim();
@@ -239,65 +267,47 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var oVar) const
 
 
 #define CMATH_UNARY_FUNCTOR(F,f)                                        \
-    var F::operator ()(const var& iVar, var* oVar) const                \
+    void F::scalar(const var& iVar, var& oVar) const                    \
     {                                                                   \
-        var r;                                                          \
-        if (!oVar)                                                      \
-        {                                                               \
-            r = iVar.copy(true);                                        \
-            oVar = &r;                                                  \
-        }                                                               \
-                                                                        \
         switch (type(iVar))                                             \
         {                                                               \
         case TYPE_ARRAY:                                                \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
         case TYPE_FLOAT:                                                \
-            *oVar = std::f(iVar.get<float>());                          \
+            oVar = std::f(iVar.get<float>());                           \
             break;                                                      \
         case TYPE_DOUBLE:                                               \
-            *oVar = std::f(iVar.get<double>());                         \
+            oVar = std::f(iVar.get<double>());                          \
             break;                                                      \
         default:                                                        \
-            throw std::runtime_error("#F##::operator(): Unknown type"); \
+            throw std::runtime_error("#F##::scalar: Unknown type");     \
         }                                                               \
-                                                                        \
-        return *oVar;                                                   \
     }
 
 #define COMPLEX_UNARY_FUNCTOR(F,f)                                      \
-    var F::operator ()(const var& iVar, var* oVar) const                \
+    void F::scalar(const var& iVar, var& oVar) const                    \
     {                                                                   \
-        var r;                                                          \
-        if (!oVar)                                                      \
-        {                                                               \
-            r = iVar.copy(true);                                        \
-            oVar = &r;                                                  \
-        }                                                               \
-                                                                        \
         switch (type(iVar))                                             \
         {                                                               \
         case TYPE_ARRAY:                                                \
             broadcast(iVar, oVar);                                      \
             break;                                                      \
         case TYPE_FLOAT:                                                \
-            *oVar = std::f(iVar.get<float>());                          \
+            oVar = std::f(iVar.get<float>());                           \
             break;                                                      \
         case TYPE_DOUBLE:                                               \
-            *oVar = std::f(iVar.get<double>());                         \
+            oVar = std::f(iVar.get<double>());                          \
             break;                                                      \
         case TYPE_CFLOAT:                                               \
-            *oVar = std::f(iVar.get<cfloat>());                         \
+            oVar = std::f(iVar.get<cfloat>());                          \
             break;                                                      \
         case TYPE_CDOUBLE:                                              \
-            *oVar = std::f(iVar.get<cdouble>());                        \
+            oVar = std::f(iVar.get<cdouble>());                         \
             break;                                                      \
         default:                                                        \
-            throw std::runtime_error("#F##::operator(): Unknown type"); \
+            throw std::runtime_error("#F##::scalar(): Unknown type");   \
         }                                                               \
-                                                                        \
-        return *oVar;                                                   \
     }
 
 
@@ -335,101 +345,99 @@ void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-var Abs::operator ()(const var& iVar, var* oVar) const
+var Abs::alloc(var iVar) const
 {
-    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
-    // returns real.
+    // This probably ought to be a helper function.  The idea is to copy iVar,
+    // but change the type to the real version.
     var r;
-    if (!oVar)
+    var s = iVar.shape();
+    switch (iVar.atype())
     {
-        // This probably ought to be a helper function.  The idea is to copy
-        // iVar, but change the type to the real version.
-        var s = iVar.shape();
-        switch (iVar.atype())
-        {
-        case TYPE_FLOAT:
-        case TYPE_CFLOAT:
-            r = view(s, 0.0f);
-            break;
-        case TYPE_DOUBLE:
-        case TYPE_CDOUBLE:
-            r = view(s, 0.0);
-            break;
-        }
-        oVar = &r;
-    }
-
-    switch (type(iVar))
-    {
-    case TYPE_ARRAY:
-        broadcast(iVar, oVar);
-        break;
     case TYPE_FLOAT:
-        *oVar = std::abs(iVar.get<float>());
+    case TYPE_CFLOAT:
+        r = view(s, 0.0f);
         break;
     case TYPE_DOUBLE:
-        *oVar = std::abs(iVar.get<double>());
-        break;
-    case TYPE_CFLOAT:
-        *oVar = std::abs(iVar.get<cfloat>());
-        break;
     case TYPE_CDOUBLE:
-        *oVar = std::abs(iVar.get<cdouble>());
+        r = view(s, 0.0);
         break;
-    default:
-        throw std::runtime_error("Abs::operator(): Unknown type");
     }
-
-    return *oVar;
+    return r;
 }
 
 
-var Norm::operator ()(const var& iVar, var* oVar) const
+void Abs::scalar(const var& iVar, var& oVar) const
 {
     // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
     // returns real.
-    var r;
-    if (!oVar)
-    {
-        // This probably ought to be a helper function.  The idea is to copy
-        // iVar, but change the type to the real version.
-        var s = iVar.shape();
-        switch (iVar.atype())
-        {
-        case TYPE_FLOAT:
-        case TYPE_CFLOAT:
-            r = view(s, 0.0f);
-            break;
-        case TYPE_DOUBLE:
-        case TYPE_CDOUBLE:
-            r = view(s, 0.0);
-            break;
-        }
-        oVar = &r;
-    }
-
     switch (type(iVar))
     {
     case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
     case TYPE_FLOAT:
-        *oVar = std::norm(iVar.get<float>());
+        oVar = std::abs(iVar.get<float>());
         break;
     case TYPE_DOUBLE:
-        *oVar = std::norm(iVar.get<double>());
+        oVar = std::abs(iVar.get<double>());
         break;
     case TYPE_CFLOAT:
-        *oVar = std::norm(iVar.get<cfloat>());
+        oVar = std::abs(iVar.get<cfloat>());
         break;
     case TYPE_CDOUBLE:
-        *oVar = std::norm(iVar.get<cdouble>());
+        oVar = std::abs(iVar.get<cdouble>());
         break;
     default:
         throw std::runtime_error("Abs::operator(): Unknown type");
     }
+}
 
-    return *oVar;
+
+var Norm::alloc(var iVar) const
+{
+    // This probably ought to be a helper function.  The idea is to copy iVar,
+    // but change the type to the real version.
+    var r;
+    var s = iVar.shape();
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+    case TYPE_CFLOAT:
+        r = view(s, 0.0f);
+        break;
+    case TYPE_DOUBLE:
+    case TYPE_CDOUBLE:
+        r = view(s, 0.0);
+        break;
+    }
+    return r;
+}
+
+
+void Norm::scalar(const var& iVar, var& oVar) const
+{
+    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
+    // returns real.
+    switch (type(iVar))
+    {
+    case TYPE_ARRAY:
+        broadcast(iVar, oVar);
+        break;
+    case TYPE_FLOAT:
+        oVar = std::norm(iVar.get<float>());
+        break;
+    case TYPE_DOUBLE:
+        oVar = std::norm(iVar.get<double>());
+        break;
+    case TYPE_CFLOAT:
+        oVar = std::norm(iVar.get<cfloat>());
+        break;
+    case TYPE_CDOUBLE:
+        oVar = std::norm(iVar.get<cdouble>());
+        break;
+    default:
+        throw std::runtime_error("Abs::operator(): Unknown type");
+    }
 }
 
 
@@ -468,7 +476,7 @@ void Set::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Set::vector(
-    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -530,7 +538,7 @@ void Add::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Add::vector(
-    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -593,7 +601,7 @@ void Sub::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Sub::vector(
-    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -625,7 +633,7 @@ void Sub::vector(
  * Overload of broadcast() for multiplication.  This catches the case where
  * just scaling is being done, meaning a different BLAS call is necessary.
  */
-void Mul::broadcast(var iVar1, var iVar2, var oVar) const
+void Mul::broadcast(var iVar1, var iVar2, var& oVar) const
 {
     // If iVar2 has size 1, call scale rather than let the base class broadcast
     // it over the unary operator.
@@ -639,7 +647,7 @@ void Mul::broadcast(var iVar1, var iVar2, var oVar) const
 }
 
 
-void Mul::scale(var iVar1, var iVar2, var oVar, int iOffset) const
+void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar1.size();
@@ -700,7 +708,7 @@ void Mul::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Mul::vector(
-    var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
 ) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
@@ -797,82 +805,81 @@ void Div::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 }
 
 
-var ASum::operator ()(const var& iVar, var* oVar) const
+var ASum::alloc(var iVar) const
 {
     var r;
-    if (!oVar)
+    if (iVar.dim() > 1)
     {
-        if (iVar.dim() > 1)
+        // Allocate an output array
+        var s = iVar.shape();
+        s[s.size()-1] = 1;
+        switch (iVar.atype())
         {
-            // Allocate an output array
-            var s = iVar.shape();
-            s[s.size()-1] = 1;
-            switch (iVar.atype())
-            {
-            case TYPE_FLOAT:
-            case TYPE_CFLOAT:
-                r = view(s, 0.0f);
-                break;
-            case TYPE_DOUBLE:
-            case TYPE_CDOUBLE:
-                r = view(s, 0.0);
-                break;
-            }
+        case TYPE_FLOAT:
+        case TYPE_CFLOAT:
+            r = view(s, 0.0f);
+            break;
+        case TYPE_DOUBLE:
+        case TYPE_CDOUBLE:
+            r = view(s, 0.0);
+            break;
         }
-        else
-        {
-            switch (iVar.atype())
-            {
-            case TYPE_FLOAT:
-            case TYPE_CFLOAT:
-                r = 0.0f;
-                break;
-            case TYPE_DOUBLE:
-            case TYPE_CDOUBLE:
-                r = 0.0;
-                break;
-            }
-        }
-        oVar = &r;
     }
+    else
+    {
+        switch (iVar.atype())
+        {
+        case TYPE_FLOAT:
+        case TYPE_CFLOAT:
+            r = 0.0f;
+            break;
+        case TYPE_DOUBLE:
+        case TYPE_CDOUBLE:
+            r = 0.0;
+            break;
+        }
+    }
+    return r;
+}
 
+
+void ASum::scalar(const var& iVar, var& oVar) const
+{
     switch(type(iVar))
     {
     case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = std::abs(iVar.get<float>());
+        *oVar.ptr<float>() = std::abs(iVar.get<float>());
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = std::abs(iVar.get<double>());
+        *oVar.ptr<double>() = std::abs(iVar.get<double>());
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = std::abs(iVar.get<cfloat>());
+        *oVar.ptr<cfloat>() = std::abs(iVar.get<cfloat>());
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = std::abs(iVar.get<cdouble>());
+        *oVar.ptr<cdouble>() = std::abs(iVar.get<cdouble>());
         break;
     default:
         throw std::runtime_error("ASum::operator(): Unknown type");
     }
-
-    return *oVar;
 }
 
 
-void ASum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
+void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
     int size = iVar.size();
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>(iOffsetO)) =
+        *(oVar.ptr<float>(iOffsetO)) =
             cblas_sasum(size, iVar.ptr<float>(iOffsetI), 1);
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>(iOffsetO)) =
+        *(oVar.ptr<double>(iOffsetO)) =
             cblas_dasum(size, iVar.ptr<double>(iOffsetI), 1);
         break;
     default:
@@ -881,75 +888,74 @@ void ASum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
 }
 
 
-var Sum::operator ()(const var& iVar, var* oVar) const
+var Sum::alloc(var iVar) const
 {
     var r;
-    if (!oVar)
+    if (iVar.dim() > 1)
     {
-        if (iVar.dim() > 1)
+        // Allocate an output array
+        var s = iVar.shape();
+        s[s.size()-1] = 1;
+        switch (iVar.atype())
         {
-            // Allocate an output array
-            var s = iVar.shape();
-            s[s.size()-1] = 1;
-            switch (iVar.atype())
-            {
-            case TYPE_FLOAT:
-                r = view(s, 0.0f);
-                break;
-            case TYPE_DOUBLE:
-                r = view(s, 0.0);
-                break;
-            case TYPE_CFLOAT:
-                r = view(s, cfloat(0.0f, 0.0f));
-                break;
-            case TYPE_CDOUBLE:
-                r = view(s, cdouble(0.0, 0.0));
-                break;
-            }
+        case TYPE_FLOAT:
+            r = view(s, 0.0f);
+            break;
+        case TYPE_DOUBLE:
+            r = view(s, 0.0);
+            break;
+        case TYPE_CFLOAT:
+            r = view(s, cfloat(0.0f, 0.0f));
+            break;
+        case TYPE_CDOUBLE:
+            r = view(s, cdouble(0.0, 0.0));
+            break;
         }
-        else
-        {
-            switch (iVar.atype())
-            {
-            case TYPE_FLOAT:
-                r = 0.0f;
-                break;
-            case TYPE_DOUBLE:
-                r = 0.0;
-                break;
-            case TYPE_CFLOAT:
-                r = cfloat(0.0f, 0.0f);
-                break;
-            case TYPE_CDOUBLE:
-                r = cdouble(0.0, 0.0);
-                break;
-            }
-        }
-        oVar = &r;
     }
+    else
+    {
+        switch (iVar.atype())
+        {
+        case TYPE_FLOAT:
+            r = 0.0f;
+            break;
+        case TYPE_DOUBLE:
+            r = 0.0;
+            break;
+        case TYPE_CFLOAT:
+            r = cfloat(0.0f, 0.0f);
+            break;
+        case TYPE_CDOUBLE:
+            r = cdouble(0.0, 0.0);
+            break;
+        }
+    }
+    return r;
+}
 
+
+void Sum::scalar(const var& iVar, var& oVar) const
+{
     switch(type(iVar))
     {
     case TYPE_ARRAY:
         broadcast(iVar, oVar);
         break;
     case TYPE_FLOAT:
-        *oVar->ptr<float>() = iVar.get<float>();
+        *oVar.ptr<float>() = iVar.get<float>();
         break;
     case TYPE_DOUBLE:
-        *oVar->ptr<double>() = iVar.get<double>();
+        *oVar.ptr<double>() = iVar.get<double>();
         break;
     case TYPE_CFLOAT:
-        *oVar->ptr<cfloat>() = iVar.get<cfloat>();
+        *oVar.ptr<cfloat>() = iVar.get<cfloat>();
         break;
     case TYPE_CDOUBLE:
-        *oVar->ptr<cdouble>() = iVar.get<cdouble>();
+        *oVar.ptr<cdouble>() = iVar.get<cdouble>();
         break;
     default:
         throw std::runtime_error("Sum::operator(): Unknown type");
     }
-
-    return *oVar;
 }
 
 
@@ -963,26 +969,26 @@ T sumArray(int iSize, T* iPointer)
 }
 
 
-void Sum::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
+void Sum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
     int size = iVar.size();
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar->ptr<float>(iOffsetO)) =
+        *(oVar.ptr<float>(iOffsetO)) =
             sumArray(size, iVar.ptr<float>(iOffsetI));
         break;
     case TYPE_DOUBLE:
-        *(oVar->ptr<double>(iOffsetO)) =
+        *(oVar.ptr<double>(iOffsetO)) =
             sumArray(size, iVar.ptr<double>(iOffsetI));
         break;
     case TYPE_CFLOAT:
-        *(oVar->ptr<cfloat>(iOffsetO)) =
+        *(oVar.ptr<cfloat>(iOffsetO)) =
             sumArray(size, iVar.ptr<cfloat>(iOffsetI));
         break;
     case TYPE_CDOUBLE:
-        *(oVar->ptr<cdouble>(iOffsetO)) =
+        *(oVar.ptr<cdouble>(iOffsetO)) =
             sumArray(size, iVar.ptr<cdouble>(iOffsetI));
         break;
     default:

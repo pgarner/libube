@@ -107,56 +107,55 @@ DFT::~DFT()
     mImpl = 0;
 }
 
-var DFT::operator ()(const var& iVar, var* oVar) const
+var DFT::alloc(var iVar) const
 {
+    // Allocate an output array
     var r;
-    if (!oVar)
-    {
-        // Allocate an output array
-        var s = iVar.shape();
-        s[s.size()-1] = mImpl->oSize;
-        r = view(s, mImpl->inverse ? mImpl->forwardType : mImpl->inverseType);
-        oVar = &r;
-    }
+    var s = iVar.shape();
+    s[s.size()-1] = mImpl->oSize;
+    r = view(s, mImpl->inverse ? mImpl->forwardType : mImpl->inverseType);
+    return r;
+}
 
+void DFT::scalar(const var& iVar, var& oVar) const
+{
     // Check the arrays are OK
     if (iVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::operator(): DFT input must be vector");
-    if (oVar->type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::operator(): DFT output must be vector");
+        throw std::runtime_error("DFT::scalar: DFT input must be vector");
+    if (oVar.type() != TYPE_ARRAY)
+        throw std::runtime_error("DFT::scalar: DFT output must be vector");
     if (iVar.atype() != (mImpl->inverse
                          ? mImpl->inverseType.type()
                          : mImpl->forwardType.type()
         ))
-        throw std::runtime_error("DFT::operator(): wrong input type");
-    if (oVar->atype() != (mImpl->inverse
+        throw std::runtime_error("DFT::scalar: wrong input type");
+    if (oVar.atype() != (mImpl->inverse
                           ? mImpl->forwardType.type()
                           : mImpl->inverseType.type()
         ))
-        throw std::runtime_error("DFT::operator(): wrong output type");
+        throw std::runtime_error("DFT::scalar: wrong output type");
 
     // DFT always broadcasts to array()
     broadcast(iVar, oVar);
-    return *oVar;
 }
 
-void DFT::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
+void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(oVar);
     MKL_LONG r;
-    if (iVar.is(*oVar))
+    if (iVar.is(oVar))
     {
-        throw std::runtime_error("DFT::array(): not implemented");
+        throw std::runtime_error("DFT::vector(): not implemented");
         if (mImpl->inverse)
-            r = DftiComputeBackward(mImpl->handle, oVar->ptr<float>(iOffsetO));
+            r = DftiComputeBackward(mImpl->handle, oVar.ptr<float>(iOffsetO));
         else
-            r = DftiComputeForward(mImpl->handle, oVar->ptr<float>(iOffsetO));
+            r = DftiComputeForward(mImpl->handle, oVar.ptr<float>(iOffsetO));
     }
     else
         if (mImpl->inverse)
             r = DftiComputeBackward(
                 mImpl->handle,
-                iVar.ptr<float>(iOffsetI), oVar->ptr<float>(iOffsetO)
+                iVar.ptr<float>(iOffsetI), oVar.ptr<float>(iOffsetO)
             );
         else
             switch (mImpl->forwardType.type())
@@ -165,32 +164,32 @@ void DFT::array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const
                 r = DftiComputeForward(
                     mImpl->handle,
                     iVar.ptr<float>(iOffsetI),
-                    oVar->ptr<cfloat>(iOffsetO)
+                    oVar.ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_DOUBLE:
                 r = DftiComputeForward(
                     mImpl->handle,
                     iVar.ptr<double>(iOffsetI),
-                    oVar->ptr<cdouble>(iOffsetO)
+                    oVar.ptr<cdouble>(iOffsetO)
                 );
                 break;
             case TYPE_CFLOAT:
                 r = DftiComputeForward(
                     mImpl->handle,
                     iVar.ptr<cfloat>(iOffsetI),
-                    oVar->ptr<cfloat>(iOffsetO)
+                    oVar.ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_CDOUBLE:
                 r = DftiComputeForward(
                     mImpl->handle,
                     iVar.ptr<cdouble>(iOffsetI),
-                    oVar->ptr<cdouble>(iOffsetO)
+                    oVar.ptr<cdouble>(iOffsetO)
                 );
                 break;
             default:
-                throw std::runtime_error("DFT::array(): unknown type");
+                throw std::runtime_error("DFT::vector(): unknown type");
             }
     dftiCheck(r);
 }

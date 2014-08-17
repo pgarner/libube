@@ -444,9 +444,9 @@ var::var(int iSize, var iVar) : var()
 /**
  * var dereference
  *
- * When dereferencing, the result can be two kinds of thing.  One is a
- * simple reference into an array.  The other is a var that is part of
- * a var/pair array.  This handles the latter case.
+ * When dereferencing, the result can be two kinds of thing.  One is a simple
+ * reference into an array.  The other is a var that is part of a var/pair
+ * array.  This handles the latter case.
  */
 var& var::varderef()
 {
@@ -468,10 +468,9 @@ var& var::varderef()
 /**
  * Negation operator
  *
- * It turns out that the negation is easier to code than the equality;
- * i.e., there are lots of not equal cases where you just want to bail
- * out as soon as you know it's not equal.  So the equality operator
- * calls "not this".
+ * It turns out that the negation is easier to code than the equality; i.e.,
+ * there are lots of not equal cases where you just want to bail out as soon as
+ * you know it's not equal.  So the equality operator calls "not this".
  */
 bool var::operator !=(var iVar) const
 {
@@ -546,8 +545,8 @@ bool var::operator <(var iVar) const
 /**
  * Shallow copy
  *
- * It's shallow in that a new array is created, but if that array
- * itself points to other arrays, they are not duplicated.
+ * It's shallow in that a new array is created, but if that array itself points
+ * to other arrays, they are not duplicated.
  */
 var var::copy(bool iAllocOnly) const
 {
@@ -604,24 +603,16 @@ ind var::atype() const
 
 
 template <class T>
-var Cast<T>::operator ()(const var& iVar, var* oVar) const
+void Cast<T>::scalar(const var& iVar, var& oVar) const
 {
     // Return immediately if no cast is required
     const T t = 0;
     static var v = t;
     if (v.type() == iVar.type())
     {
-        if (oVar)
-            *oVar = iVar;
-        return iVar;
-    }
-
-    // Output variable; may not be used.  Hereafter just write to oVar
-    var r;
-    if (!oVar)
-    {
-        r = iVar.copy(true);
-        oVar = &r;
+        if (!iVar.is(oVar))
+            oVar = iVar;
+        return;
     }
 
     // Strings get converted
@@ -631,8 +622,8 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
         vstream s(iVar);
         s.exceptions(std::ios_base::badbit | std::ios_base::failbit);
         s >> t;
-        *oVar = t;
-        return *oVar;
+        oVar = t;
+        return;
     }
 
     // Everything else gets cast<>ed
@@ -642,43 +633,39 @@ var Cast<T>::operator ()(const var& iVar, var* oVar) const
         broadcast(iVar, oVar);
         break;
     case TYPE_CHAR:
-        *oVar = static_cast<T>(iVar.get<char>());
+        oVar = static_cast<T>(iVar.get<char>());
         break;
     case TYPE_INT:
-        *oVar = static_cast<T>(iVar.get<int>());
+        oVar = static_cast<T>(iVar.get<int>());
         break;
     case TYPE_LONG:
-        *oVar = static_cast<T>(iVar.get<long>());
+        oVar = static_cast<T>(iVar.get<long>());
         break;
     case TYPE_FLOAT:
-        *oVar = static_cast<T>(iVar.get<float>());
+        oVar = static_cast<T>(iVar.get<float>());
         break;
     case TYPE_DOUBLE:
-        *oVar = static_cast<T>(iVar.get<double>());
+        oVar = static_cast<T>(iVar.get<double>());
         break;
     case TYPE_CFLOAT:
-        *oVar = static_cast<T>(iVar.get<cfloat>().real());
+        oVar = static_cast<T>(iVar.get<cfloat>().real());
         break;
     case TYPE_CDOUBLE:
-        *oVar = static_cast<T>(iVar.get<cdouble>().real());
+        oVar = static_cast<T>(iVar.get<cdouble>().real());
         break;
     default:
         throw std::runtime_error("Cast::operator(): Unknown type");
     }
-
-    return *oVar;
 }
 
 
 /**
  * operator[int]
  *
- * In principle, just creates a reference.  In practice it calls
- * resize(), that in turn can create a larger array, or an array of
- * vars if unset.
+ * In principle, just creates a reference.  In practice it calls resize(), that
+ * in turn can create a larger array, or an array of vars if unset.
  *
- * Can't be const because it calls resize(), which might change the
- * type.
+ * Can't be const because it calls resize(), which might change the type.
  */
 var var::operator [](int iIndex)
 {
@@ -695,11 +682,10 @@ var var::operator [](int iIndex)
 /**
  * operator[var]
  *
- * In principle, just creates a reference.  However, it is also the
- * primary means of creating a map type (array of TYPE_PAIR).
+ * In principle, just creates a reference.  However, it is also the primary
+ * means of creating a map type (array of TYPE_PAIR).
  *
- * Can't be const because it calls resize(), which might change the
- * type.
+ * Can't be const because it calls resize(), which might change the type.
  */
 var var::operator [](var iVar)
 {
@@ -769,9 +755,8 @@ bool var::is(var& iVar) const
 /*
  * Array indirection
  *
- * The main difference between at() and operator[] is that at() is
- * const.  That follows from its being unable to change the array
- * size.
+ * The main difference between at() and operator[] is that at() is const.  That
+ * follows from its being unable to change the array size.
  */
 var var::at(int iIndex) const
 {
@@ -789,9 +774,9 @@ var var::at(int iIndex) const
 /*
  * Array indirection
  *
- * The main difference between at() and operator[] is that at() is
- * const.  That follows from it's being unable to change the array
- * size.  As above, but for map type.
+ * The main difference between at() and operator[] is that at() is const.  That
+ * follows from it's being unable to change the array size.  As above, but for
+ * map type.
  */
 var var::at(var iVar) const
 {
@@ -809,8 +794,8 @@ var var::at(var iVar) const
 
 
 /**
- * Never indent a basic var, but do pass the current level along to
- * the array formatter.
+ * Never indent a basic var, but do pass the current level along to the array
+ * formatter.
  */
 void var::format(std::ostream& iStream, int iIndent) const
 {
@@ -853,10 +838,9 @@ void var::format(std::ostream& iStream, int iIndent) const
 
 
 /**
- * Generate a range of indeces.  Does pretty much what python's
- * range() does, in that the higher value is not included, and it
- * starts at 0 if the lower value is omitted.  To start at 1 and
- * include the higher value, use range().
+ * Generate a range of indeces.  Does pretty much what python's range() does,
+ * in that the higher value is not included, and it starts at 0 if the lower
+ * value is omitted.  To start at 1 and include the higher value, use range().
  */
 var libvar::irange(var iLo, var iHi, var iStep)
 {
@@ -877,13 +861,12 @@ var libvar::irange(var iHi)
 
 
 /**
- * Generate a range.  This one includes both the high and low
- * extremes, and the low extreme defaults to 1, so range(4) gives
- * {1,2,3,4} as you might expect.  This is not what python does for
- * the same argument; if you want that then use irange() which gives
- * {0,1,2,3}.  Note that in python, range() is more of a loop iterator
- * so you tend to want {0,1,2,3}; in C++, loops use the traditional
- * for (i=0; i<N, i++) syntax, so irange() is less useful.
+ * Generate a range.  This one includes both the high and low extremes, and the
+ * low extreme defaults to 1, so range(4) gives {1,2,3,4} as you might expect.
+ * This is not what python does for the same argument; if you want that then
+ * use irange() which gives {0,1,2,3}.  Note that in python, range() is more of
+ * a loop iterator so you tend to want {0,1,2,3}; in C++, loops use the
+ * traditional for (i=0; i<N, i++) syntax, so irange() is less useful.
  */
 var libvar::range(var iLo, var iHi, var iStep)
 {
@@ -975,9 +958,8 @@ int var::attach(varheap* iHeap)
 
 
 /**
- * Detaches a var from a varheap.  If a varheap is passed as argument,
- * detaches from that varheap, otherwise detaches from the current one
- * if it exists.
+ * Detaches a var from a varheap.  If a varheap is passed as argument, detaches
+ * from that varheap, otherwise detaches from the current one if it exists.
  */
 int var::detach(varheap* iHeap)
 {
@@ -1044,10 +1026,9 @@ var var::atypeStr() const
 /**
  * Push a value onto a stack
  *
- * Push is the fundamental way of building arrays, combined with the
- * way resize() works.  Pushing something of an array type creates an
- * array of var; pushing something of a builtin type creates a dense
- * array of that type.
+ * Push is the fundamental way of building arrays, combined with the way
+ * resize() works.  Pushing something of an array type creates an array of var;
+ * pushing something of a builtin type creates a dense array of that type.
  */
 var& var::push(var iVar)
 {
@@ -1183,8 +1164,8 @@ var& var::presize(int iSize)
 
 
 /**
- * Usable both as a boolean (if this var uses a heap allocation) and
- * as a means to get the pointer.
+ * Usable both as a boolean (if this var uses a heap allocation) and as a means
+ * to get the pointer.
  */
 varheap* var::heap() const
 {
@@ -1223,9 +1204,9 @@ var var::reference(int iIndex) const
 /**
  * Converts a reference to an actual var in place
  *
- * However, if the ref is to another var, it takes a copy but returns
- * a reference to the original var.  That way, it can be modified by
- * the caller if necessary.
+ * However, if the ref is to another var, it takes a copy but returns a
+ * reference to the original var.  That way, it can be modified by the caller
+ * if necessary.
  */
 var& var::dereference()
 {
@@ -1332,16 +1313,15 @@ void var::setStrides(var& iVar, int iSize, int iOffset)
 
 
 /**
- * Assuming that *this is an array, returns a view of the array.  A
- * view is just another array, of type int, holding the dimensions of
- * the new view.
+ * Assuming that *this is an array, returns a view of the array.  A view is
+ * just another array, of type int, holding the dimensions of the new view.
  */
 var var::view(const std::initializer_list<int> iList, int iOffset)
 {
     var v;
 
-    // The first entry is the offset; remember to add on the current
-    // offset which could be non-zero if we are already a view
+    // The first entry is the offset; remember to add on the current offset
+    // which could be non-zero if we are already a view
     v.push(iOffset+offset());
 
     // First entry of each subsequent pair is the dimension
@@ -1359,16 +1339,15 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
 
 
 /**
- * Assuming that *this is an array, returns a view of the array.  A
- * view is just another array, of type int, holding the dimensions of
- * the new view.
+ * Assuming that *this is an array, returns a view of the array.  A view is
+ * just another array, of type int, holding the dimensions of the new view.
  */
 var var::view(var iShape, int iOffset)
 {
     var v;
 
-    // The first entry is the offset; remember to add on the current
-    // offset which could be non-zero if we are already a view
+    // The first entry is the offset; remember to add on the current offset
+    // which could be non-zero if we are already a view
     v.push(iOffset+offset());
 
     // First entry of each subsequent pair is the dimension
@@ -1565,16 +1544,14 @@ vstream::vstream(class var iVar)
 /**
  * vruntime_error constructor
  *
- * This is really just a runtime_error that takes a var as its
- * argument.  The var is formatted, so you can have arbitrary values
- * appear in the what() string.
+ * This is really just a runtime_error that takes a var as its argument.  The
+ * var is formatted, so you can have arbitrary values appear in the what()
+ * string.
  *
- * Two things are wrong here: One is that it should be
- * namespace::runtime_error.  The other is that what() should do the
- * formatting, not the constructor.  That is because memory is more
- * likely to have been cleared by the time what() gets executed.  It's
- * this way because what() is const, and "operator&" and all the
- * things returning strings aren't.
+ * One thing wrong here is that what() should do the formatting, not the
+ * constructor.  That is because memory is more likely to have been cleared by
+ * the time what() gets executed.  It's this way because what() is const, and
+ * "operator&" and all the things returning strings aren't.
  */
 vruntime_error::vruntime_error(var iVar)
 {

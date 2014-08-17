@@ -52,14 +52,17 @@ namespace libvar
     public:
         UnaryFunctor() { mDim = 0; };
         virtual ~UnaryFunctor() {};
-        virtual var operator ()(const var& iVar, var* oVar=0) const = 0;
+        var operator ()(const var& iVar) const;
+        var operator ()(const var& iVar, var& oVar) const;
     protected:
         int mDim;
-        virtual void broadcast(var iVar1, var* oVar) const;
-        virtual void array(
-            var iVar, ind iOffsetI, var* oVar, ind iOffsetO
+        virtual void broadcast(var iVar, var& oVar) const;
+        virtual var alloc(var iVar) const;
+        virtual void scalar(const var& iVar, var& oVar) const;
+        virtual void vector(
+            var iVar, ind iOffsetI, var& oVar, ind iOffsetO
         ) const;
-        virtual void array(var iVar, var* oVar) const;
+        virtual void vector(var iVar, var& oVar) const;
     };
 
 
@@ -79,35 +82,33 @@ namespace libvar
             const var& iVar1, const var& iVar2, var& oVar
         ) const;
     protected:
-        virtual void broadcast(var iVar1, var iVar2, var oVar) const;
+        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
         virtual var alloc(var iVar) const;
         virtual void scalar(
             const var& iVar1, const var& iVar2, var& oVar
         ) const;
         virtual void vector(
-            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
     };
 
 
-#   define BASIC_UNARY_FUNCTOR_DECL(f)                          \
-    class f : public UnaryFunctor                               \
-    {                                                           \
-    public:                                                     \
-        var operator ()(const var& iVar, var* oVar=0) const;    \
+#   define BASIC_UNARY_FUNCTOR_DECL(f)                      \
+    class f : public UnaryFunctor                           \
+    {                                                       \
+    protected:                                              \
+        void scalar(const var& iVar, var& oVar) const;      \
     };
 
-#   define BASIC_BINARY_FUNCTOR_DECL(f)                         \
-    class f : public BinaryFunctor                              \
-    {                                                           \
-    public:                                                     \
-        void scalar(                                            \
-            const var& iVar1, const var& iVar2, var& oVar       \
-        ) const;                                                \
+#   define BASIC_BINARY_FUNCTOR_DECL(f)                     \
+    class f : public BinaryFunctor                          \
+    {                                                       \
+    protected:                                              \
+        void scalar(                                        \
+            const var& iVar1, const var& iVar2, var& oVar   \
+        ) const;                                            \
     };
 
-    BASIC_UNARY_FUNCTOR_DECL(Abs)
-    BASIC_UNARY_FUNCTOR_DECL(Norm)
     BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
     BASIC_UNARY_FUNCTOR_DECL(Cos)
@@ -130,7 +131,7 @@ namespace libvar
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -143,7 +144,7 @@ namespace libvar
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -156,7 +157,7 @@ namespace libvar
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -167,12 +168,12 @@ namespace libvar
     class Mul : public BinaryFunctor
     {
     protected:
-        void broadcast(var iVar1, var iVar2, var oVar) const;
+        void broadcast(var iVar1, var iVar2, var& oVar) const;
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var oVar, ind iOffsetO
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
-        void scale(var iVar1, var iVar2, var oVar, int iOffset) const;
+        void scale(var iVar1, var iVar2, var& oVar, int iOffset) const;
     };
 
 
@@ -188,15 +189,38 @@ namespace libvar
 
 
     /**
+     * Absolute value functor
+     */
+    class Abs : public UnaryFunctor
+    {
+    protected:
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+    };
+
+
+    /**
+     * Norm functor
+     */
+    class Norm : public UnaryFunctor
+    {
+    protected:
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+    };
+
+
+    /**
      * Absolute sum functor
      */
     class ASum : public UnaryFunctor
     {
     public:
         ASum() { mDim = 1; };
-        var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     };
 
 
@@ -207,9 +231,10 @@ namespace libvar
     {
     public:
         Sum() { mDim = 1; };
-        var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     };
 
 
@@ -220,9 +245,10 @@ namespace libvar
     {
     public:
         Transpose() { mDim = 2; };
-        var operator ()(const var& iVar, var* oVar=0) const;
     protected:
-        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     };
 
 
@@ -352,17 +378,17 @@ namespace libvar
         void format(std::ostream& iStream, int iIndent = 0) const;
 
         // Methods for functors in math.cpp
-        var abs() { return libvar::abs(*this, this); };
-        var norm() { return libvar::normc(*this, this); };
-        var floor() { return libvar::floor(*this, this); };
-        var sin() { return libvar::sin(*this, this); };
-        var cos() { return libvar::cos(*this, this); };
-        var sqrt() { return libvar::sqrt(*this, this); };
-        var log() { return libvar::log(*this, this); };
+        var abs() { return libvar::abs(*this, *this); };
+        var norm() { return libvar::normc(*this, *this); };
+        var floor() { return libvar::floor(*this, *this); };
+        var sin() { return libvar::sin(*this, *this); };
+        var cos() { return libvar::cos(*this, *this); };
+        var sqrt() { return libvar::sqrt(*this, *this); };
+        var log() { return libvar::log(*this, *this); };
         var pow(var iPow) { return libvar::pow(*this, iPow, *this); };
 
         // Other functors
-        var transpose() { return libvar::transpose(*this, this); };
+        var transpose() { return libvar::transpose(*this, *this); };
 
         // string.cpp
         var& getline(std::istream& iStream);
@@ -536,9 +562,11 @@ namespace libvar
     public:
         DFT(int iSize, bool iInverse=false, var iForwardType=0.0f);
         ~DFT();
-        var operator ()(const var& iVar, var* oVar=0) const;
+    protected:
+        var alloc(var iVar) const;
+        void scalar(const var& iVar, var& oVar) const;
+        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     private:
-        void array(var iVar, ind iOffsetI, var* oVar, ind iOffsetO) const;
         DFTImpl* mImpl;
     };
 }
