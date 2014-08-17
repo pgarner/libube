@@ -214,26 +214,26 @@ int main(int argc, char** argv)
     vstream vstr;
     float fl = 23e-1f;
     vstr << "H";
-    cout << vstr.var() << endl;
+    cout << var(vstr) << endl;
     vstr << "ello: " << fl;
-    cout << vstr.var() << endl;
+    cout << var(vstr) << endl;
 
     // vstream as iostream
     vstream iostr("1");
     iostr.exceptions(ios_base::badbit | ios_base::failbit);
     iostr << " 2 3.4";
     iostr << " end";
-    cout << iostr.var() << endl;
+    cout << var(iostr) << endl;
     int ioi;
     float iof;
     iostr >> ioi;
-    cout << iostr.var() << endl;
+    cout << var(iostr) << endl;
     cout << ioi << endl;
     iostr >> ioi;
-    cout << iostr.var() << endl;
+    cout << var(iostr) << endl;
     cout << ioi << endl;
     iostr >> iof;
-    cout << iostr.var() << endl;
+    cout << var(iostr) << endl;
     cout << iof << endl;
 
     // Exception

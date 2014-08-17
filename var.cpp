@@ -1017,7 +1017,7 @@ var var::atypeStr() const
     {
         vstream s;
         s << "array[" << libvar::typeStr(heap()->type()) << "]";
-        return s.var();
+        return var(s);
     }
     return typeStr();
 }
@@ -1557,7 +1557,7 @@ vruntime_error::vruntime_error(var iVar)
 {
     vstream vs;
     vs << iVar;
-    mVar = vs.var();
+    mVar = var(vs);
     mStr = mVar.ptr<char>();
 }
 

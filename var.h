@@ -467,13 +467,13 @@ namespace libvar
     {
     public:
         varbuf(var iVar);
-        class var var() const { return mVar; };
+        explicit operator var () const { return mVar; };
     protected:
         virtual int_type overflow(int_type iInt = traits_type::eof());
         virtual int_type uflow();
         virtual int_type underflow();
     private:
-        class var mVar; ///< The var being accessed
+        var mVar; ///< The var being accessed
     };
 
 
@@ -484,8 +484,8 @@ namespace libvar
     {
     public:
         vstream(var iVar = nil);
-        class var var() const { return mVarBuf.var(); };
-        const char* str() { return mVarBuf.var().str(); };
+        explicit operator var() const { return var(mVarBuf); };
+        const char* str() { return var(mVarBuf).str(); };
     private:
         class varbuf mVarBuf;
     };
@@ -500,7 +500,7 @@ namespace libvar
         vruntime_error(var iVar);
         virtual const char* what() const noexcept;
     private:
-        class var mVar;
+        var mVar;
         char* mStr;
     };
 
