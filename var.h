@@ -359,7 +359,7 @@ namespace libvar
         var operator [](int iIndex);
         var operator [](int iIndex) const { return at(iIndex); };
         var operator [](var iVar);
-        var operator ()(int iFirst, ...);
+        var operator ()(int iFirst, ...) const;
         explicit operator bool() const { return defined(); };
         var operator ,(var iVar) { return push(iVar); };
 

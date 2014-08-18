@@ -711,7 +711,7 @@ var var::operator [](var iVar)
  *
  * returns a reference in the same sense as operator [].
  */
-var var::operator ()(int iFirst, ...)
+var var::operator ()(int iFirst, ...) const
 {
     // Can't dereference with a va_list, so first convert to index
     va_list ap;
