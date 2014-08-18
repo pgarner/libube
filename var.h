@@ -116,6 +116,7 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Floor)
     BASIC_UNARY_FUNCTOR_DECL(Sqrt)
     BASIC_UNARY_FUNCTOR_DECL(Log)
+    BASIC_UNARY_FUNCTOR_DECL(Exp)
     BASIC_BINARY_FUNCTOR_DECL(Pow)
 
 
@@ -174,6 +175,19 @@ namespace libvar
             var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
         ) const;
         void scale(var iVar1, var iVar2, var& oVar, int iOffset) const;
+    };
+
+
+    /**
+     * Dot product functor
+     */
+    class Dot : public BinaryFunctor
+    {
+    protected:
+        var alloc(var iVar) const;
+        void vector(
+            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+        ) const;
     };
 
 
@@ -274,6 +288,7 @@ namespace libvar
     extern Floor floor;
     extern Sqrt sqrt;
     extern Log log;
+    extern Exp exp;
     extern Pow pow;
 
     // BLAS functors
@@ -281,6 +296,7 @@ namespace libvar
     extern Add add;
     extern Sub sub;
     extern Mul mul;
+    extern Dot dot;
     extern Div div;
     extern ASum asum;
     extern Sum sum;
@@ -385,6 +401,7 @@ namespace libvar
         var cos() { return libvar::cos(*this, *this); };
         var sqrt() { return libvar::sqrt(*this, *this); };
         var log() { return libvar::log(*this, *this); };
+        var exp() { return libvar::exp(*this, *this); };
         var pow(var iPow) { return libvar::pow(*this, iPow, *this); };
 
         // Other functors

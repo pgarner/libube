@@ -65,6 +65,12 @@ int main(int argc, char** argv)
     cout << "oTranspose:\n" << lv::transpose(r6) << endl << r6 << endl;
     cout << "iTranspose:\n" << r6.transpose() << endl << r6 << endl;
 
+    // Dot
+    var rd;
+    rd = 2.0, 2.0, 2.0;
+    var rd6 = lv::dot(r6, rd);
+    cout << "Dot: " << rd6 << endl;
+
     // DFT
     var td = lv::view({2, 10});
     var fd;

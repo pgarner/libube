@@ -31,12 +31,14 @@ namespace libvar
     Floor floor;
     Sqrt sqrt;
     Log log;
+    Exp exp;
 
     Pow pow;
     Set set;
     Add add;
     Sub sub;
     Mul mul;
+    Dot dot;
     Div div;
     ASum asum;
     Sum sum;
@@ -317,6 +319,7 @@ COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
 COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
 COMPLEX_UNARY_FUNCTOR(Log,log)
+COMPLEX_UNARY_FUNCTOR(Exp,exp)
 COMPLEX_UNARY_FUNCTOR(NormC,norm)
 
 
@@ -767,6 +770,69 @@ void Mul::vector(
         default:
             throw std::runtime_error("Mul::vector: Unknown type");
         }
+    }
+}
+
+
+var Dot::alloc(var iVar) const
+{
+    var r;
+    if (iVar.dim() > 1)
+    {
+        // Allocate an output array
+        var s = iVar.shape();
+        s[s.size()-1] = 1;
+        r = view(s, iVar.at(0));
+    }
+    else
+    {
+        r = iVar.at(0);
+    }
+    return r;
+}
+
+
+void Dot::vector(
+    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+) const
+{
+    assert(type(iVar1) == TYPE_ARRAY);
+    int size = iVar2.size();
+    if (iVar1.is(oVar))
+        throw std::runtime_error("Dot::vector: Cannot operate in place");
+
+    switch(iVar1.atype())
+    {
+    case TYPE_FLOAT:
+    {
+        float* x = iVar1.ptr<float>(iOffset1);
+        float* y = iVar2.ptr<float>();
+        *oVar.ptr<float>(iOffsetO) = cblas_sdot(size, x, 1, y, 1);
+        break;
+    }
+    case TYPE_DOUBLE:
+    {
+        double* x = iVar1.ptr<double>(iOffset1);
+        double* y = iVar2.ptr<double>();
+        *oVar.ptr<double>(iOffsetO) = cblas_ddot(size, x, 1, y, 1);
+        break;
+    }
+    case TYPE_CFLOAT:
+    {
+        cfloat* x = iVar1.ptr<cfloat>(iOffset1);
+        cfloat* y = iVar2.ptr<cfloat>();
+        cblas_cdotc_sub(size, x, 1, y, 1, oVar.ptr<cfloat>(iOffsetO));
+        break;
+    }
+    case TYPE_CDOUBLE:
+    {
+        cdouble* x = iVar1.ptr<cdouble>(iOffset1);
+        cdouble* y = iVar2.ptr<cdouble>();
+        cblas_zdotc_sub(size, x, 1, y, 1, oVar.ptr<cdouble>(iOffsetO));
+        break;
+    }
+    default:
+        throw std::runtime_error("Dot::vector: Unknown type");
     }
 }
 
