@@ -266,6 +266,21 @@ namespace libvar
     };
 
 
+    /**
+     * Index of absolute maximum value functor
+     */
+    class IAMax : public UnaryFunctor
+    {
+    public:
+        IAMax() { mDim = 1; };
+    protected:
+        var alloc(var iVar) const;
+        void vector(
+            var iVar, ind iOffsetI, var& oVar, ind iOffsetO
+        ) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -300,6 +315,7 @@ namespace libvar
     extern Div div;
     extern ASum asum;
     extern Sum sum;
+    extern IAMax iamax;
 
     // BLAS-like
     extern Transpose transpose;

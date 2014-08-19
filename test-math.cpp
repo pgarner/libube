@@ -86,6 +86,9 @@ int main(int argc, char** argv)
     var ab = lv::abs(fd);
     cout << "Abs: " << ab << endl;
 
+    var im = lv::iamax(fd);
+    cout << "IAMax: " << im << endl;
+
     // Done
     return 0;
 }

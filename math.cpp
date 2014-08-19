@@ -42,6 +42,7 @@ namespace libvar
     Div div;
     ASum asum;
     Sum sum;
+    IAMax iamax;
 }
 
 
@@ -1059,6 +1060,65 @@ void Sum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
         break;
     default:
         throw std::runtime_error("Sum::array: Unknown type");
+    }
+}
+
+
+var IAMax::alloc(var iVar) const
+{
+    var r;
+    if (iVar.dim() > 1)
+    {
+        // Allocate an output array
+        var s = iVar.shape();
+        s[s.size()-1] = 1;
+        r = view(s, 0l);
+    }
+    else
+    {
+        r = 0l;
+    }
+    return r;
+}
+
+
+void IAMax::vector(
+    var iVar, ind iOffsetI, var& oVar, ind iOffsetO
+) const
+{
+    assert(type(iVar) == TYPE_ARRAY);
+    if (iVar.is(oVar))
+        throw std::runtime_error("IAMax::vector: Cannot operate in place");
+
+    int size = iVar.shape(iVar.dim()-1);
+    switch(iVar.atype())
+    {
+    case TYPE_FLOAT:
+    {
+        float* x = iVar.ptr<float>(iOffsetI);
+        *oVar.ptr<long>(iOffsetO) = cblas_isamax(size, x, 1);
+        break;
+    }
+    case TYPE_DOUBLE:
+    {
+        double* x = iVar.ptr<double>(iOffsetI);
+        *oVar.ptr<long>(iOffsetO) = cblas_idamax(size, x, 1);
+        break;
+    }
+    case TYPE_CFLOAT:
+    {
+        cfloat* x = iVar.ptr<cfloat>(iOffsetI);
+        *oVar.ptr<long>(iOffsetO) = cblas_icamax(size, x, 1);
+        break;
+    }
+    case TYPE_CDOUBLE:
+    {
+        cdouble* x = iVar.ptr<cdouble>(iOffsetI);
+        *oVar.ptr<long>(iOffsetO) = cblas_izamax(size, x, 1);
+        break;
+    }
+    default:
+        throw std::runtime_error("IAMax::vector: Unknown type");
     }
 }
 
