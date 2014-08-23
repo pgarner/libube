@@ -697,7 +697,8 @@ var var::operator [](var iVar)
     }
     else
         if (v.heap() && (v.atype() != TYPE_PAIR))
-            throw std::runtime_error("operator [var]: Not a map");
+            // Fall back to normal array if the var can be cast to int
+            return operator [](iVar.cast<int>());
 
     int index = v.binary(iVar);
     if ( (index >= v.size()) || (v.heap()->key(index) != iVar) )

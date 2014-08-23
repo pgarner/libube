@@ -55,8 +55,8 @@ int main(int argc, char** argv)
     var wav = wavf.read("test.wav");
     cout << "Loaded wav file:" << endl;
     cout << " rate:     " << wav["rate"] << endl;
-    cout << " frames:   " << wav["data"].shape(0) << endl;
-    cout << " channels: " << wav["data"].shape(1) << endl;
+    cout << " channels: " << wav["data"].shape(0) << endl;
+    cout << " frames:   " << wav["data"].shape(1) << endl;
 
     // Done
     return 0;

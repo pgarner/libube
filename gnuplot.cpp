@@ -106,11 +106,11 @@ void gnuplot::write(const char* iFile, var iVar)
                 break;
             case 2:
             {
-                // It's a matrix
+                // It's a matrix; write it out as a transpose
                 vstream vs;
-                for (int i=0; i<line.shape(0); i++)
+                for (int j=0; j<line.shape(1); j++)
                 {
-                    for (int j=0; j<line.shape(1); j++)
+                    for (int i=0; i<line.shape(0); i++)
                         vs << " " << line(i, j);
                     vs << "\n";
                 }

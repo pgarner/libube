@@ -38,17 +38,22 @@ var sndfile::read(const char* iFile)
     if (!sndFile)
         throw vruntime_error("sndfile::read: Failed to open file");
 
-    var oVar;
-    oVar["rate"] = sfInfo.samplerate;
+    var r;
+    r["rate"] = sfInfo.samplerate;
     int size = sfInfo.frames * sfInfo.channels;
     var data = 0.0f;
     data.resize(size);
     int nGot = sf_readf_float(sndFile, data.ptr<float>(), size);
     if (nGot != size)
         throw vruntime_error("sndfile::read: Size fuckup");
-    oVar["data"] = data.view({(int)sfInfo.frames, sfInfo.channels});
+    if (sfInfo.channels == 1)
+        r["data"] = data.view({sfInfo.channels, (int)sfInfo.frames});
+    else
+        // In place transpose for channels > 1
+        r["data"] =
+            data.view({(int)sfInfo.frames, sfInfo.channels}).transpose();
     sf_close(sndFile);
-    return oVar;
+    return r;
 }
 
 void sndfile::write(const char* iFile, var iVar)
