@@ -11,6 +11,7 @@
 
 #include <var.h>
 namespace lv = libvar;
+typedef lv::ind ind;
 typedef lv::var var;
 typedef lv::vfile vfile;
 typedef lv::vstream vstream;

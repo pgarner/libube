@@ -153,10 +153,39 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
     }
     else
         if (mImpl->inverse)
-            r = DftiComputeBackward(
-                mImpl->handle,
-                iVar.ptr<float>(iOffsetI), oVar.ptr<float>(iOffsetO)
-            );
+            switch (mImpl->forwardType.type())
+            {
+            case TYPE_FLOAT:
+                r = DftiComputeBackward(
+                    mImpl->handle,
+                    iVar.ptr<cfloat>(iOffsetI),
+                    oVar.ptr<float>(iOffsetO)
+                );
+                break;
+            case TYPE_DOUBLE:
+                r = DftiComputeBackward(
+                    mImpl->handle,
+                    iVar.ptr<cdouble>(iOffsetI),
+                    oVar.ptr<double>(iOffsetO)
+                );
+                break;
+            case TYPE_CFLOAT:
+                r = DftiComputeBackward(
+                    mImpl->handle,
+                    iVar.ptr<cfloat>(iOffsetI),
+                    oVar.ptr<cfloat>(iOffsetO)
+                );
+                break;
+            case TYPE_CDOUBLE:
+                r = DftiComputeBackward(
+                    mImpl->handle,
+                    iVar.ptr<cdouble>(iOffsetI),
+                    oVar.ptr<cdouble>(iOffsetO)
+                );
+                break;
+            default:
+                throw std::runtime_error("DFT::vector(): unknown type");
+            }
         else
             switch (mImpl->forwardType.type())
             {
