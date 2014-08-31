@@ -2,6 +2,24 @@
 
 using namespace std;
 
+// A test functor
+class Unary : public lv::UnaryFunctor
+{
+public:
+    Unary() { mDim = 1; };
+protected:
+    void vector(var iVar, var& oVar) const;
+};
+
+void Unary::vector(var iVar, var& oVar) const
+{
+    for (int i=0; i<iVar.size(); i++)
+        oVar[i] = iVar[iVar.size()-1-i];
+    cout << "Unary: I: " << iVar.shape() << " " << iVar << endl;
+    cout << "Unary: O: " << oVar.shape() << " " << oVar << endl;
+}
+
+
 int main(int argc, char** argv)
 {
     // BLAS
@@ -88,6 +106,10 @@ int main(int argc, char** argv)
 
     var im = lv::iamax(fd);
     cout << "IAMax: " << im << endl;
+
+    // Functor view broadcast
+    Unary u;
+    cout << u(r6) << endl;
 
     // Done
     return 0;
