@@ -17,9 +17,20 @@
 namespace libvar
 {
     /**
+     * The main file handler class
+     */
+    class XMLFile : public varfile
+    {
+    public:
+        virtual var read(const char* iFile);
+        virtual void write(const char* iFile, var iVar);
+    };
+
+
+    /**
      * Class to wrap the expat library and callbacks.
      */
-    class Expat : public varfile
+    class Expat
     {
     public:
         Expat();
@@ -28,15 +39,23 @@ namespace libvar
         void startElementHandler(const XML_Char *iName, const XML_Char **iAtts);
         void endElementHandler(const XML_Char *iName);
         void characterDataHandler(const XML_Char *iStr, int iLen);
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
-
     private:
         var mVar;            ///< Var to populate during parse
         var mStack;          ///< Parse stack
         XML_Parser mParser;  ///< The expat parser
-
         var element();
+    };
+
+    /**
+     * XML writer class
+     */
+    class XMLWriter
+    {
+    public:
+        void write(const char* iFile, var iVar);
+    private:
+        bool writeElem(std::ofstream& iOS, var iVar);
+        void escape(std::ofstream& iOS, var iVar);
     };
 }
 
@@ -46,7 +65,22 @@ using namespace libvar;
 
 void libvar::factory(varfile** oFile)
 {
-    *oFile = new Expat;
+    *oFile = new XMLFile;
+}
+
+
+var XMLFile::read(const char* iFile)
+{
+    // Instantiate an expat class and use it to parse the file
+    Expat expat;
+    return expat.parse(iFile);
+}
+
+void XMLFile::write(const char* iFile, var iVar)
+{
+    // Instantiate an XML writer and write the file
+    XMLWriter writer;
+    writer.write(iFile, iVar);
 }
 
 
@@ -203,11 +237,76 @@ void Expat::characterDataHandler(const XML_Char *iStr, int iLen)
 }
 
 
-var Expat::read(const char* iFile)
+void XMLWriter::write(const char* iFile, var iVar)
 {
-    return parse(iFile);
+    // Output stream
+    std::ofstream os(iFile, std::ofstream::out);
+    if (os.fail())
+        throw std::runtime_error("xmlwriter::write(): Open failed");
+
+    // XML declaration
+    os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
+
+    // Loop over iVar
+    if (!writeElem(os, iVar))
+        throw std::runtime_error("xmlwriter::write(): Top level not element");
+    os << std::endl;
 }
 
-void Expat::write(const char* iFile, var iVar)
+bool XMLWriter::writeElem(std::ofstream& iOS, var iVar)
 {
+    // Exit if it's not an element
+    if (!iVar.index("name"))
+        return false;
+
+    // It's an element
+    var name = iVar["name"];
+    var attr = iVar["attr"];
+    var data = iVar["data"];
+    iOS << "<" << name.str();
+    if (attr)
+        for (int i=0; i<attr.size(); i++)
+        {
+            iOS << " " << attr.key(i).str() << "=\"";
+            escape(iOS, attr[i]);
+            iOS << "\"";
+        }
+    if (!data)
+    {
+        iOS << " />";
+        return true;
+    }
+    iOS << ">";
+    for (int i=0; i<data.size(); i++)
+        if (!writeElem(iOS, data[i]))
+            escape(iOS, data[i]);
+    iOS << "</" << name.str() << ">";
+    return true;
+}
+
+void XMLWriter::escape(std::ofstream& iOS, var iVar)
+{
+    const char* str = iVar.str();
+    for (int i=0; i<iVar.size(); i++)
+        switch (str[i])
+        {
+        case '&':
+            iOS << "&amp;";
+            break;
+        case '<':
+            iOS << "&lt;";
+            break;
+        case '>':
+            iOS << "&gt;";
+            break;
+        case '\'':
+            iOS << "&apos;";
+            break;
+        case '"':
+            iOS << "&quot;";
+            break;
+        default:
+            iOS.put(str[i]);
+            break;
+        }
 }

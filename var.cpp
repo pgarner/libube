@@ -157,7 +157,11 @@ const char* var::str()
 {
     // Normally would be inline, but needs to be defined after the ptr
     // templates.
-    return ptr<char>();
+
+    // This should not need a deref!  Something is wrong with ptr<char>().  The
+    // deref is required for var["ref"].str(); something TYPE_PAIR specific?
+    var v(*this);
+    return v.ptr<char>();
 }
 
 
@@ -794,6 +798,14 @@ var var::at(var iVar) const
 }
 
 
+var var::key(int iIndex) const
+{
+    if (atype() != TYPE_PAIR)
+        throw std::runtime_error("var::key(): Not a map");
+    return heap()->key(iIndex);
+}
+
+
 /**
  * Never indent a basic var, but do pass the current level along to the array
  * formatter.
@@ -1137,9 +1149,21 @@ var var::sort() const
 
 ind var::index(var iVar) const
 {
-    for (ind i=0; i<size(); i++)
-        if (at(i) == iVar)
-            return i;
+    int index;
+    switch (atype())
+    {
+    case TYPE_PAIR:
+        // Pairs are sorted
+        index = binary(iVar);
+        if (heap()->key(index) == iVar)
+            return index;
+        break;
+    default:
+        // Nothing else is sorted; start at the beginning
+        for (ind i=0; i<size(); i++)
+            if (at(i) == iVar)
+                return i;
+    }
     return -1;
 }
 

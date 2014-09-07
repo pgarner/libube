@@ -49,6 +49,7 @@ int main(int argc, char** argv)
     vfile xmlf("xml");
     var xml = xmlf.read("test.xml");
     cout << "Loaded: " << xml << endl;
+    xmlf.write("test-out.xml", xml);
 
     // wav
     vfile wavf("snd");

@@ -385,6 +385,7 @@ namespace libvar
         bool is(var& iVar) const;
         var at(int iIndex) const;
         var at(var iVar) const;
+        var key(int iIndex) const;
         var copy(bool iAllocOnly=false) const;
         bool defined() const;
         int size() const;

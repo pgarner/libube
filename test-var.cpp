@@ -191,6 +191,10 @@ int main(int argc, char** argv)
     wmap["one"]["four"] = "five";
     cout << "wmap is " << wmap << endl;
 
+    // .str() should give the entry without quotes
+    cout << "wmap entry is " << wmap["one"]["two"] << endl;
+    cout << "wmap entry is " << wmap["one"]["two"].str() << endl;
+
     // Tensors
     var ts = 0.0f;
     ts.resize(16);
