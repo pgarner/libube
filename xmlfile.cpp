@@ -58,6 +58,10 @@ static void DefaultHandler(
     void *iUserData, const XML_Char *iStr, int iLen
 )
 {
+    // DOS line ends find their way here.  Why?
+    if ((iLen == 1) && (*iStr == '\r'))
+        return;
+
     var str(iLen, iStr);
     std::cout << "expat::DefaultHandler: " << str << std::endl;
     throw std::runtime_error("xmlfile: default handler called");
