@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <initializer_list>
 #include <complex>
+#include <chrono>
 
 #include <ind.h>
 
@@ -603,6 +604,21 @@ namespace libvar
     private:
         DFTImpl* mImpl;
     };
+
+
+    /**
+     * Timer class
+     */
+    class timer
+    {
+    public:
+        timer(var iName);
+        ~timer();
+    private:
+        var mName;
+        std::chrono::steady_clock::time_point mBegan;
+    };
+
 }
 
 #endif // VAR_H

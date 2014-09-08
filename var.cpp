@@ -1590,3 +1590,30 @@ const char* vruntime_error::what() const noexcept
 {
     return mStr;
 }
+
+
+// It's a bit verbose without these.  The duration could be "milliseconds", but
+// that's an integer value whereas the double does carry meaningful extra
+// precision.
+using namespace std::chrono;
+typedef duration<double,std::ratio<1,1000>> ms;
+
+/**
+ * Stores the current time at instantiation, along with an identifier.
+ */
+timer::timer(var iName)
+{
+    mName = iName;
+    mBegan = steady_clock::now();
+}
+
+/**
+ * Calculates and prints in milliseconds the difference between the current
+ * time and that when the class was constructed.
+ */
+timer::~timer()
+{
+    steady_clock::time_point now = steady_clock::now();
+    ms span = duration_cast<ms>(now - mBegan);
+    std::cout << mName << ": " << span.count() << " ms" << std::endl;
+}

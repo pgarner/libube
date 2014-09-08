@@ -22,6 +22,9 @@ void useString(var s)
 
 int main(int argc, char** argv)
 {
+    // Timer; commented as it will never match the reference output
+    //lv::timer d("Program duration");
+
     // Copy the command line
     var arg(argc, argv);
 
