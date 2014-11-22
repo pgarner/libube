@@ -65,12 +65,6 @@ var var::split(const char* iStr, int iMax) const
         while ( (p = std::strstr(source, iStr)) )
         {
             int len = p-source;
-            if (len == 0)
-            {
-                source += strLen;
-                continue;
-            }
-
             var s(len, source);
             r.push(s);
             source = p+strLen;

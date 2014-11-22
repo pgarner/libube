@@ -63,12 +63,16 @@ using namespace libvar;
  *
  * Going into existing storage via operator=() can be wasteful if it's a view,
  * i.e., there is a temporary.  The solution seems to be to define all vector
- * operations to take the target storage as an argument.  If it's not defined
- * we have case 1, if it's defined ahead we have case 2, and in general we have
- * case 3.  All are methods, but case 2 can be a (static) function.
+ * operations to take the target storage as an argument.  For some BLAS
+ * operations, the natural operation is to overwrite.  In this case, the BLAS
+ * wrapper can allocate or not.
  *
- * That said, for some BLAS operations, the natural operation is to overwrite.
- * In this case, the BLAS wrapper can allocate or not.
+ * If the output variable is equal to the input variable we have case 1.  If
+ * it's not defined at all we have case 2.  If it's defined ahead we have case
+ * 3.  Cases 1 and 3 are basically the same.
+ *
+ * The output variable has to be either reference or pointer because it may not
+ * be an array and has to be written to.  It cannot be const.
  */
 
 

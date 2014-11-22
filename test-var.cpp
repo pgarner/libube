@@ -98,6 +98,10 @@ int main(int argc, char** argv)
     sp = b.split("n");
     cout << "sp is: " << sp << endl;
 
+    // Split with empty strings
+    var vcn = "N:First;Last;;;";
+    cout << vcn << " splits to " << vcn.split(";") << endl;
+
     // String strip
     var ss = "  Hello ";
     cout << ss;
