@@ -1155,7 +1155,7 @@ ind var::index(var iVar) const
     case TYPE_PAIR:
         // Pairs are sorted
         index = binary(iVar);
-        if (heap()->key(index) == iVar)
+        if ( (index < size()) && (heap()->key(index) == iVar) )
             return index;
         break;
     default:

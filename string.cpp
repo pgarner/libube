@@ -8,6 +8,7 @@
  */
 
 #include <stdexcept>
+#include <locale>
 #include <cassert>
 #include <cstring>
 #include <cstdarg>
@@ -187,4 +188,27 @@ var var::replace(var iRE, var iStr)
     std::string s = str();
     var r = boost::regex_replace(s, rgx, iStr.str()).c_str();
     return r;
+}
+
+/**
+ * This may not work in UTF-8
+ */
+var& var::toupper()
+{
+    if (atype() != TYPE_CHAR)
+        throw std::runtime_error("var::toupper(): Not a string");
+    char* p = ptr<char>();
+    for (int i=0; i<size(); i++)
+        p[i] = std::toupper(p[i]);
+    return *this;
+}
+
+var& var::tolower()
+{
+    if (atype() != TYPE_CHAR)
+        throw std::runtime_error("var::tolower(): Not a string");
+    char* p = ptr<char>();
+    for (int i=0; i<size(); i++)
+        p[i] = std::tolower(p[i]);
+    return *this;
 }

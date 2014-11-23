@@ -297,6 +297,11 @@ int main(int argc, char** argv)
     dc += dd;
     cout << "dc: " << dc << endl;
 
+    // Case change
+    var mix = "This was mixed cäsÉ";
+    cout << "Upper: " << mix.copy().toupper() << endl;
+    cout << "Lower: " << mix.copy().tolower() << endl;
+
     // Phil, leave this at the end!
     return 0;
 }

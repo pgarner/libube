@@ -434,6 +434,8 @@ namespace libvar
         bool search(var iRE);
         bool match(var iRE);
         var replace(var iRE, var iStr);
+        var& toupper();
+        var& tolower();
 
         // Files
         var& read(const char* iFile, const char* iType);
