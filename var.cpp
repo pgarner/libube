@@ -51,7 +51,10 @@ using namespace libvar;
 
 
 /*
- * Main data accessor
+ * Value data accessor
+ *
+ * These return by value, so there can be no attempt to write to the result.
+ * This means they can just dereference.
  */
 template<> char var::get<char>() const {
     var v(*this); return v.mData.c;
@@ -77,6 +80,11 @@ template<> cdouble var::get<cdouble>() const {
 
 
 /**
+ * Pointer data accessor
+ *
+ * We may wish to write to the resulting pointer; this means we can't
+ * dereference as the resulting var will be a different copy.
+ *
  * The pointer methods are rather basic in that they do not do any type or
  * range checking.  So, if you ask for index 10 of something that is not an
  * array then the index is ignored.  Maybe this will get fixed one day.
@@ -87,7 +95,8 @@ template<> char* var::ptr<char>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.c : mData.hp->ptr<char>(~mType);
+        return (&r != this)
+            ? r.ptr<char>(iIndex) : mData.hp->ptr<char>(~mType);
     }
     return heap() ? heap()->ptr<char>(iIndex) : &mData.c;
 }
@@ -96,7 +105,8 @@ template<> int* var::ptr<int>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.i : mData.hp->ptr<int>(~mType);
+        return (&r != this)
+            ? r.ptr<int>(iIndex) : mData.hp->ptr<int>(~mType);
     }
     return heap() ? heap()->ptr<int>(iIndex) : &mData.i;
 }
@@ -105,7 +115,8 @@ template<> long* var::ptr<long>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.l : mData.hp->ptr<long>(~mType);
+        return (&r != this)
+            ? r.ptr<long>(iIndex) : mData.hp->ptr<long>(~mType);
     }
     return heap() ? heap()->ptr<long>(iIndex) : &mData.l;
 }
@@ -114,7 +125,8 @@ template<> float* var::ptr<float>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.f : mData.hp->ptr<float>(~mType);
+        return (&r != this)
+            ? r.ptr<float>(iIndex) : mData.hp->ptr<float>(~mType);
     }
     return heap() ? heap()->ptr<float>(iIndex) : &mData.f;
 }
@@ -123,7 +135,8 @@ template<> double* var::ptr<double>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.d : mData.hp->ptr<double>(~mType);
+        return (&r != this)
+            ? r.ptr<double>(iIndex) : mData.hp->ptr<double>(~mType);
     }
     return heap() ? heap()->ptr<double>(iIndex) : &mData.d;
 }
@@ -132,7 +145,8 @@ template<> cfloat* var::ptr<cfloat>(ind iIndex)
     if (reference())
     {
         var& r = varderef();
-        return (&r != this) ? &r.mData.cf : mData.hp->ptr<cfloat>(~mType);
+        return (&r != this)
+            ? r.ptr<cfloat>(iIndex) : mData.hp->ptr<cfloat>(~mType);
     }
     return heap() ? heap()->ptr<cfloat>(iIndex) : &mData.cf;
 }
@@ -157,11 +171,7 @@ const char* var::str()
 {
     // Normally would be inline, but needs to be defined after the ptr
     // templates.
-
-    // This should not need a deref!  Something is wrong with ptr<char>().  The
-    // deref is required for var["ref"].str(); something TYPE_PAIR specific?
-    var v(*this);
-    return v.ptr<char>();
+    return ptr<char>();
 }
 
 
