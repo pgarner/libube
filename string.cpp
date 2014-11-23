@@ -157,8 +157,8 @@ bool var::search(var iRE)
 {
     if (atype() != TYPE_CHAR)
         throw std::runtime_error("var::search(): Not a string");
-    boost::regex rgx(iRE.ptr<char>());
-    bool r = boost::regex_search(ptr<char>(), rgx);
+    boost::regex rgx(iRE.str());
+    bool r = boost::regex_search(str(), rgx);
     return r;
 }
 
@@ -170,8 +170,8 @@ bool var::match(var iRE)
 {
     if (type() != TYPE_CHAR)
         throw std::runtime_error("var::match(): Not a string");
-    boost::regex rgx(iRE.ptr<char>());
-    bool r = boost::regex_match(ptr<char>(), rgx);
+    boost::regex rgx(iRE.str());
+    bool r = boost::regex_match(str(), rgx);
     return r;
 }
 
@@ -183,9 +183,8 @@ var var::replace(var iRE, var iStr)
 {
     if (atype() != TYPE_CHAR)
         throw std::runtime_error("var::replace(): Not a string");
-
-    std::string str = ptr<char>();
-    boost::regex rgx(iRE.ptr<char>());
-    var r = boost::regex_replace(str, rgx, iStr.ptr<char>()).c_str();
+    boost::regex rgx(iRE.str());
+    std::string s = str();
+    var r = boost::regex_replace(s, rgx, iStr.str()).c_str();
     return r;
 }
