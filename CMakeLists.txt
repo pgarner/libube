@@ -16,7 +16,11 @@ set(VERSION 0.1)
 # Package stuff
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 find_package(BLAS REQUIRED)
-find_package(Boost COMPONENTS regex REQUIRED)
+find_package(Boost COMPONENTS
+  regex REQUIRED
+  filesystem REQUIRED
+  system REQUIRED
+  )
 
 # add_definitions(-DVARBOSE)
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++11")
@@ -30,6 +34,7 @@ set(SOURCES
   string.cpp
   dft-mkl.cpp
   transpose-mkl.cpp
+  path.cpp
   )
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
@@ -158,6 +163,13 @@ target_link_libraries(test-math shared-lib)
 add_test(
   NAME math
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-math.cmake
+  )
+
+add_executable(test-path test-path.cpp)
+target_link_libraries(test-path shared-lib)
+add_test(
+  NAME path
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-path.cmake
   )
 
 # Normal install path for the library
