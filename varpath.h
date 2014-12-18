@@ -18,9 +18,9 @@ namespace libvar
     class VarPath : public Module
     {
     public:
-        virtual var dir() { return nil; };
-        virtual var rdir() { return nil; };
-        virtual var tree() { return nil; };
+        virtual var dir() = 0;
+        virtual var rdir() = 0;
+        virtual var tree() = 0;
     };
 };
 

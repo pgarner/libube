@@ -61,14 +61,3 @@ Module* module::instance() const
     assert(mInstance);
     return mInstance;
 }
-
-
-vfile::vfile(const char* iType)
-    : module(iType)
-{
-}
-
-
-vfile::~vfile()
-{
-}
