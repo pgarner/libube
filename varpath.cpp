@@ -8,18 +8,42 @@
  */
 
 #include "var.h"
-#include "path.h"
+#include "varpath.h"
+#include "boost/filesystem/operations.hpp"
 
 
 using namespace boost::filesystem;
 using namespace libvar;
 
-libvar::path::path(var iPath)
+
+namespace libvar
 {
-    mPath = iPath ? iPath.str() : initial_path();
+    class varpath : public VarPath
+    {
+    public:
+        varpath();
+        var dir();
+        var rdir();
+        var tree();
+    private:
+        boost::filesystem::path mPath;
+        var tree(boost::filesystem::path iPath);
+    };
+};
+
+
+void libvar::factory(Module** oModule)
+{
+    *oModule = new varpath;
 }
 
-var libvar::path::dir()
+
+varpath::varpath()
+{
+    mPath = initial_path();
+}
+
+var varpath::dir()
 {
     if (!exists(mPath))
         throw std::runtime_error("dir: path doesn't exist");
@@ -32,7 +56,7 @@ var libvar::path::dir()
     return dir;
 }
 
-var libvar::path::rdir()
+var varpath::rdir()
 {
     if (!exists(mPath))
         throw std::runtime_error("dir: path doesn't exist");
@@ -45,12 +69,12 @@ var libvar::path::rdir()
     return dir;
 }
 
-var libvar::path::tree()
+var varpath::tree()
 {
     return tree(mPath);
 }
 
-var libvar::path::tree(boost::filesystem::path iPath)
+var varpath::tree(boost::filesystem::path iPath)
 {
     if (!exists(iPath))
         throw std::runtime_error("tree: path doesn't exist");

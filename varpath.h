@@ -7,25 +7,21 @@
  *   Phil Garner, December 2014
  */
 
-#ifndef PATH_H
-#define PATH_H
+#ifndef VARPATH_H
+#define VARPATH_H
 
 #include <var.h>
 #include "boost/filesystem/operations.hpp"
 
 namespace libvar
 {
-    class path
+    class VarPath : public Module
     {
     public:
-        path(var iPath);
-        var dir();
-        var rdir();
-        var tree();
-    private:
-        boost::filesystem::path mPath;
-        var tree(boost::filesystem::path iPath);
+        virtual var dir() { return nil; };
+        virtual var rdir() { return nil; };
+        virtual var tree() { return nil; };
     };
 };
 
-#endif // PATH_H
+#endif // VARPATH_H

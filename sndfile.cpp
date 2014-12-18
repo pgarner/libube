@@ -24,9 +24,9 @@ namespace libvar
 using namespace libvar;
 
 
-void libvar::factory(varfile** oFile)
+void libvar::factory(Module** oModule)
 {
-    *oFile = new sndfile;
+    *oModule = new sndfile;
 }
 
 

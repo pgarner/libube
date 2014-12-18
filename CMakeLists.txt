@@ -34,7 +34,6 @@ set(SOURCES
   string.cpp
   dft-mkl.cpp
   transpose-mkl.cpp
-  path.cpp
   )
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
@@ -84,6 +83,13 @@ endif (USE_STATIC)
 # different target list so they can be installed to a different
 # directory.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(path-lib MODULE varpath.cpp)
+target_link_libraries(path-lib ${Boost_LIBRARIES})
+set_target_properties(path-lib
+  PROPERTIES OUTPUT_NAME "path"
+  )
+list(APPEND MODULE_TARGETS path-lib)
 
 add_library(txt-lib MODULE txtfile.cpp)
 set_target_properties(txt-lib

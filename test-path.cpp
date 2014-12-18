@@ -8,19 +8,23 @@
  */
 
 #include <lv.h>
-#include <path.h>
+#include <varpath.h>
 
 int main()
 {
-    lv::path p("CMakeFiles");
+    lv::module m("path");
+    lv::VarPath* p = dynamic_cast<lv::VarPath*>(m.instance());
 
-    var dir = p.dir();    
+    std::cout << "Dir:" << std::endl;
+    var dir = p->dir();
     std::cout << dir << std::endl;
 
-    var rdir = p.rdir();    
+    std::cout << "Recursive Dir:" << std::endl;
+    var rdir = p->rdir();
     std::cout << rdir << std::endl;
 
-    var tree = p.tree();
+    std::cout << "Tree:" << std::endl;
+    var tree = p->tree();
     std::cout << tree << std::endl;
 
     return 0;

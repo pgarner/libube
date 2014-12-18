@@ -7,6 +7,7 @@
  *   Phil Garner, October 2013
  */
 
+#include <cassert>
 #include <stdexcept>
 #include <dlfcn.h>
 
@@ -16,10 +17,9 @@
 using namespace libvar;
 
 
-vfile::vfile(const char* iType)
+module::module(const char* iType)
 {
     // Initialise
-    mVarFile = 0;
     mHandle = 0;
     char *error = dlerror();
 
@@ -30,25 +30,45 @@ vfile::vfile(const char* iType)
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
     if (!mHandle)
-        throw std::runtime_error("vfile::vfile(): dlopen failed");
+        throw std::runtime_error("module::module(): dlopen failed");
 
     // Find the factory function
-    void (*fileFactory)(varfile** oFile);
-    *(void **)(&fileFactory) = dlsym(mHandle, "factory");
+    void (*factory)(Module** oModule);
+    *(void **)(&factory) = dlsym(mHandle, "factory");
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
 
     // Run the dynamically loaded factory function
-    (*fileFactory)(&mVarFile);
-    if (!mVarFile)
-        throw std::runtime_error("vfile::vfile(): factory() failed");
+    (*factory)(&mInstance);
+    if (!mInstance)
+        throw std::runtime_error("module::module(): factory() failed");
+}
+
+
+module::~module()
+{
+    // Destroy the instance that the factory loaded
+    if (mInstance)
+        delete mInstance;
+
+    // Close the dynamic library
+    dlclose(mHandle);
+}
+
+
+Module* module::instance() const
+{
+    assert(mInstance);
+    return mInstance;
+}
+
+
+vfile::vfile(const char* iType)
+    : module(iType)
+{
 }
 
 
 vfile::~vfile()
 {
-    // Destroy the handler and close the library
-    if (mVarFile)
-        delete mVarFile;
-    dlclose(mHandle);
 }

@@ -543,10 +543,46 @@ namespace libvar
 
 
     /**
+     * Base class for modules (dynamically loaded classes)
+     */
+    class Module
+    {
+    public:
+        virtual ~Module() {};
+     };
+
+
+    extern "C" {
+        /**
+         * Function with C linkage that must exist in the dynamically loaded
+         * library.  It should return a varfile by calling new on the derived
+         * class within the library.  It is part of the interface.
+         */
+        void factory(Module** oModule);
+    }
+
+
+    /**
+     * Module concrete class.  This is actually a loader for the module.
+     */
+    class module
+    {
+    public:
+        module(const char* iType);
+        virtual ~module();
+        Module* instance() const;
+    protected:
+        Module* mInstance; ///< Pointer to instance of module
+    private:
+        void* mHandle;     ///< Handle for dynamic library
+    };
+
+
+    /**
      * Abstract class for dynamically loaded file handlers.  Defines the
      * interface that file handlers must implement.
      */
-    class varfile
+    class varfile : public Module
     {
     public:
         virtual ~varfile() {};
@@ -555,34 +591,20 @@ namespace libvar
     };
 
 
-    extern "C" {
-        /**
-         * Function with C linkage that must exist in the dynamically
-         * loaded library.  It should return a varfile by calling new on
-         * the derived class within the library.  It is part of the
-         * interface.
-         */
-        void factory(varfile** oFile);
-    }
-
-
     /**
      * Class to dynamically load a file handler
      */
-    class vfile
+    class vfile : public module
     {
     public:
         vfile(const char* iType="txt");
         ~vfile();
         var read(const char* iFile) {
-            return mVarFile->read(iFile);
+            return dynamic_cast<varfile*>(mInstance)->read(iFile);
         };
         void write(const char* iFile, var iVar) {
-            return mVarFile->write(iFile, iVar);
+            return dynamic_cast<varfile*>(mInstance)->write(iFile, iVar);
         };
-    private:
-        void* mHandle;     ///< Handle for dynamic library
-        varfile* mVarFile; ///< Pointer to instance of file handler
     };
 
 
