@@ -19,16 +19,15 @@ namespace libvar
         virtual var read(const char* iFile);
         virtual void write(const char* iFile, var iVar);
     };
+
+    void factory(Module** oModule)
+    {
+        *oModule = new txtfile;
+    }
 }
 
 
 using namespace libvar;
-
-
-void libvar::factory(Module** oModule)
-{
-    *oModule = new txtfile;
-}
 
 
 var txtfile::read(const char* iFile)

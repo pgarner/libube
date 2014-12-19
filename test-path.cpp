@@ -13,7 +13,8 @@
 int main()
 {
     lv::module m("path");
-    lv::VarPath* p = dynamic_cast<lv::VarPath*>(m.instance());
+    //lv::path* p = dynamic_cast<lv::path*>(m.create());
+    lv::path* p = lv::create(m);
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();

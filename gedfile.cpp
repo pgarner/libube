@@ -73,16 +73,16 @@ namespace libvar
         var mIndividualMap;
         var mFamilyMap;
     };
+
+
+    void factory(Module** oModule)
+    {
+        *oModule = new GEDCOM;
+    }
 }
 
 
 using namespace libvar;
-
-
-void libvar::factory(Module** oModule)
-{
-    *oModule = new GEDCOM;
-}
 
 
 GEDCOM::GEDCOM()

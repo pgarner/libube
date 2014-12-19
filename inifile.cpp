@@ -19,16 +19,15 @@ namespace libvar
         virtual var read(const char* iFile);
         virtual void write(const char* iFile, var iVar);
     };
+
+    void factory(Module** oModule)
+    {
+        *oModule = new inifile;
+    }
 }
 
 
 using namespace libvar;
-
-
-void libvar::factory(Module** oModule)
-{
-    *oModule = new inifile;
-}
 
 
 var inifile::read(const char* iFile)

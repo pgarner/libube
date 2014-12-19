@@ -57,16 +57,15 @@ namespace libvar
         bool writeElem(std::ofstream& iOS, var iVar);
         void escape(std::ofstream& iOS, var iVar);
     };
+
+    void factory(Module** oModule)
+    {
+        *oModule = new XMLFile;
+    }
 }
 
 
 using namespace libvar;
-
-
-void libvar::factory(Module** oModule)
-{
-    *oModule = new XMLFile;
-}
 
 
 var XMLFile::read(const char* iFile)

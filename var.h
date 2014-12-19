@@ -563,14 +563,17 @@ namespace libvar
 
 
     /**
-     * Module concrete class.  This is actually a loader for the module.
+     * Module factory
+     *
+     * This is actually a loader for the module rather than the module itself.
+     * The create() method is a factory method that generates modules.
      */
     class module
     {
     public:
         module(const char* iType);
         virtual ~module();
-        Module* instance() const;
+        Module* create() const;
     protected:
         Module* mInstance; ///< Pointer to instance of module
     private:

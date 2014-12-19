@@ -7,82 +7,86 @@
  *   Phil Garner, December 2014
  */
 
-#include "var.h"
+/*
+ * Take care here; there is a boost thing called path.  In this sense, there is
+ * the possibility that one could be confused as the other.  Of course, it
+ * boils down to being careful with namespaces.
+ */
+
 #include "varpath.h"
 #include "boost/filesystem/operations.hpp"
 
-
-using namespace boost::filesystem;
-using namespace libvar;
-
+namespace fs = boost::filesystem;
 
 namespace libvar
 {
-    class varpath : public VarPath
+    /** Concrete implementation of path module */
+    class Path : public path
     {
     public:
-        varpath();
+        Path();
         var dir();
         var rdir();
         var tree();
     private:
-        boost::filesystem::path mPath;
-        var tree(boost::filesystem::path iPath);
+        fs::path mPath;
+        var tree(fs::path iPath);
     };
+
+    /** Factory function to create a class */
+    void factory(Module** oModule)
+    {
+        *oModule = new Path;
+    }
 };
 
+using namespace libvar;
 
-void libvar::factory(Module** oModule)
+Path::Path()
 {
-    *oModule = new varpath;
+    mPath = fs::initial_path();
 }
 
-
-varpath::varpath()
-{
-    mPath = initial_path();
-}
-
-var varpath::dir()
+var Path::dir()
 {
     if (!exists(mPath))
         throw std::runtime_error("dir: path doesn't exist");
 
     var dir;
-    directory_iterator end;
-    for (directory_iterator it(mPath); it != end; it++)
+    fs::directory_iterator end;
+    for (fs::directory_iterator it(mPath); it != end; it++)
         dir[it->path().c_str()] = nil;
     
     return dir;
 }
 
-var varpath::rdir()
+var Path::rdir()
 {
     if (!exists(mPath))
         throw std::runtime_error("dir: path doesn't exist");
 
     var dir;
-    recursive_directory_iterator end;
-    for (recursive_directory_iterator it(mPath); it != end; it++)
+    fs::recursive_directory_iterator end;
+    for (fs::recursive_directory_iterator it(mPath); it != end; it++)
         dir[it->path().c_str()] = nil;
     
     return dir;
 }
 
-var varpath::tree()
+var Path::tree()
 {
     return tree(mPath);
 }
 
-var varpath::tree(boost::filesystem::path iPath)
+var Path::tree(boost::filesystem::path iPath)
 {
     if (!exists(iPath))
         throw std::runtime_error("tree: path doesn't exist");
 
     var dir;
-    directory_iterator end;
-    for (directory_iterator it(iPath); it != end; it++)
-        if (is_directory(*it))
+    fs::directory_iterator end;
+    for (fs::directory_iterator it(iPath); it != end; it++)
+        if (fs::is_directory(*it))
             dir[it->path().filename().c_str()] = tree(*it);
         else
             dir[it->path().filename().c_str()] = nil;

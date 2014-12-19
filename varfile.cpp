@@ -56,7 +56,7 @@ module::~module()
 }
 
 
-Module* module::instance() const
+Module* module::create() const
 {
     assert(mInstance);
     return mInstance;

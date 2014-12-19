@@ -11,17 +11,20 @@
 #define VARPATH_H
 
 #include <var.h>
-#include "boost/filesystem/operations.hpp"
 
 namespace libvar
 {
-    class VarPath : public Module
+    /** Virtual interface to path module */
+    class path : public Module
     {
     public:
         virtual var dir() = 0;
         virtual var rdir() = 0;
         virtual var tree() = 0;
     };
+
+    /** Helper function to create path modules */
+    path* create(module& iMod) { return dynamic_cast<path*>(iMod.create()); };
 };
 
 #endif // VARPATH_H
