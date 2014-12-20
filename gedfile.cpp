@@ -75,7 +75,7 @@ namespace libvar
     };
 
 
-    void factory(Module** oModule)
+    void factory(Module** oModule, var iArg)
     {
         *oModule = new GEDCOM;
     }

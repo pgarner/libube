@@ -555,10 +555,10 @@ namespace libvar
     extern "C" {
         /**
          * Function with C linkage that must exist in the dynamically loaded
-         * library.  It should return a varfile by calling new on the derived
+         * library.  It should return a module by calling new on the derived
          * class within the library.  It is part of the interface.
          */
-        void factory(Module** oModule);
+        void factory(Module** oModule, var iArg);
     }
 
 
@@ -573,10 +573,11 @@ namespace libvar
     public:
         module(const char* iType);
         virtual ~module();
-        Module* create() const;
+        Module* create(var iArg=nil);
     protected:
         Module* mInstance; ///< Pointer to instance of module
     private:
+        void (*mFactory)(Module** oModule, var iArg);
         void* mHandle;     ///< Handle for dynamic library
     };
 
@@ -600,7 +601,7 @@ namespace libvar
     class vfile : public module
     {
     public:
-        vfile(const char* iType="txt") : module(iType) {};
+        vfile(const char* iType="txt");
         var read(const char* iFile) {
             return dynamic_cast<varfile*>(mInstance)->read(iFile);
         };

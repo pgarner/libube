@@ -13,8 +13,7 @@
 int main()
 {
     lv::module m("path");
-    //lv::path* p = dynamic_cast<lv::path*>(m.create());
-    lv::path* p = lv::create(m);
+    lv::path* p = lv::create(m, "CMakeFiles");
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();

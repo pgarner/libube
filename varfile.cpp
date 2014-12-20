@@ -21,6 +21,7 @@ module::module(const char* iType)
 {
     // Initialise
     mHandle = 0;
+    mInstance = 0;
     char *error = dlerror();
 
     // Open the library
@@ -33,15 +34,9 @@ module::module(const char* iType)
         throw std::runtime_error("module::module(): dlopen failed");
 
     // Find the factory function
-    void (*factory)(Module** oModule);
-    *(void **)(&factory) = dlsym(mHandle, "factory");
+    *(void **)(&mFactory) = dlsym(mHandle, "factory");
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
-
-    // Run the dynamically loaded factory function
-    (*factory)(&mInstance);
-    if (!mInstance)
-        throw std::runtime_error("module::module(): factory() failed");
 }
 
 
@@ -56,8 +51,21 @@ module::~module()
 }
 
 
-Module* module::create() const
+Module* module::create(var iArg)
 {
-    assert(mInstance);
+    if (mInstance)
+        throw std::runtime_error("module::create(): just one instance for now");
+
+    // Run the dynamically loaded factory function
+    (*mFactory)(&mInstance, iArg);
+    if (!mInstance)
+        throw std::runtime_error("module::create(): factory() failed");
     return mInstance;
+}
+
+
+vfile::vfile(const char* iType)
+    : module(iType)
+{
+    create();
 }

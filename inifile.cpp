@@ -20,7 +20,7 @@ namespace libvar
         virtual void write(const char* iFile, var iVar);
     };
 
-    void factory(Module** oModule)
+    void factory(Module** oModule, var iArg)
     {
         *oModule = new inifile;
     }

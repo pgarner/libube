@@ -24,7 +24,9 @@ namespace libvar
     };
 
     /** Helper function to create path modules */
-    path* create(module& iMod) { return dynamic_cast<path*>(iMod.create()); };
+    path* create(module& iMod, var iArg=nil) {
+        return dynamic_cast<path*>(iMod.create(iArg));
+    };
 };
 
 #endif // VARPATH_H

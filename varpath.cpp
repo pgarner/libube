@@ -24,7 +24,7 @@ namespace libvar
     class Path : public path
     {
     public:
-        Path();
+        Path(var iArg);
         var dir();
         var rdir();
         var tree();
@@ -34,17 +34,17 @@ namespace libvar
     };
 
     /** Factory function to create a class */
-    void factory(Module** oModule)
+    void factory(Module** oModule, var iArg)
     {
-        *oModule = new Path;
+        *oModule = new Path(iArg);
     }
 };
 
 using namespace libvar;
 
-Path::Path()
+Path::Path(var iArg)
 {
-    mPath = fs::initial_path();
+    mPath = iArg ? iArg.str() : fs::initial_path();
 }
 
 var Path::dir()

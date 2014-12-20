@@ -58,7 +58,7 @@ namespace libvar
         void escape(std::ofstream& iOS, var iVar);
     };
 
-    void factory(Module** oModule)
+    void factory(Module** oModule, var iArg)
     {
         *oModule = new XMLFile;
     }

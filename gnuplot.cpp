@@ -25,14 +25,15 @@ namespace libvar
     private:
         FILE* mStream;
     };
+
+    void factory(Module** oModule, var iArg)
+    {
+        *oModule = new gnuplot;
+    }
 }
+
 
 using namespace libvar;
-
-void libvar::factory(Module** oModule)
-{
-    *oModule = new gnuplot;
-}
 
 
 gnuplot::gnuplot()
