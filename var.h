@@ -25,6 +25,7 @@ namespace libvar
 
     class varheap;
     class var;
+    struct pair;
 
     /**
      * The possible var types
@@ -382,6 +383,7 @@ namespace libvar
 
         // Methods
         var& dereference();
+        template<class T> bool atype() const;
         template<class T> T cast() const;
         bool is(var& iVar) const;
         var at(int iIndex) const;

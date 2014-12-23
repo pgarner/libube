@@ -175,6 +175,35 @@ const char* var::str()
 }
 
 
+template<> bool var::atype<char>() const {
+    return atype() == TYPE_CHAR;
+}
+template<> bool var::atype<int>() const {
+    return atype() == TYPE_INT;
+}
+template<> bool var::atype<long>() const {
+    return atype() == TYPE_LONG;
+}
+template<> bool var::atype<float>() const {
+    return atype() == TYPE_FLOAT;
+}
+template<> bool var::atype<double>() const {
+    return atype() == TYPE_DOUBLE;
+}
+template<> bool var::atype<cfloat>() const {
+    return atype() == TYPE_CFLOAT;
+}
+template<> bool var::atype<cdouble>() const {
+    return atype() == TYPE_CDOUBLE;
+}
+template<> bool var::atype<var>() const {
+    return atype() == TYPE_VAR;
+}
+template<> bool var::atype<pair>() const {
+    return atype() == TYPE_PAIR;
+}
+
+
 template<> char var::cast<char>() const {
     return castChar(*this).get<char>();
 }
@@ -196,7 +225,6 @@ template<> cfloat var::cast<cfloat>() const {
 template<> cdouble var::cast<cdouble>() const {
     return castCDouble(*this).get<cdouble>();
 }
-
 
 /*
  * Notes
@@ -630,7 +658,7 @@ void Cast<T>::scalar(const var& iVar, var& oVar) const
     }
 
     // Strings get converted
-    if (iVar.heap() && (iVar.atype() == TYPE_CHAR))
+    if (iVar.heap() && iVar.atype<char>())
     {
         T t;
         vstream s(iVar);
@@ -710,7 +738,7 @@ var var::operator [](var iVar)
         v.attach(new varheap(0, TYPE_PAIR));
     }
     else
-        if (v.heap() && (v.atype() != TYPE_PAIR))
+        if (v.heap() && !v.atype<pair>())
             // Fall back to normal array if the var can be cast to int
             return operator [](iVar.cast<int>());
 
@@ -798,7 +826,7 @@ var var::at(var iVar) const
     if (!defined())
         throw std::runtime_error("var::at(): uninitialised");
     else
-        if (heap() && (atype() != TYPE_PAIR))
+        if (heap() && !atype<pair>())
             throw std::runtime_error("operator [var]: Not a map");
 
     int index = binary(iVar);
@@ -810,7 +838,7 @@ var var::at(var iVar) const
 
 var var::key(int iIndex) const
 {
-    if (atype() != TYPE_PAIR)
+    if (!atype<pair>())
         throw std::runtime_error("var::key(): Not a map");
     return heap()->key(iIndex);
 }
@@ -1096,7 +1124,7 @@ var& var::insert(var iVar, int iIndex)
     if (iIndex > size())
         throw std::range_error("insert(): index too large");
 
-    if (heap() && (atype() == TYPE_VAR))
+    if (heap() && atype<var>())
     {
         // Implies array; insert a single var
         resize(size()+1);
@@ -1104,7 +1132,7 @@ var& var::insert(var iVar, int iIndex)
             at(i) = at(i-1);
         at(iIndex) = iVar;
     }
-    else if (heap() && (atype() == TYPE_PAIR))
+    else if (heap() && atype<pair>())
     {
         // Implies array; insert a single pair
         resize(size()+1);
@@ -1308,12 +1336,12 @@ int var::binary(var iData) const
 
     int lo = 0;
     int hi = size();
-    bool pair =  // index on key rather than value
-        (heap() && (atype() == TYPE_PAIR));
+    bool p =  // index on key rather than value
+        (heap() && this->atype<pair>());
     while (lo != hi)
     {
         int pos = (hi-lo)/2 + lo;
-        var x = pair ? heap()->key(pos) : at(pos);
+        var x = p ? heap()->key(pos) : at(pos);
         if (x < iData)
             lo = pos+1;
         else

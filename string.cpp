@@ -32,7 +32,7 @@ var& var::getline(std::istream& iStream)
 
     // Start off as a zero length string as an array; re-use the existing array
     // if possible
-    if (!defined() || (atype() != TYPE_CHAR))
+    if (!defined() || !atype<char>())
         *this = "";
     else
         resize(0);
@@ -42,7 +42,8 @@ var& var::getline(std::istream& iStream)
     while (!iStream.eof())
     {
         char c = iStream.get();
-        if (c == '\n') // Unix specific?
+        if (c == '\n') // Unix specific?  ...no, I think c++ will change it to
+                       // whatever is appropriate
             break;
         push(c);
     }
@@ -80,7 +81,7 @@ var var::split(const char* iStr, int iMax) const
 
 var var::join(const char* iStr) const
 {
-    if (type() == TYPE_CHAR)
+    if (atype<char>())
         return *this;
 
     var r = "";
@@ -102,7 +103,7 @@ var var::join(const char* iStr) const
 var var::strip()
 {
     var v(*this);
-    if (v.atype() != TYPE_CHAR)
+    if (!v.atype<char>())
         return *this;
 
     char* ptr = v.ptr<char>();
@@ -132,8 +133,7 @@ var& var::sprintf(const char* iFormat, ...)
 
     while (1)
     {
-        // Bear in mind that libvar handles the null terminator
-        // implicitly.
+        // Bear in mind that libvar handles the null terminator implicitly.
         va_start(ap, iFormat);
         int m = vsnprintf(ptr<char>(), size(), iFormat, ap);
         va_end(ap);
@@ -151,12 +151,11 @@ var& var::sprintf(const char* iFormat, ...)
 }
 
 /**
- * Waiting for std::regex_search(), but currently implemented using
- * boost.
+ * Waiting for std::regex_search(), but currently implemented using boost.
  */
 bool var::search(var iRE)
 {
-    if (atype() != TYPE_CHAR)
+    if (!atype<char>())
         throw std::runtime_error("var::search(): Not a string");
     boost::regex rgx(iRE.str());
     bool r = boost::regex_search(str(), rgx);
@@ -164,12 +163,11 @@ bool var::search(var iRE)
 }
 
 /**
- * Waiting for std::regex_match(), but currently implemented using
- * boost.
+ * Waiting for std::regex_match(), but currently implemented using boost.
  */
 bool var::match(var iRE)
 {
-    if (type() != TYPE_CHAR)
+    if (!atype<char>())
         throw std::runtime_error("var::match(): Not a string");
     boost::regex rgx(iRE.str());
     bool r = boost::regex_match(str(), rgx);
@@ -177,12 +175,11 @@ bool var::match(var iRE)
 }
 
 /**
- * Waiting for std::regex_replace(), but currently implemented using
- * boost.
+ * Waiting for std::regex_replace(), but currently implemented using boost.
  */
 var var::replace(var iRE, var iStr)
 {
-    if (atype() != TYPE_CHAR)
+    if (!atype<char>())
         throw std::runtime_error("var::replace(): Not a string");
     boost::regex rgx(iRE.str());
     std::string s = str();
@@ -195,7 +192,7 @@ var var::replace(var iRE, var iStr)
  */
 var& var::toupper()
 {
-    if (atype() != TYPE_CHAR)
+    if (!atype<char>())
         throw std::runtime_error("var::toupper(): Not a string");
     char* p = ptr<char>();
     for (int i=0; i<size(); i++)
@@ -205,7 +202,7 @@ var& var::toupper()
 
 var& var::tolower()
 {
-    if (atype() != TYPE_CHAR)
+    if (!atype<char>())
         throw std::runtime_error("var::tolower(): Not a string");
     char* p = ptr<char>();
     for (int i=0; i<size(); i++)

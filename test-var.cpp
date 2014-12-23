@@ -267,7 +267,7 @@ int main(int argc, char** argv)
     else
         cout << "Matches not" << endl;
     cout << "Matching \\S+ell\\S: " << ss << endl;
-    if (ss.search("\\S+ell\\S"))
+    if (ss.match("\\S+ell\\S"))
         cout << "Matches" << endl;
     else
         cout << "Matches not" << endl;

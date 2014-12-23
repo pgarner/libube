@@ -77,17 +77,15 @@ using namespace libvar;
 
 
 /**
- * Report var type, but treating TYPE_CDOUBLE as a type rather than an
- * array.
+ * Report var type, but treating TYPE_CDOUBLE as a type rather than an array.
  *
- * This avoids an infinite loop where arrays are always broadcasted,
- * and broadcasting calls the original unary operator again.
+ * This avoids an infinite loop where arrays are always broadcasted, and
+ * broadcasting calls the original unary operator again.
  */
 ind type(var iVar)
 {
     ind type = iVar.type();
-    if ((type == TYPE_ARRAY) &&
-        (iVar.atype() == TYPE_CDOUBLE))
+    if (iVar.atype<cdouble>())
         type = TYPE_CDOUBLE;
     return type;
 }
