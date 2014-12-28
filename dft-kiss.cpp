@@ -8,17 +8,25 @@
  */
 
 #include <cassert>
-#include <mkl_dfti.h>
+
+#include "kiss_fft.h"
+#include "kiss_fftr.h"
 
 #include "var.h"
 
 
+namespace kissfft
+{
+    static int sInstanceCount = 0;
+};
+
+
 /**
- * The MKL DFT implementation (aka DFTI)
+ * The Kiss DFT implementation
  */
 struct libvar::DFTImpl
 {
-    DFTI_DESCRIPTOR_HANDLE handle;
+    void* config;
     var forwardType;
     var inverseType;
     int oSize;
@@ -27,14 +35,6 @@ struct libvar::DFTImpl
 
 
 using namespace libvar;
-
-
-void dftiCheck(MKL_LONG iReturn)
-{
-    if (iReturn == DFTI_NO_ERROR)
-        return;
-    throw std::runtime_error(DftiErrorMessage(iReturn));
-}
 
 
 /**
@@ -50,61 +50,51 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
 
     // It's a 1 dimensional thing (for now)
     mDim = 1;
-    mImpl->handle = 0;
+    mImpl->config = 0;
     mImpl->inverse = iInverse;
     mImpl->forwardType = iForwardType;
 
     // Set the input and output types for a forward transform
-    MKL_LONG r;
     switch (mImpl->forwardType.type())
     {
     case TYPE_FLOAT:
         mImpl->inverseType = cfloat(0.0f, 0.0f);
         mImpl->oSize = iInverse ? iSize : iSize / 2 + 1;
-        r = DftiCreateDescriptor(
-            &mImpl->handle, DFTI_SINGLE, DFTI_REAL, 1, iSize
-        );
+        if (iInverse)
+            mImpl->config = kiss_fftr_alloc(iSize, 1, 0, 0);
+        else
+            mImpl->config = kiss_fftr_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_DOUBLE:
-        mImpl->inverseType = cdouble(0.0, 0.0);
-        mImpl->oSize = iInverse ? iSize : iSize / 2 + 1;
-        r = DftiCreateDescriptor(
-            &mImpl->handle, DFTI_DOUBLE, DFTI_REAL, 1, iSize
-        );
+        throw std::runtime_error("DFT::DFT: Kiss FFT float only");
         break;
     case TYPE_CFLOAT:
         mImpl->inverseType = cfloat(0.0f, 0.0f);
         mImpl->oSize = iSize;
-        r = DftiCreateDescriptor(
-            &mImpl->handle, DFTI_SINGLE, DFTI_COMPLEX, 1, iSize
-        );
+        if (iInverse)
+            mImpl->config = kiss_fft_alloc(iSize, 1, 0, 0);
+        else
+            mImpl->config = kiss_fft_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_CDOUBLE:
-        mImpl->inverseType = cdouble(0.0, 0.0);
-        mImpl->oSize = iSize;
-        r = DftiCreateDescriptor(
-            &mImpl->handle, DFTI_DOUBLE, DFTI_COMPLEX, 1, iSize
-        );
+        throw std::runtime_error("DFT::DFT: Kiss FFT float only");
         break;
     default:
         throw std::runtime_error("DFT::DFT: Unknown type");
     }
-    dftiCheck(r);
-
-    // Default is to overwrite the input
-    r = DftiSetValue(mImpl->handle, DFTI_PLACEMENT, DFTI_NOT_INPLACE);
-    dftiCheck(r);
-
-    r = DftiCommitDescriptor(mImpl->handle);
-    dftiCheck(r);
+    
+    // Update the instance count
+    kissfft::sInstanceCount++;
 }
 
 DFT::~DFT()
 {
-    MKL_LONG r = DftiFreeDescriptor(&mImpl->handle);
-    dftiCheck(r);
+    free(mImpl->config);
     delete mImpl;
     mImpl = 0;
+
+    if (--kissfft::sInstanceCount == 0)
+        kiss_fft_cleanup();
 }
 
 var DFT::alloc(var iVar) const
@@ -142,46 +132,33 @@ void DFT::scalar(const var& iVar, var& oVar) const
 void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(oVar);
-    MKL_LONG r;
     if (iVar.is(oVar))
     {
         throw std::runtime_error("DFT::vector(): not implemented");
-        if (mImpl->inverse)
-            r = DftiComputeBackward(mImpl->handle, oVar.ptr<float>(iOffsetO));
-        else
-            r = DftiComputeForward(mImpl->handle, oVar.ptr<float>(iOffsetO));
     }
     else
         if (mImpl->inverse)
             switch (mImpl->forwardType.type())
             {
             case TYPE_FLOAT:
-                r = DftiComputeBackward(
-                    mImpl->handle,
-                    iVar.ptr<cfloat>(iOffsetI),
-                    oVar.ptr<float>(iOffsetO)
+                kiss_fftri(
+                    (kiss_fftr_cfg)mImpl->config,
+                    (const kiss_fft_cpx*)iVar.ptr<cfloat>(iOffsetI),
+                    (float*)oVar.ptr<float>(iOffsetO)
                 );
                 break;
             case TYPE_DOUBLE:
-                r = DftiComputeBackward(
-                    mImpl->handle,
-                    iVar.ptr<cdouble>(iOffsetI),
-                    oVar.ptr<double>(iOffsetO)
-                );
+                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
-                r = DftiComputeBackward(
-                    mImpl->handle,
-                    iVar.ptr<cfloat>(iOffsetI),
-                    oVar.ptr<cfloat>(iOffsetO)
+                kiss_fft(
+                    (kiss_fft_cfg)mImpl->config,
+                    (const kiss_fft_cpx*)iVar.ptr<cfloat>(iOffsetI),
+                    (kiss_fft_cpx*)oVar.ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_CDOUBLE:
-                r = DftiComputeBackward(
-                    mImpl->handle,
-                    iVar.ptr<cdouble>(iOffsetI),
-                    oVar.ptr<cdouble>(iOffsetO)
-                );
+                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
                 break;
             default:
                 throw std::runtime_error("DFT::vector(): unknown type");
@@ -190,35 +167,26 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             switch (mImpl->forwardType.type())
             {
             case TYPE_FLOAT:
-                r = DftiComputeForward(
-                    mImpl->handle,
-                    iVar.ptr<float>(iOffsetI),
-                    oVar.ptr<cfloat>(iOffsetO)
+                kiss_fftr(
+                    (kiss_fftr_cfg)mImpl->config,
+                    (const float*)iVar.ptr<float>(iOffsetI),
+                    (kiss_fft_cpx*)oVar.ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_DOUBLE:
-                r = DftiComputeForward(
-                    mImpl->handle,
-                    iVar.ptr<double>(iOffsetI),
-                    oVar.ptr<cdouble>(iOffsetO)
-                );
+                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
-                r = DftiComputeForward(
-                    mImpl->handle,
-                    iVar.ptr<cfloat>(iOffsetI),
-                    oVar.ptr<cfloat>(iOffsetO)
+                kiss_fft(
+                    (kiss_fft_cfg)mImpl->config,
+                    (const kiss_fft_cpx*)iVar.ptr<cfloat>(iOffsetI),
+                    (kiss_fft_cpx*)oVar.ptr<cfloat>(iOffsetO)
                 );
                 break;
             case TYPE_CDOUBLE:
-                r = DftiComputeForward(
-                    mImpl->handle,
-                    iVar.ptr<cdouble>(iOffsetI),
-                    oVar.ptr<cdouble>(iOffsetO)
-                );
+                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
                 break;
             default:
                 throw std::runtime_error("DFT::vector(): unknown type");
             }
-    dftiCheck(r);
 }

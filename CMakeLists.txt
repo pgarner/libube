@@ -32,9 +32,33 @@ set(SOURCES
   varfile.cpp
   math.cpp
   string.cpp
-  dft-mkl.cpp
-  transpose-mkl.cpp
   )
+
+# If we have MKL then we should use the DFT and matrix transpose in MKL (in
+# addition to the BLAS stuff in there).  If not, BLAS is covered by OpenBLAS
+# and the like, but we need a fallback for the DFT and transpose.  Right now,
+# that's Kiss FFT and an ad-hoc matrix transpose.  These are not optimal!
+# ...not least because Kiss FFT is only single precision.
+set(USE_MKL ${BLAS_mkl_core_LIBRARY})
+if (USE_MKL)
+  list(APPEND SOURCES
+    dft-mkl.cpp
+    transpose-mkl.cpp
+    )
+  message(STATUS "MKL BLAS seems available; using it for DFT & transpose")
+else (USE_MKL)
+  set(KISSDIR $ENV{KISSDIR}
+    CACHE FILEPATH "Path to Kiss FFT directory"
+    )
+  list(APPEND SOURCES
+    dft-kiss.cpp
+    transpose-adhoc.cpp
+    ${KISSDIR}/tools/kiss_fftr.c
+    ${KISSDIR}/kiss_fft.c
+    )
+  include_directories(${KISSDIR} ${KISSDIR}/tools)
+  message(STATUS "MKL seems not available; using Kiss FFT & ad-hoc transpose")
+endif (USE_MKL)
 
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
 set(TARGET_LIBS

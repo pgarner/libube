@@ -28,6 +28,15 @@ then
     ln -s arctic_a0001.wav test.wav
 fi
 
+# Download Kiss FFT (whether or not it's needed)
+export KISSDIR=kiss_fft130
+if [ ! -e $KISSDIR ]
+then
+    kisssrc=http://sourceforge.net/projects/kissfft/files/kissfft/v1_3_0
+    wget $kisssrc/$KISSDIR.tar.gz
+    tar zxf $KISSDIR.tar.gz
+fi
+
 # Build the static library?
 export USE_STATIC=0
 
