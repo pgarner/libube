@@ -13,7 +13,7 @@
 int main()
 {
     lv::module m("path");
-    lv::path* p = lv::create(m, "CMakeFiles");
+    lv::path* p = lv::create(m, "cmake");
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();

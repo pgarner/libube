@@ -23,7 +23,7 @@ find_package(Boost COMPONENTS
   )
 
 # add_definitions(-DVARBOSE)
-set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++11")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 
 set(HEADERS var.h ind.h lv.h)
 set(SOURCES
