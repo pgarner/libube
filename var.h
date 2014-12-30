@@ -45,21 +45,47 @@ namespace libvar
 
 
     /**
+     * Base functor
+     */
+    class Functor
+    {
+    public:
+        virtual ~Functor() {};
+    protected:
+        virtual var alloc(var iVar) const;
+    };
+
+
+    /**
+     * String functor
+     *
+     * A unary functor for handling strings
+     */
+    class StringFunctor : public Functor
+    {
+    public:
+        var operator ()(const var& iVar) const;
+        var operator ()(const var& iVar, var& oVar) const;
+    protected:
+        virtual void broadcast(var iVar, var& oVar) const;
+        virtual void string(const var& iVar, var& oVar) const;
+    };
+
+
+    /**
      * Unary functor
      *
      * A unary functor just acts on itself.
      */
-    class UnaryFunctor
+    class UnaryFunctor : public Functor
     {
     public:
         UnaryFunctor() { mDim = 0; };
-        virtual ~UnaryFunctor() {};
         var operator ()(const var& iVar) const;
         var operator ()(const var& iVar, var& oVar) const;
     protected:
         int mDim;
         virtual void broadcast(var iVar, var& oVar) const;
-        virtual var alloc(var iVar) const;
         virtual void scalar(const var& iVar, var& oVar) const;
         virtual void vector(
             var iVar, ind iOffsetI, var& oVar, ind iOffsetO
@@ -73,10 +99,9 @@ namespace libvar
      *
      * A binary functor is a functor of two variables.
      */
-    class BinaryFunctor
+    class BinaryFunctor : public Functor
     {
     public:
-        virtual ~BinaryFunctor() {};
         var operator ()(
             const var& iVar1, const var& iVar2
         ) const;
@@ -85,7 +110,6 @@ namespace libvar
         ) const;
     protected:
         virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
-        virtual var alloc(var iVar) const;
         virtual void scalar(
             const var& iVar1, const var& iVar2, var& oVar
         ) const;
@@ -111,6 +135,13 @@ namespace libvar
         ) const;                                            \
     };
 
+#   define BASIC_STRING_FUNCTOR_DECL(f)                     \
+    class f : public StringFunctor                          \
+    {                                                       \
+    public:                                                 \
+        void string(const var& iVar, var& oVar) const;      \
+    };
+
     // Math functors
     BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
@@ -123,8 +154,8 @@ namespace libvar
     BASIC_BINARY_FUNCTOR_DECL(Pow)
 
     // String functors
-    BASIC_UNARY_FUNCTOR_DECL(ToUpper)
-    BASIC_UNARY_FUNCTOR_DECL(ToLower)
+    BASIC_STRING_FUNCTOR_DECL(ToUpper)
+    BASIC_STRING_FUNCTOR_DECL(ToLower)
 
 
     template <class T>

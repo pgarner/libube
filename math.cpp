@@ -91,7 +91,7 @@ ind type(var iVar)
 }
 
 
-var UnaryFunctor::alloc(var iVar) const
+var Functor::alloc(var iVar) const
 {
     var r;
     r = iVar.copy(true);
@@ -139,14 +139,6 @@ void UnaryFunctor::vector(var iVar, ind iIOffset, var& oVar, ind iOOffset) const
 void UnaryFunctor::vector(var iVar, var& oVar) const
 {
     throw std::runtime_error("UnaryFunctor: not a vector operation");
-}
-
-
-var BinaryFunctor::alloc(var iVar) const
-{
-    var r;
-    r = iVar.copy(true);
-    return r;
 }
 
 

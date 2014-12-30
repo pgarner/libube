@@ -31,6 +31,49 @@ namespace libvar
 using namespace libvar;
 
 
+var StringFunctor::operator ()(const var& iVar) const
+{
+    var v = alloc(iVar);
+    if (iVar.atype<char>())
+        string(iVar, v);
+    else
+        broadcast(iVar, v);
+    return v;
+}
+
+
+var StringFunctor::operator ()(const var& iVar, var& oVar) const
+{
+    if (iVar.atype<char>())
+        string(iVar, oVar);
+    else
+        broadcast(iVar, oVar);
+    return oVar;
+}
+
+
+void StringFunctor::string(const var& iVar, var& oVar) const
+{
+    broadcast(iVar, oVar);
+}
+
+
+/**
+ * String broadcaster
+ *
+ * Broadcasts the operation against iVar.
+ */
+void StringFunctor::broadcast(var iVar, var& oVar) const
+{
+    // This could be parallel!
+    for (int i=0; i<iVar.size(); i++)
+    {
+        var ref = oVar.at(i);
+        operator()(iVar.at(i), ref);
+    }
+}
+
+
 /**
  * Read a line from an istream
  */
@@ -198,54 +241,30 @@ var var::replace(var iRE, var iStr)
     return r;
 }
 
-void ToUpper::scalar(const var& iVar, var& oVar) const
+void ToUpper::string(const var& iVar, var& oVar) const
 {
-    if (iVar.atype<var>())
+    if (!iVar.is(oVar))
     {
-        broadcast(iVar, oVar);
-        return;
+        oVar = "";
+        oVar.resize(iVar.size());
     }
-
-    if (iVar.atype<char>())
-    {
-        if (!iVar.is(oVar))
-        {
-            oVar = "";
-            oVar.resize(iVar.size());
-        }
-        char* ip = const_cast<var&>(iVar).ptr<char>();
-        char* op = oVar.ptr<char>();
-        for (int i=0; i<iVar.size(); i++)
-            // Does not work for UTF-8 'é' and the like
-            op[i] = std::toupper(ip[i]);
-        return;
-    }
-
-    throw std::runtime_error("ToUpper::scalar(): Unknown type");
+    char* ip = const_cast<var&>(iVar).ptr<char>();
+    char* op = oVar.ptr<char>();
+    for (int i=0; i<iVar.size(); i++)
+        // Does not work for UTF-8 'é' and the like
+        op[i] = std::toupper(ip[i]);
 }
 
-void ToLower::scalar(const var& iVar, var& oVar) const
+void ToLower::string(const var& iVar, var& oVar) const
 {
-    if (iVar.atype<var>())
+    if (!iVar.is(oVar))
     {
-        broadcast(iVar, oVar);
-        return;
+        oVar = "";
+        oVar.resize(iVar.size());
     }
-
-    if (iVar.atype<char>())
-    {
-        if (!iVar.is(oVar))
-        {
-            oVar = "";
-            oVar.resize(iVar.size());
-        }
-        char* ip = const_cast<var&>(iVar).ptr<char>();
-        char* op = oVar.ptr<char>();
-        for (int i=0; i<iVar.size(); i++)
-            // Does not work for UTF-8 'é' and the like
-            op[i] = std::tolower(ip[i]);
-        return;
-    }
-
-    throw std::runtime_error("ToLower::scalar(): Unknown type");
+    char* ip = const_cast<var&>(iVar).ptr<char>();
+    char* op = oVar.ptr<char>();
+    for (int i=0; i<iVar.size(); i++)
+        // Does not work for UTF-8 'é' and the like
+        op[i] = std::tolower(ip[i]);
 }
