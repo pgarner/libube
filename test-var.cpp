@@ -302,6 +302,14 @@ int main(int argc, char** argv)
     cout << "Upper: " << mix.copy().toupper() << endl;
     cout << "Lower: " << mix.copy().tolower() << endl;
 
+    // Broadcast over strings
+    var strs;
+    strs.push("One two three o'clock four o'clock rock");
+    strs.push("Five six seven o'clock eight o'clock rock");
+    var STRS = lv::toupper(strs);
+    cout << "Lower: " << strs.tolower() << endl;
+    cout << "Upper: " << STRS << endl;
+
     // Phil, leave this at the end!
     return 0;
 }

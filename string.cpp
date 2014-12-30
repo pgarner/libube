@@ -17,6 +17,17 @@
 #include "var.h"
 
 
+namespace libvar
+{
+    /*
+     * The instantiations of the string functors defined in this module.  They
+     * are declared extern in var.h
+     */
+    ToUpper toupper;
+    ToLower tolower;
+}
+
+
 using namespace libvar;
 
 
@@ -187,25 +198,54 @@ var var::replace(var iRE, var iStr)
     return r;
 }
 
-/**
- * This may not work in UTF-8
- */
-var& var::toupper()
+void ToUpper::scalar(const var& iVar, var& oVar) const
 {
-    if (!atype<char>())
-        throw std::runtime_error("var::toupper(): Not a string");
-    char* p = ptr<char>();
-    for (int i=0; i<size(); i++)
-        p[i] = std::toupper(p[i]);
-    return *this;
+    if (iVar.atype<var>())
+    {
+        broadcast(iVar, oVar);
+        return;
+    }
+
+    if (iVar.atype<char>())
+    {
+        if (!iVar.is(oVar))
+        {
+            oVar = "";
+            oVar.resize(iVar.size());
+        }
+        char* ip = const_cast<var&>(iVar).ptr<char>();
+        char* op = oVar.ptr<char>();
+        for (int i=0; i<iVar.size(); i++)
+            // Does not work for UTF-8 'é' and the like
+            op[i] = std::toupper(ip[i]);
+        return;
+    }
+
+    throw std::runtime_error("ToUpper::scalar(): Unknown type");
 }
 
-var& var::tolower()
+void ToLower::scalar(const var& iVar, var& oVar) const
 {
-    if (!atype<char>())
-        throw std::runtime_error("var::tolower(): Not a string");
-    char* p = ptr<char>();
-    for (int i=0; i<size(); i++)
-        p[i] = std::tolower(p[i]);
-    return *this;
+    if (iVar.atype<var>())
+    {
+        broadcast(iVar, oVar);
+        return;
+    }
+
+    if (iVar.atype<char>())
+    {
+        if (!iVar.is(oVar))
+        {
+            oVar = "";
+            oVar.resize(iVar.size());
+        }
+        char* ip = const_cast<var&>(iVar).ptr<char>();
+        char* op = oVar.ptr<char>();
+        for (int i=0; i<iVar.size(); i++)
+            // Does not work for UTF-8 'é' and the like
+            op[i] = std::tolower(ip[i]);
+        return;
+    }
+
+    throw std::runtime_error("ToLower::scalar(): Unknown type");
 }

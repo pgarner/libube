@@ -111,6 +111,7 @@ namespace libvar
         ) const;                                            \
     };
 
+    // Math functors
     BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
     BASIC_UNARY_FUNCTOR_DECL(Cos)
@@ -120,6 +121,10 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Log)
     BASIC_UNARY_FUNCTOR_DECL(Exp)
     BASIC_BINARY_FUNCTOR_DECL(Pow)
+
+    // String functors
+    BASIC_UNARY_FUNCTOR_DECL(ToUpper)
+    BASIC_UNARY_FUNCTOR_DECL(ToLower)
 
 
     template <class T>
@@ -322,6 +327,11 @@ namespace libvar
     // BLAS-like
     extern Transpose transpose;
 
+    // String functors
+    extern ToUpper toupper;
+    extern ToLower tolower;
+
+
     /**
      * Class with runtime type determination.
      *
@@ -436,8 +446,8 @@ namespace libvar
         bool search(var iRE);
         bool match(var iRE);
         var replace(var iRE, var iStr);
-        var& toupper();
-        var& tolower();
+        var toupper() { return libvar::toupper(*this, *this); };
+        var tolower() { return libvar::tolower(*this, *this); };
 
         // Files
         var& read(const char* iFile, const char* iType);
