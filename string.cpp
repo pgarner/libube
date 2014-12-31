@@ -12,6 +12,8 @@
 #include <cassert>
 #include <cstring>
 #include <cstdarg>
+
+// Waiting for std::regex_xxx(), but currently boost appears more reliable.
 #include <boost/regex.hpp>
 
 #include "var.h"
@@ -25,6 +27,7 @@ namespace libvar
      */
     ToUpper toupper;
     ToLower tolower;
+    Strip strip;
 }
 
 
@@ -71,6 +74,19 @@ void StringFunctor::broadcast(var iVar, var& oVar) const
         var ref = oVar.at(i);
         operator()(iVar.at(i), ref);
     }
+}
+
+
+RegExFunctor::RegExFunctor(var iRE)
+{
+    mRE = new boost::regex(iRE.str());
+}
+
+RegExFunctor::~RegExFunctor()
+{
+    // This (and other) reinterpret_cast<>s are to avoid var.h including boost
+    // headers; this in turn would slow down compilation.
+    delete reinterpret_cast<boost::regex*>(mRE);
 }
 
 
@@ -154,28 +170,35 @@ var var::join(const char* iStr) const
     return r;
 }
 
-var var::strip()
-{
-    var v(*this);
-    if (!v.atype<char>())
-        return *this;
 
-    char* ptr = v.ptr<char>();
+void Strip::string(const var& iVar, var& oVar) const
+{
+    char* ip = const_cast<var&>(iVar).ptr<char>();
+    char* op = oVar.ptr<char>();
+    int is = iVar.size();
     int leading = 0;
-    while ((leading < v.size()) && (isspace(ptr[leading])))
+    while ((leading < is) && (isspace(ip[leading])))
         leading++;
     int trailing = 0;
-    while ((trailing < v.size()) && (isspace(ptr[size()-trailing-1])))
+    while ((trailing < is) && (isspace(ip[is-trailing-1])))
         trailing++;
 
-    int newSize = v.size() - leading - trailing;
-    if (leading > 0)
-        std::memmove(ptr, ptr+leading, newSize);
-    if (newSize != v.size())
-        v.resize(newSize);
-    return v;
+    int newSize = is - leading - trailing;
+    if (iVar.is(oVar))
+    {
+        if (leading > 0)
+            std::memmove(op, op+leading, newSize);
+        if (newSize != oVar.size())
+            oVar.resize(newSize);
+    }
+    else
+    {
+        oVar = "";
+        oVar.resize(newSize);
+        for (int i=0; i<newSize; i++)
+            op[i] = ip[i+leading];
+    }
 }
-
 
 var& var::sprintf(const char* iFormat, ...)
 {
@@ -204,42 +227,64 @@ var& var::sprintf(const char* iFormat, ...)
     return *this;
 }
 
-/**
- * Waiting for std::regex_search(), but currently implemented using boost.
- */
-bool var::search(var iRE)
+
+void Search::string(const var& iVar, var& oVar) const
 {
-    if (!atype<char>())
-        throw std::runtime_error("var::search(): Not a string");
-    boost::regex rgx(iRE.str());
-    bool r = boost::regex_search(str(), rgx);
-    return r;
+    boost::regex re = *reinterpret_cast<boost::regex*>(mRE);
+    bool r = boost::regex_search(const_cast<var&>(iVar).str(), re);
+    if (!r)
+        oVar = nil;
+    else
+        if (!iVar.is(oVar))
+            oVar = iVar;
 }
 
-/**
- * Waiting for std::regex_match(), but currently implemented using boost.
- */
-bool var::match(var iRE)
+var var::search(var iRE)
 {
-    if (!atype<char>())
-        throw std::runtime_error("var::match(): Not a string");
-    boost::regex rgx(iRE.str());
-    bool r = boost::regex_match(str(), rgx);
-    return r;
+    Search s(iRE);
+    return s(*this, *this);
 }
 
-/**
- * Waiting for std::regex_replace(), but currently implemented using boost.
- */
+
+void Match::string(const var& iVar, var& oVar) const
+{
+    boost::regex re = *reinterpret_cast<boost::regex*>(mRE);
+    bool r = boost::regex_match(const_cast<var&>(iVar).str(), re);
+    if (!r)
+        oVar = nil;
+    else
+        if (!iVar.is(oVar))
+            oVar = iVar;
+}
+
+var var::match(var iRE)
+{
+    Match m = Match(iRE);
+    return m(*this, *this);
+}
+
+
+Replace::Replace(var iRE, var iStr)
+    : RegExFunctor(iRE)
+{
+    mStr = iStr;
+}
+
+void Replace::string(const var& iVar, var& oVar) const
+{
+    boost::regex re = *reinterpret_cast<boost::regex*>(mRE);
+    std::string s = const_cast<var&>(iVar).str();
+    var str(mStr); // const thing
+    var r = boost::regex_replace(s, re, str.str()).c_str();
+    oVar = r;
+}
+
 var var::replace(var iRE, var iStr)
 {
-    if (!atype<char>())
-        throw std::runtime_error("var::replace(): Not a string");
-    boost::regex rgx(iRE.str());
-    std::string s = str();
-    var r = boost::regex_replace(s, rgx, iStr.str()).c_str();
-    return r;
+    Replace r = Replace(iRE, iStr);
+    return r(*this, *this);
 }
+
 
 void ToUpper::string(const var& iVar, var& oVar) const
 {

@@ -27,6 +27,7 @@ namespace libvar
     class var;
     struct pair;
 
+
     /**
      * The possible var types
      */
@@ -69,6 +70,21 @@ namespace libvar
     protected:
         virtual void broadcast(var iVar, var& oVar) const;
         virtual void string(const var& iVar, var& oVar) const;
+    };
+
+
+    /**
+     * String regex functor
+     *
+     * A unary functor for handling regular expressions
+     */
+    class RegExFunctor : public StringFunctor
+    {
+    public:
+        RegExFunctor(var iRE);
+        virtual ~RegExFunctor();
+    protected:
+        void* mRE;
     };
 
 
@@ -142,6 +158,14 @@ namespace libvar
         void string(const var& iVar, var& oVar) const;      \
     };
 
+#   define BASIC_REGEX_FUNCTOR_DECL(f)                      \
+    class f : public RegExFunctor                           \
+    {                                                       \
+    public:                                                 \
+        f(var iRE) : RegExFunctor(iRE) {};                  \
+        void string(const var& iVar, var& oVar) const;      \
+    };
+
     // Math functors
     BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
@@ -156,7 +180,7 @@ namespace libvar
     // String functors
     BASIC_STRING_FUNCTOR_DECL(ToUpper)
     BASIC_STRING_FUNCTOR_DECL(ToLower)
-
+    BASIC_STRING_FUNCTOR_DECL(Strip)
 
     template <class T>
     BASIC_UNARY_FUNCTOR_DECL(Cast)
@@ -361,7 +385,7 @@ namespace libvar
     // String functors
     extern ToUpper toupper;
     extern ToLower tolower;
-
+    extern Strip strip;
 
     /**
      * Class with runtime type determination.
@@ -454,7 +478,7 @@ namespace libvar
         var& presize(int iSize);
         void format(std::ostream& iStream, int iIndent = 0) const;
 
-        // Methods for functors in math.cpp
+        // Math functors
         var abs() { return libvar::abs(*this, *this); };
         var norm() { return libvar::normc(*this, *this); };
         var floor() { return libvar::floor(*this, *this); };
@@ -468,17 +492,17 @@ namespace libvar
         // Other functors
         var transpose() { return libvar::transpose(*this, *this); };
 
-        // string.cpp
+        // String functors
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
         var join(const char* iStr) const;
-        var strip();
         var& sprintf(const char* iFormat, ...);
-        bool search(var iRE);
-        bool match(var iRE);
+        var search(var iRE);
+        var match(var iRE);
         var replace(var iRE, var iStr);
         var toupper() { return libvar::toupper(*this, *this); };
         var tolower() { return libvar::tolower(*this, *this); };
+        var strip() { return libvar::strip(*this, *this); };
 
         // Files
         var& read(const char* iFile, const char* iType);
@@ -673,6 +697,19 @@ namespace libvar
         void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     private:
         DFTImpl* mImpl;
+    };
+
+
+    // RegEx functors
+    BASIC_REGEX_FUNCTOR_DECL(Search)
+    BASIC_REGEX_FUNCTOR_DECL(Match)
+    class Replace : public RegExFunctor
+    {
+    public:
+        Replace(var iRE, var iStr);
+        void string(const var& iVar, var& oVar) const;
+    private:
+        var mStr;
     };
 
 
