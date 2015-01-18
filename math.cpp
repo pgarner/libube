@@ -50,33 +50,6 @@ using namespace libvar;
 
 
 /**
- * Operations
- *
- * There are three different cases:
- *
- * 1. We want the operation to happen in place, e.g., x += 1
- *
- * 2. We want the operation to allocate new storage, e.g., y = x + 1
- *
- * 3. We want the result in existing storage, e.g., y[0] = x + 1 This would
- * also happen in case 2 if y were a view.
- *
- * Going into existing storage via operator=() can be wasteful if it's a view,
- * i.e., there is a temporary.  The solution seems to be to define all vector
- * operations to take the target storage as an argument.  For some BLAS
- * operations, the natural operation is to overwrite.  In this case, the BLAS
- * wrapper can allocate or not.
- *
- * If the output variable is equal to the input variable we have case 1.  If
- * it's not defined at all we have case 2.  If it's defined ahead we have case
- * 3.  Cases 1 and 3 are basically the same.
- *
- * The output variable has to be either reference or pointer because it may not
- * be an array and has to be written to.  It cannot be const.
- */
-
-
-/**
  * Report var type, but treating TYPE_CDOUBLE as a type rather than an array.
  *
  * This avoids an infinite loop where arrays are always broadcasted, and

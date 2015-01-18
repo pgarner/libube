@@ -1,0 +1,46 @@
+Operations
+
+There are three different cases:
+
+1. We want the operation to happen in place, e.g., x += 1
+
+2. We want the operation to allocate new storage, e.g., y = x + 1
+
+3. We want the result in existing storage, e.g., y[0] = x + 1 This would also
+happen in case 2 if y were a view.
+
+Going into existing storage via operator=() can be wasteful if it's a view,
+i.e., there is a temporary.  The solution seems to be to define all vector
+operations to take the target storage as an argument.  For some BLAS
+operations, the natural operation is to overwrite.  In this case, the BLAS
+wrapper can allocate or not.
+
+If the output variable is equal to the input variable we have case 1.  If it's
+not defined at all we have case 2.  If it's defined ahead we have case 3.
+Cases 1 and 3 are basically the same.
+
+The output variable has to be either reference or pointer because it may not be
+an array and has to be written to.  It cannot be const.
+
+
+Broadcasting
+
+For unary functors, the situation seems quite clear: we just set mDim to the
+dimension of the function.
+
+For binary functors, there are four possible semantics:
+
+1. If var2 is a scalar, it just gets broadcast over the whole of var1. e.g., a
+matrix plus a scalar.
+
+2. Var2 is a vector, it is broadcast over all var2 sized bits or var1.  In this
+case, all of var2 gets broadcast.  e.g., var1 is matrix, var2 is vector; each
+row of the matrix has the vector added to it.
+
+3. Var2 is a vector, it has the same dimension as some part of var1; those
+dimensions are broadcast together.  So, the loop goes over var1 and var2
+together.  e.g., var1 is matrix, var2 is matrix, they have the same number of
+rows.  Row 1 of var2 is applied to row 1 of var1.
+
+4. Matrix multiplication.  var2 is a fixed matrix; it is broadcast over each
+row of var1.
