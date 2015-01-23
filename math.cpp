@@ -115,7 +115,7 @@ void UnaryFunctor::vector(var iVar, var& oVar) const
 }
 
 
-var BinaryFunctor::operator ()(
+var ArithmeticFunctor::operator ()(
     const var& iVar1, const var& iVar2
 ) const
 {
@@ -125,7 +125,7 @@ var BinaryFunctor::operator ()(
 }
 
 
-var BinaryFunctor::operator ()(
+var ArithmeticFunctor::operator ()(
     const var& iVar1, const var& iVar2, var& oVar
 ) const
 {
@@ -134,7 +134,7 @@ var BinaryFunctor::operator ()(
 }
 
 
-void BinaryFunctor::scalar(
+void ArithmeticFunctor::scalar(
     const var& iVar1, const var& iVar2, var& oVar
 ) const
 {
@@ -142,11 +142,13 @@ void BinaryFunctor::scalar(
 }
 
 
-void BinaryFunctor::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+void ArithmeticFunctor::vector(
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
-    throw std::runtime_error("BinaryFunctor: not a vector operation");
+    throw std::runtime_error("ArithmeticFunctor: not a vector operation");
 }
 
 
@@ -189,12 +191,12 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
 
 
 /**
- * Binary broadcaster
+ * Arithmetic broadcaster
  *
  * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
  * is the rvalue.
  */
-void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
+void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
     int dim1 = iVar1.dim();
     int dim2 = iVar2.dim();
@@ -232,7 +234,40 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
     int stepO = oDim-dim2 > 0 ? oVar.stride(oDim-dim2-1) : oVar.size();
     int nOps = iVar1.size() / step1;
     for (int i=0; i<nOps; i++)
-        vector(iVar1, step1*i, iVar2, oVar, stepO*i);
+        vector(iVar1, step1*i, iVar2, 0, oVar, stepO*i);
+}
+
+
+/**
+ * Binary broadcaster
+ *
+ * Broadcasts iVar2 against iVar1; the general idea is that both vars are the
+ * same size.
+ */
+void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
+{
+    int dim1 = iVar1.dim();
+
+    // Check that the two arrays are broadcastable
+    if (iVar1.atype() != iVar2.atype())
+        throw std::runtime_error("var::broadcast: types must match (for now)");
+
+    int cdim = 0; // Common dimension
+    for (int i=0; i<dim1; i++)
+    {
+        if (iVar1.shape(i) == iVar2.shape(i))
+            cdim++;
+        else
+            break;
+    }
+
+    // Assume that the common dimension is to be broadcast over.
+    int step1 = iVar1.stride(cdim);
+    int step2 = iVar2.stride(cdim);
+    int stepO =  oVar.stride(cdim);
+    int nOps = iVar1.size() / step1;
+    for (int i=0; i<nOps; i++)
+        vector(iVar1, step1*i, iVar2, step2*i, oVar, stepO*i);
 }
 
 
@@ -447,7 +482,9 @@ void Set::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Set::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -456,14 +493,14 @@ void Set::vector(
     {
     case TYPE_FLOAT:
     {
-        float* x = iVar2.ptr<float>();
+        float* x = iVar2.ptr<float>(iOffset2);
         float* y = iVar1.ptr<float>(iOffset1);
         cblas_scopy(size, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
-        double* x = iVar2.ptr<double>();
+        double* x = iVar2.ptr<double>(iOffset2);
         double* y = iVar1.ptr<double>(iOffset1);
         cblas_dcopy(size, x, 1, y, 1);
         break;
@@ -509,7 +546,9 @@ void Add::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Add::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -519,14 +558,14 @@ void Add::vector(
     {
     case TYPE_FLOAT:
     {
-        float* x = iVar2.ptr<float>();
+        float* x = iVar2.ptr<float>(iOffset2);
         float* y = iVar1.ptr<float>(iOffset1);
         cblas_saxpy(size, 1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
-        double* x = iVar2.ptr<double>();
+        double* x = iVar2.ptr<double>(iOffset2);
         double* y = iVar1.ptr<double>(iOffset1);
         cblas_daxpy(size, 1.0, x, 1, y, 1);
         break;
@@ -572,7 +611,9 @@ void Sub::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Sub::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -582,14 +623,14 @@ void Sub::vector(
     {
     case TYPE_FLOAT:
     {
-        float* x = iVar2.ptr<float>();
+        float* x = iVar2.ptr<float>(iOffset2);
         float* y = iVar1.ptr<float>(iOffset1);
         cblas_saxpy(size, -1.0f, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
-        double* x = iVar2.ptr<double>();
+        double* x = iVar2.ptr<double>(iOffset2);
         double* y = iVar1.ptr<double>(iOffset1);
         cblas_daxpy(size, -1.0, x, 1, y, 1);
         break;
@@ -614,7 +655,7 @@ void Mul::broadcast(var iVar1, var iVar2, var& oVar) const
         return;
     }
     else
-        BinaryFunctor::broadcast(iVar1, iVar2, oVar);
+        ArithmeticFunctor::broadcast(iVar1, iVar2, oVar);
 }
 
 
@@ -679,7 +720,9 @@ void Mul::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 
 void Mul::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
     // Elementwise multiplication is actually multiplication by a diagonal
@@ -694,7 +737,7 @@ void Mul::vector(
         {
         case TYPE_FLOAT:
         {
-            float* A = iVar2.ptr<float>();
+            float* A = iVar2.ptr<float>(iOffset2);
             float* x = iVar1.ptr<float>(iOffset1);
             cblas_stbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                         size, 0, A, 1, x, 1);
@@ -702,7 +745,7 @@ void Mul::vector(
         }
         case TYPE_DOUBLE:
         {
-            double* A = iVar2.ptr<double>();
+            double* A = iVar2.ptr<double>(iOffset2);
             double* x = iVar1.ptr<double>(iOffset1);
             cblas_dtbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
                         size, 0, A, 1, x, 1);
@@ -719,7 +762,7 @@ void Mul::vector(
         {
         case TYPE_FLOAT:
         {
-            float* A = iVar2.ptr<float>();
+            float* A = iVar2.ptr<float>(iOffset2);
             float* x = iVar1.ptr<float>(iOffset1);
             float* y = oVar.ptr<float>(iOffsetO);
             cblas_ssbmv(CblasRowMajor, CblasUpper, size, 0,
@@ -728,7 +771,7 @@ void Mul::vector(
         }
         case TYPE_DOUBLE:
         {
-            double* A = iVar2.ptr<double>();
+            double* A = iVar2.ptr<double>(iOffset2);
             double* x = iVar1.ptr<double>(iOffset1);
             double* y = oVar.ptr<double>(iOffsetO);
             cblas_dsbmv(CblasRowMajor, CblasUpper, size, 0,
@@ -761,7 +804,9 @@ var Dot::alloc(var iVar) const
 
 
 void Dot::vector(
-    var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
@@ -774,28 +819,28 @@ void Dot::vector(
     case TYPE_FLOAT:
     {
         float* x = iVar1.ptr<float>(iOffset1);
-        float* y = iVar2.ptr<float>();
+        float* y = iVar2.ptr<float>(iOffset2);
         *oVar.ptr<float>(iOffsetO) = cblas_sdot(size, x, 1, y, 1);
         break;
     }
     case TYPE_DOUBLE:
     {
         double* x = iVar1.ptr<double>(iOffset1);
-        double* y = iVar2.ptr<double>();
+        double* y = iVar2.ptr<double>(iOffset2);
         *oVar.ptr<double>(iOffsetO) = cblas_ddot(size, x, 1, y, 1);
         break;
     }
     case TYPE_CFLOAT:
     {
         cfloat* x = iVar1.ptr<cfloat>(iOffset1);
-        cfloat* y = iVar2.ptr<cfloat>();
+        cfloat* y = iVar2.ptr<cfloat>(iOffset2);
         cblas_cdotc_sub(size, x, 1, y, 1, oVar.ptr<cfloat>(iOffsetO));
         break;
     }
     case TYPE_CDOUBLE:
     {
         cdouble* x = iVar1.ptr<cdouble>(iOffset1);
-        cdouble* y = iVar2.ptr<cdouble>();
+        cdouble* y = iVar2.ptr<cdouble>(iOffset2);
         cblas_zdotc_sub(size, x, 1, y, 1, oVar.ptr<cdouble>(iOffsetO));
         break;
     }

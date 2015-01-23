@@ -111,11 +111,12 @@ namespace libvar
 
 
     /**
-     * Binary functor
+     * Arithmetic functor
      *
-     * A binary functor is a functor of two variables.
+     * An arithmetic functor is a binary functor, a functor of two variables,
+     * that broadcasts in an arithmetic sense.
      */
-    class BinaryFunctor : public Functor
+    class ArithmeticFunctor : public Functor
     {
     public:
         var operator ()(
@@ -130,10 +131,23 @@ namespace libvar
             const var& iVar1, const var& iVar2, var& oVar
         ) const;
         virtual void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
     };
 
+    /**
+     * Binary functor
+     *
+     * More general binary functor that does not broadcast like an arithmetic
+     * functor.  The inheritance might be the wrong way around.
+     */
+    class BinaryFunctor : public ArithmeticFunctor
+    {
+    protected:
+        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
+    };
 
 #   define BASIC_UNARY_FUNCTOR_DECL(f)                      \
     class f : public UnaryFunctor                           \
@@ -142,8 +156,8 @@ namespace libvar
         void scalar(const var& iVar, var& oVar) const;      \
     };
 
-#   define BASIC_BINARY_FUNCTOR_DECL(f)                     \
-    class f : public BinaryFunctor                          \
+#   define BASIC_ARITH_FUNCTOR_DECL(f)                      \
+    class f : public ArithmeticFunctor                      \
     {                                                       \
     protected:                                              \
         void scalar(                                        \
@@ -175,7 +189,7 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Sqrt)
     BASIC_UNARY_FUNCTOR_DECL(Log)
     BASIC_UNARY_FUNCTOR_DECL(Exp)
-    BASIC_BINARY_FUNCTOR_DECL(Pow)
+    BASIC_ARITH_FUNCTOR_DECL(Pow)
 
     // String functors
     BASIC_STRING_FUNCTOR_DECL(ToUpper)
@@ -189,12 +203,14 @@ namespace libvar
     /**
      * Set/Copy functor
      */
-    class Set : public BinaryFunctor
+    class Set : public ArithmeticFunctor
     {
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -202,12 +218,14 @@ namespace libvar
     /**
      * Addition functor
      */
-    class Add : public BinaryFunctor
+    class Add : public ArithmeticFunctor
     {
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -215,12 +233,14 @@ namespace libvar
     /**
      * Subtraction functor
      */
-    class Sub : public BinaryFunctor
+    class Sub : public ArithmeticFunctor
     {
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -228,13 +248,15 @@ namespace libvar
     /**
      * Multiplication functor
      */
-    class Mul : public BinaryFunctor
+    class Mul : public ArithmeticFunctor
     {
     protected:
         void broadcast(var iVar1, var iVar2, var& oVar) const;
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
         void scale(var iVar1, var iVar2, var& oVar, int iOffset) const;
     };
@@ -243,12 +265,14 @@ namespace libvar
     /**
      * Dot product functor
      */
-    class Dot : public BinaryFunctor
+    class Dot : public ArithmeticFunctor
     {
     protected:
         var alloc(var iVar) const;
         void vector(
-            var iVar1, ind iOffset1, var iVar2, var& oVar, ind iOffsetO
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
         ) const;
     };
 
@@ -257,7 +281,7 @@ namespace libvar
      * Division functor
      * There's no array operation.
      */
-    class Div : public BinaryFunctor
+    class Div : public ArithmeticFunctor
     {
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
