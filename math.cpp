@@ -252,8 +252,11 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
     if (iVar1.atype() != iVar2.atype())
         throw std::runtime_error("var::broadcast: types must match (for now)");
 
-    int cdim = 0; // Common dimension
-    for (int i=0; i<dim1; i++)
+    // Find the highest common dimension.  This may not be what the functor
+    // needs; rather, it may be better to have the functor report its dimension
+    // and just check that the inputs are sane.
+    int cdim = -1;
+    for (int i=0; i<dim1-1; i++)
     {
         if (iVar1.shape(i) == iVar2.shape(i))
             cdim++;
