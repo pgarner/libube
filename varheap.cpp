@@ -71,6 +71,8 @@ int sizeOf(ind iType)
     case TYPE_LONG: return sizeof(long);
     case TYPE_FLOAT: return sizeof(float);
     case TYPE_DOUBLE: return sizeof(double);
+    case TYPE_CFLOAT: return sizeof(cfloat);
+    case TYPE_CDOUBLE: return sizeof(cdouble);
     case TYPE_VAR: return sizeof(var);
     case TYPE_PAIR: return sizeof(pair);
     default:
