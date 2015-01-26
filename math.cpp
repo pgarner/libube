@@ -64,6 +64,10 @@ ind type(var iVar)
 }
 
 
+/**
+ * The default allocator is simply to make a copy of the input variable with
+ * the same type and shape.  Only the allocation is done; data is not copied.
+ */
 var Functor::alloc(var iVar) const
 {
     var r;
@@ -72,6 +76,10 @@ var Functor::alloc(var iVar) const
 }
 
 
+/**
+ * The normal operation of operator(iVar) is to allocate space then call the
+ * protected method scalar().
+ */
 var UnaryFunctor::operator ()(const var& iVar) const
 {
     var v = alloc(iVar);
@@ -80,6 +88,10 @@ var UnaryFunctor::operator ()(const var& iVar) const
 }
 
 
+/**
+ * The normal operation of operator(iVar, oVar) is to just call the protected
+ * method scalar().
+ */
 var UnaryFunctor::operator ()(const var& iVar, var& oVar) const
 {
     scalar(iVar, oVar);
@@ -87,6 +99,9 @@ var UnaryFunctor::operator ()(const var& iVar, var& oVar) const
 }
 
 
+/**
+ * The default behaviour of scalar(), hence operator(), is to broadcast.
+ */
 void UnaryFunctor::scalar(const var& iVar, var& oVar) const
 {
     broadcast(iVar, oVar);
@@ -109,53 +124,22 @@ void UnaryFunctor::vector(var iVar, ind iIOffset, var& oVar, ind iOOffset) const
 }
 
 
+/**
+ * The default vector() throws, meaning that it should have been overridden or
+ * implemented by scalar() or vector() with offsets.
+ */
 void UnaryFunctor::vector(var iVar, var& oVar) const
 {
     throw std::runtime_error("UnaryFunctor: not a vector operation");
 }
 
 
-var ArithmeticFunctor::operator ()(
-    const var& iVar1, const var& iVar2
-) const
-{
-    var v = alloc(iVar1);
-    scalar(iVar1, iVar2, v);
-    return v;
-}
-
-
-var ArithmeticFunctor::operator ()(
-    const var& iVar1, const var& iVar2, var& oVar
-) const
-{
-    scalar(iVar1, iVar2, oVar);
-    return oVar;
-}
-
-
-void ArithmeticFunctor::scalar(
-    const var& iVar1, const var& iVar2, var& oVar
-) const
-{
-    broadcast(iVar1, iVar2, oVar);
-}
-
-
-void ArithmeticFunctor::vector(
-    var iVar1, ind iOffset1,
-    var iVar2, ind iOffset2,
-    var& oVar, ind iOffsetO
-) const
-{
-    throw std::runtime_error("ArithmeticFunctor: not a vector operation");
-}
-
-
 /**
  * Unary broadcaster
  *
- * Broadcasts the operation against iVar.
+ * Broadcasts the operation against iVar.  The unary broadcast is obvious
+ * because there's only one semantic: repeat the operation over the given
+ * (sub-) dimension.  The functor dimension is indicated at construction time.
  */
 void UnaryFunctor::broadcast(var iVar, var& oVar) const
 {
@@ -191,10 +175,62 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
 
 
 /**
+ * The normal operation of operator(iVar1, iVar2) is to allocate space then
+ * call the protected method scalar().
+ */
+var ArithmeticFunctor::operator ()(
+    const var& iVar1, const var& iVar2
+) const
+{
+    var v = alloc(iVar1);
+    scalar(iVar1, iVar2, v);
+    return v;
+}
+
+
+/**
+ * The normal operation of operator(iVar1, iVar2, oVar) is to just call the
+ * protected method scalar().
+ */
+var ArithmeticFunctor::operator ()(
+    const var& iVar1, const var& iVar2, var& oVar
+) const
+{
+    scalar(iVar1, iVar2, oVar);
+    return oVar;
+}
+
+
+/**
+ * The default behaviour of scalar(), hence operator(), is to broadcast.
+ */
+void ArithmeticFunctor::scalar(
+    const var& iVar1, const var& iVar2, var& oVar
+) const
+{
+    broadcast(iVar1, iVar2, oVar);
+}
+
+
+/**
+ * The default vector() throws, meaning that it should have been overridden or
+ * implemented by scalar() or vector() with offsets.
+ */
+void ArithmeticFunctor::vector(
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
+) const
+{
+    throw std::runtime_error("ArithmeticFunctor: not a vector operation");
+}
+
+
+/**
  * Arithmetic broadcaster
  *
- * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2
- * is the rvalue.
+ * Broadcasts iVar2 against iVar1; i.e., iVar1 is the lvalue and iVar2 is the
+ * rvalue.  The dimension of the operation is the dimension of iVar2.
  */
 void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
@@ -242,7 +278,8 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
  * Binary broadcaster
  *
  * Broadcasts iVar2 against iVar1; the general idea is that both vars are the
- * same size.
+ * same size.  The dimension of the operation should be given by an mDim set at
+ * construction time.
  */
 void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
