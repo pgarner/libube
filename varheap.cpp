@@ -26,40 +26,17 @@ using namespace libvar;
 
 
 /*
- * Template specialisations (before any get used)
- *
- * These can be used to get the actual storage.  C++ doesn't allow
- * overloading on return type, so the return type must be specified.
+ * Allow data access to be templated
  */
-template<> char* varheap::ptr<char>(int iIndex) const {
-    return mView ? mView->ptr<char>(iIndex + mData.ip[0]) : mData.cp + iIndex;
-}
-template<> int* varheap::ptr<int>(int iIndex) const {
-    return mView ? mView->ptr<int>(iIndex + mData.ip[0]) : mData.ip + iIndex;
-}
-template<> long* varheap::ptr<long>(int iIndex) const {
-    return mView ? mView->ptr<long>(iIndex + mData.ip[0]) : mData.lp + iIndex;
-}
-template<> float* varheap::ptr<float>(int iIndex) const {
-    return mView ? mView->ptr<float>(iIndex + mData.ip[0]) : mData.fp + iIndex;
-}
-template<> double* varheap::ptr<double>(int iIndex) const {
-    return mView ? mView->ptr<double>(iIndex + mData.ip[0]) : mData.dp + iIndex;
-}
-template<> cfloat* varheap::ptr<cfloat>(int iIndex) const {
-    return mView
-        ? mView->ptr<cfloat>(iIndex + mData.ip[0]) : mData.cfp + iIndex;
-}
-template<> cdouble* varheap::ptr<cdouble>(int iIndex) const {
-    return mView
-        ? mView->ptr<cdouble>(iIndex + mData.ip[0]) : mData.cdp + iIndex;
-}
-template<> var* varheap::ptr<var>(int iIndex) const {
-    return mView ? mView->ptr<var>(iIndex + mData.ip[0]) : mData.vp + iIndex;
-}
-template<> pair* varheap::ptr<pair>(int iIndex) const {
-    return mView ? mView->ptr<pair>(iIndex + mData.ip[0]) : mData.pp + iIndex;
-}
+template<> char* varheap::data<char>() const { return mData.cp; };
+template<> int* varheap::data<int>() const { return mData.ip; };
+template<> long* varheap::data<long>() const { return mData.lp; };
+template<> float* varheap::data<float>() const { return mData.fp; };
+template<> double* varheap::data<double>() const { return mData.dp; };
+template<> cfloat* varheap::data<cfloat>() const { return mData.cfp; };
+template<> cdouble* varheap::data<cdouble>() const { return mData.cdp; };
+template<> var* varheap::data<var>() const { return mData.vp; };
+template<> pair* varheap::data<pair>() const { return mData.pp; };
 
 
 int sizeOf(ind iType)

@@ -51,31 +51,28 @@ using namespace libvar;
 
 
 /*
+ * Allow data access to be templated
+ */
+template<> char& var::data<char>() { return mData.c; };
+template<> int& var::data<int>() { return mData.i; };
+template<> long& var::data<long>() { return mData.l; };
+template<> float& var::data<float>() { return mData.f; };
+template<> double& var::data<double>() { return mData.d; };
+template<> cfloat& var::data<cfloat>() { return mData.cf; };
+template<> cdouble& var::data<cdouble>() {
+    // It's too big for a var; always an array
+    return *mData.hp->ptr<cdouble>(0);
+};
+
+
+/*
  * Value data accessor
  *
  * These return by value, so there can be no attempt to write to the result.
  * This means they can just dereference.
  */
-template<> char var::get<char>() const {
-    var v(*this); return v.mData.c;
-}
-template<> int var::get<int>() const {
-    var v(*this); return v.mData.i;
-}
-template<> long var::get<long>() const {
-    var v(*this); return v.mData.l;
-}
-template<> float var::get<float>() const {
-    var v(*this); return v.mData.f;
-}
-template<> double var::get<double>() const {
-    var v(*this); return v.mData.d;
-}
-template<> cfloat var::get<cfloat>() const {
-    var v(*this); return v.mData.cf;
-}
-template<> cdouble var::get<cdouble>() const {
-    var v(*this); return *v.mData.hp->ptr<cdouble>(0);
+template<class T> T var::get() const {
+    var v(*this); return v.data<T>();
 }
 
 
@@ -89,77 +86,25 @@ template<> cdouble var::get<cdouble>() const {
  * range checking.  So, if you ask for index 10 of something that is not an
  * array then the index is ignored.  Maybe this will get fixed one day.
  */
+template<class T> T* var::ptr(ind iIndex)
+{
+    if (reference())
+    {
+        var& r = varderef();
+        return (&r != this)
+            ? r.ptr<T>(iIndex) : mData.hp->ptr<T>(~mType);
+    }
+    return heap() ? heap()->ptr<T>(iIndex) : &data<T>();
+}
 
-template<> char* var::ptr<char>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<char>(iIndex) : mData.hp->ptr<char>(~mType);
-    }
-    return heap() ? heap()->ptr<char>(iIndex) : &mData.c;
-}
-template<> int* var::ptr<int>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<int>(iIndex) : mData.hp->ptr<int>(~mType);
-    }
-    return heap() ? heap()->ptr<int>(iIndex) : &mData.i;
-}
-template<> long* var::ptr<long>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<long>(iIndex) : mData.hp->ptr<long>(~mType);
-    }
-    return heap() ? heap()->ptr<long>(iIndex) : &mData.l;
-}
-template<> float* var::ptr<float>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<float>(iIndex) : mData.hp->ptr<float>(~mType);
-    }
-    return heap() ? heap()->ptr<float>(iIndex) : &mData.f;
-}
-template<> double* var::ptr<double>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<double>(iIndex) : mData.hp->ptr<double>(~mType);
-    }
-    return heap() ? heap()->ptr<double>(iIndex) : &mData.d;
-}
-template<> cfloat* var::ptr<cfloat>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<cfloat>(iIndex) : mData.hp->ptr<cfloat>(~mType);
-    }
-    return heap() ? heap()->ptr<cfloat>(iIndex) : &mData.cf;
-}
-template<> cdouble* var::ptr<cdouble>(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        assert(&r == this);
-        return mData.hp->ptr<cdouble>(~mType);
-    }
-    return mData.hp->ptr<cdouble>(iIndex);
-}
+// Dummies to cause the above template to get instantiated
+char* ptr_c(var v) { return v.ptr<char>(); };
+int* ptr_i(var v) { return v.ptr<int>(); };
+long* ptr_l(var v) { return v.ptr<long>(); };
+float* ptr_f(var v) { return v.ptr<float>(); };
+double* ptr_d(var v) { return v.ptr<double>(); };
+cfloat* ptr_cf(var v) { return v.ptr<cfloat>(); };
+cdouble* ptr_cd(var v) { return v.ptr<cdouble>(); };
 
 
 /**

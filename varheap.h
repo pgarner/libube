@@ -39,7 +39,11 @@ namespace libvar
         varheap(const varheap& iHeap, bool iAllocOnly=false);
 
         // Templates
-        template<class T> T* ptr(int iIndex=0) const;
+        template<class T> T* ptr(int iIndex=0) const {
+            return mView
+                ? mView->ptr<T>(iIndex + mData.ip[0])
+                : data<T>() + iIndex;
+        }
 
         // Overloaded constructors
         varheap(int iSize, ind iType);
@@ -92,6 +96,7 @@ namespace libvar
         varheap* mView; ///< If this is a view, the real storage
 
         // Methods
+        template<class T> T* data() const;
         void copy(const varheap* iHeap, int iSize);
         void alloc(int iSize);
         void dealloc(dataType iData);

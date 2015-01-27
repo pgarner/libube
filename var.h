@@ -565,6 +565,7 @@ namespace libvar
         ind mType;      ///< The data type or reference index
 
         // Methods
+        template<class T> T& data();
         var& varderef();
         bool reference() const;
         var reference(int iIndex) const;
