@@ -1542,7 +1542,7 @@ varbuf::int_type varbuf::underflow()
 }
 
 vstream::vstream(class var iVar)
-    : mVarBuf(iVar)
+    : std::iostream(0), mVarBuf(iVar)
 {
     // Tell the base class to use the buffer in the derived class
     rdbuf(&mVarBuf);

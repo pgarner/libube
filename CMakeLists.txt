@@ -6,7 +6,7 @@
 # Author(s):
 #   Phil Garner, July 2013
 #
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 
 # Package information
 project(libvar)
@@ -23,6 +23,7 @@ find_package(Boost COMPONENTS
   )
 
 # add_definitions(-DVARBOSE)
+# Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 
 set(HEADERS var.h ind.h lv.h varpath.h)
