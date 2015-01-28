@@ -12,7 +12,13 @@
 #include <cstring>
 #include <stdexcept>
 
-#include <mkl.h>
+// Basically BLAS is cblas.h, but the MKL version mkl.h
+#ifdef HAVE_MKL
+# include <mkl.h>
+#else
+# include <cblas.h>
+#endif
+
 #include "var.h"
 
 

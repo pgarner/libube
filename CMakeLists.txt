@@ -45,6 +45,7 @@ if (USE_MKL)
     dft-mkl.cpp
     transpose-mkl.cpp
     )
+  add_definitions(-DHAVE_MKL)
   message(STATUS "MKL BLAS seems available; using it for DFT & transpose")
 else (USE_MKL)
   set(KISSDIR $ENV{KISSDIR}
