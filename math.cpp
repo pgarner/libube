@@ -319,7 +319,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 
     // Find the common dimension.
     int dim1 = iVar1.dim();
-    int cdim = dim1 - mDim;
+    int cdim = dim1 - mDim - 1;
     if (cdim < 0)
         throw std::runtime_error("var::broadcast: input dimension too small");
 
