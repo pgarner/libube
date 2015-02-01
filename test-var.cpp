@@ -310,6 +310,15 @@ int main(int argc, char** argv)
     cout << "Lower: " << strs.tolower() << endl;
     cout << "Upper: " << STRS << endl;
 
+    // Initialise an empty pair
+    var nilPair;
+    nilPair[lv::nil];
+    cout << "Nil pair: " << nilPair << endl;
+    nilPair["Hi"] = 3;
+    cout << "Nil pair: " << nilPair << endl;
+    nilPair[lv::nil] = 4;
+    cout << "Nil pair: " << nilPair << endl;
+
     // Phil, leave this at the end!
     return 0;
 }

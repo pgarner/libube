@@ -217,9 +217,8 @@ bool varheap::copyable(varheap* iHeap)
 int allocSize(int iSize)
 {
     assert(iSize >= 0);
-    if (iSize == 0)
-        // Always alloc something
-        return 1;
+    if (iSize < 3)
+        return iSize;
     iSize -= 1;
     int size = 1;
     while (iSize > 0)
@@ -340,6 +339,11 @@ void varheap::copy(const varheap* iHeap, int iSize)
 void varheap::alloc(int iSize)
 {
     assert(iSize >= 0);
+    if (iSize == 0)
+    {
+        mData.cp = 0;
+        return;
+    }
     switch (mType)
     {
     case TYPE_CHAR:
@@ -376,6 +380,8 @@ void varheap::alloc(int iSize)
 
 void varheap::dealloc(dataType iData)
 {
+    if (!iData.cp)
+        return;
     switch (mType)
     {
     case TYPE_CHAR:
@@ -412,8 +418,6 @@ void varheap::dealloc(dataType iData)
 
 void varheap::format(std::ostream& iStream, int iIndent)
 {
-    assert(mData.vp); // Any of the pointers
-
     if (mView)
         return formatView(iStream);
 
@@ -425,17 +429,23 @@ void varheap::format(std::ostream& iStream, int iIndent)
         iStream << "\"";
         break;
     case TYPE_PAIR:
-        iStream << "{\n";
+        // Might be empty
+        iStream << "{";
         for (int i=0; i<mSize; i++)
         {
+            iStream << "\n";
             for (int j=0; j<iIndent+2; j++)
                 iStream << " ";
             iStream << "[" << at(i, true) << "] = ";
             at(i).format(iStream, iIndent+2);
-            iStream << ";\n";
+            iStream << ";";
         }
-        for (int j=0; j<iIndent; j++)
-            iStream << " ";
+        if (mSize)
+        {
+            iStream << "\n";
+            for (int j=0; j<iIndent; j++)
+                iStream << " ";
+        }
         iStream << "}";
         break;
     case TYPE_VAR:

@@ -672,6 +672,9 @@ var var::operator [](int iIndex)
  * In principle, just creates a reference.  However, it is also the primary
  * means of creating a map type (array of TYPE_PAIR).
  *
+ * Simply saying var[nil] will create the pair but return without doing
+ * anything.  This means that empty pairs can be created.
+ *
  * Can't be const because it calls resize(), which might change the type.
  */
 var var::operator [](var iVar)
@@ -686,7 +689,8 @@ var var::operator [](var iVar)
         if (v.heap() && !v.atype<pair>())
             // Fall back to normal array if the var can be cast to int
             return operator [](iVar.cast<int>());
-
+    if (!iVar)
+        return nil;
     int index = v.binary(iVar);
     if ( (index >= v.size()) || (v.heap()->key(index) != iVar) )
         v.insert(iVar, index);
