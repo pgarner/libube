@@ -119,6 +119,7 @@ namespace libvar
     class ArithmeticFunctor : public Functor
     {
     public:
+        ArithmeticFunctor() { mDim = 0; };
         var operator ()(
             const var& iVar1, const var& iVar2
         ) const;
@@ -126,6 +127,7 @@ namespace libvar
             const var& iVar1, const var& iVar2, var& oVar
         ) const;
     protected:
+        int mDim;
         virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
         virtual void scalar(
             const var& iVar1, const var& iVar2, var& oVar
@@ -135,6 +137,7 @@ namespace libvar
             var iVar2, ind iOffset2,
             var& oVar, ind iOffsetO
         ) const;
+        virtual void vector(var iVar1, var iVar2, var& oVar) const;
     };
 
     /**

@@ -124,8 +124,11 @@ void UnaryFunctor::scalar(const var& iVar, var& oVar) const
  */
 void UnaryFunctor::vector(var iVar, ind iIOffset, var& oVar, ind iOOffset) const
 {
-    var iv = iVar.subview(mDim, iIOffset);
-    var ov = oVar.subview(mDim, iOOffset);
+    int dimI = iVar.dim();
+    int dimO = oVar.dim();
+    int cdim = dimI - mDim;
+    var iv = iVar.subview(dimI-cdim, iIOffset);
+    var ov = oVar.subview(dimO-cdim, iOOffset);
     vector(iv, ov);
 }
 
@@ -149,7 +152,7 @@ void UnaryFunctor::vector(var iVar, var& oVar) const
  */
 void UnaryFunctor::broadcast(var iVar, var& oVar) const
 {
-    int iDim = iVar.dim();
+    int dimI = iVar.dim();
 
     // Case 1: Operation is dimensionless
     // Call back to the unary operator
@@ -166,14 +169,14 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
 
     // Case 2: array operation (mDim is at least 1)
     // Check that the array is broadcastable
-    if (mDim > iDim)
+    if (mDim > dimI)
         throw std::runtime_error("var::broadcast: op dimension too large");
 
     // If it didn't throw, then the array is broadcastable
     // In this case, loop over iVar (and oVar) with different offsets
-    int oDim = oVar.dim();
-    int stepI = iDim-mDim > 0 ? iVar.stride(iDim-mDim-1) : iVar.size();
-    int stepO = oDim-mDim > 0 ? oVar.stride(oDim-mDim-1) : oVar.size();
+    int dimO = oVar.dim();
+    int stepI = dimI-mDim > 0 ? iVar.stride(dimI-mDim-1) : iVar.size();
+    int stepO = dimO-mDim > 0 ? oVar.stride(dimO-mDim-1) : oVar.size();
     int nOps = iVar.size() / stepI;
     for (int i=0; i<nOps; i++)
         vector(iVar, stepI*i, oVar, stepO*i);
@@ -219,14 +222,35 @@ void ArithmeticFunctor::scalar(
 
 
 /**
- * The default vector() throws, meaning that it should have been overridden or
- * implemented by scalar() or vector() with offsets.
+ * This vector() is called by broadcast() without allocating any memory.
+ * Overriding it is the most efficient way to implement vector operations.
+ *
+ * This default implementation encodes the offsets into views and calls the
+ * vector() form without offsets.  This allocates memory, but means that the
+ * implementation can be more var-like.
  */
 void ArithmeticFunctor::vector(
     var iVar1, ind iOffset1,
     var iVar2, ind iOffset2,
     var& oVar, ind iOffsetO
 ) const
+{
+    int dim1 = iVar1.dim();
+    int dim2 = iVar2.dim();
+    int dimO =  oVar.dim();
+    int cdim = dim1 - mDim;
+    var iv1 = iVar1.subview(dim1-cdim, iOffset1);
+    var iv2 = iVar2.subview(dim2-cdim, iOffset2);
+    var ov  =  oVar.subview(dimO-cdim, iOffsetO);
+    vector(iv1, iv2, ov);
+}
+
+
+/**
+ * The default vector() throws, meaning that it should have been overridden or
+ * implemented by scalar() or vector() with offsets.
+ */
+void ArithmeticFunctor::vector(var iVar1, var iVar2, var& oVar) const
 {
     throw std::runtime_error("ArithmeticFunctor: not a vector operation");
 }
@@ -271,9 +295,9 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
-    int oDim = oVar.dim();
+    int dimO = oVar.dim();
     int step1 = dim1-dim2 > 0 ? iVar1.stride(dim1-dim2-1) : iVar1.size();
-    int stepO = oDim-dim2 > 0 ? oVar.stride(oDim-dim2-1) : oVar.size();
+    int stepO = dimO-dim2 > 0 ? oVar.stride(dimO-dim2-1) : oVar.size();
     int nOps = iVar1.size() / step1;
     for (int i=0; i<nOps; i++)
         vector(iVar1, step1*i, iVar2, 0, oVar, stepO*i);
@@ -289,23 +313,15 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
  */
 void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
-    int dim1 = iVar1.dim();
-
     // Check that the two arrays are broadcastable
     if (iVar1.atype() != iVar2.atype())
         throw std::runtime_error("var::broadcast: types must match (for now)");
 
-    // Find the highest common dimension.  This may not be what the functor
-    // needs; rather, it may be better to have the functor report its dimension
-    // and just check that the inputs are sane.
-    int cdim = -1;
-    for (int i=0; i<dim1-1; i++)
-    {
-        if (iVar1.shape(i) == iVar2.shape(i))
-            cdim++;
-        else
-            break;
-    }
+    // Find the common dimension.
+    int dim1 = iVar1.dim();
+    int cdim = dim1 - mDim;
+    if (cdim < 0)
+        throw std::runtime_error("var::broadcast: input dimension too small");
 
     // Assume that the common dimension is to be broadcast over.
     int step1 = iVar1.stride(cdim);
