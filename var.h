@@ -696,7 +696,7 @@ namespace libvar
     class vfile : public module
     {
     public:
-        vfile(const char* iType="txt");
+        vfile(const char* iType="txt", var iArg = nil);
         var read(const char* iFile) {
             return dynamic_cast<varfile*>(mInstance)->read(iFile);
         };

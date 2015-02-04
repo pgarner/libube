@@ -64,8 +64,8 @@ Module* module::create(var iArg)
 }
 
 
-vfile::vfile(const char* iType)
+vfile::vfile(const char* iType, var iArg)
     : module(iType)
 {
-    create();
+    create(iArg);
 }

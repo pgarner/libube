@@ -52,12 +52,14 @@ int main(int argc, char** argv)
     xmlf.write("test-out.xml", xml);
 
     // wav
-    vfile wavf("snd");
+    var sndAttr;
+    sndAttr[lv::nil];
+    vfile wavf("snd", sndAttr);
     var wav = wavf.read("test.wav");
     cout << "Loaded wav file:" << endl;
-    cout << " rate:     " << wav["rate"] << endl;
-    cout << " channels: " << wav["data"].shape(0) << endl;
-    cout << " frames:   " << wav["data"].shape(1) << endl;
+    cout << " rate:     " << sndAttr["rate"] << endl;
+    cout << " channels: " << wav.shape(0) << endl;
+    cout << " frames:   " << wav.shape(1) << endl;
 
     // Done
     return 0;
