@@ -12,7 +12,7 @@
 #include <cstring>
 #include <stdexcept>
 
-// Basically BLAS is cblas.h, but the MKL version mkl.h
+// Basically BLAS is cblas.h, but the MKL version is in mkl.h
 #ifdef HAVE_MKL
 # include <mkl.h>
 #else
@@ -319,15 +319,15 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 
     // Find the common dimension.
     int dim1 = iVar1.dim();
-    int cdim = dim1 - mDim - 1;
+    int cdim = dim1 - mDim;
     if (cdim < 0)
         throw std::runtime_error("var::broadcast: input dimension too small");
 
     // Assume that the common dimension is to be broadcast over.
-    int step1 = iVar1.stride(cdim);
-    int step2 = iVar2.stride(cdim);
-    int stepO =  oVar.stride(cdim);
-    int nOps = iVar1.size() / step1;
+    int step1 = cdim > 0 ? iVar1.stride(cdim-1) : 0;
+    int step2 = cdim > 0 ? iVar2.stride(cdim-1) : 0;
+    int stepO = cdim > 0 ?  oVar.stride(cdim-1) : 0;
+    int nOps = cdim > 0 ? iVar1.size() / step1 : 1;
     for (int i=0; i<nOps; i++)
         vector(iVar1, step1*i, iVar2, step2*i, oVar, stepO*i);
 }
