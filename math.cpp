@@ -71,6 +71,50 @@ ind type(var iVar)
 
 
 /**
+ * Allocator where the output is the same shape but always real
+ */
+static var absAlloc(var iVar)
+{
+    // The idea is to copy iVar, but change the type to the real version.
+    var r;
+    var s = iVar.shape();
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+    case TYPE_CFLOAT:
+        r = view(s, 0.0f);
+        break;
+    case TYPE_DOUBLE:
+    case TYPE_CDOUBLE:
+        r = view(s, 0.0);
+        break;
+    }
+    return r;
+}
+
+
+/**
+ * Allocator where the output retains the type but is scalar
+ */
+static var scalarAlloc(var iVar)
+{
+    var r;
+    if (iVar.dim() > 1)
+    {
+        // Allocate an output array
+        var s = iVar.shape();
+        s[s.size()-1] = 1;
+        r = view(s, iVar.at(0));
+    }
+    else
+    {
+        r = iVar.at(0);
+    }
+    return r;
+}
+
+
+/**
  * The default allocator is simply to make a copy of the input variable with
  * the same type and shape.  Only the allocation is done; data is not copied.
  */
@@ -415,21 +459,7 @@ void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 
 var Abs::alloc(var iVar) const
 {
-    // This probably ought to be a helper function.  The idea is to copy iVar,
-    // but change the type to the real version.
-    var r;
-    var s = iVar.shape();
-    switch (iVar.atype())
-    {
-    case TYPE_FLOAT:
-    case TYPE_CFLOAT:
-        r = view(s, 0.0f);
-        break;
-    case TYPE_DOUBLE:
-    case TYPE_CDOUBLE:
-        r = view(s, 0.0);
-        break;
-    }
+    var r = absAlloc(iVar);
     return r;
 }
 
@@ -463,21 +493,7 @@ void Abs::scalar(const var& iVar, var& oVar) const
 
 var Norm::alloc(var iVar) const
 {
-    // This probably ought to be a helper function.  The idea is to copy iVar,
-    // but change the type to the real version.
-    var r;
-    var s = iVar.shape();
-    switch (iVar.atype())
-    {
-    case TYPE_FLOAT:
-    case TYPE_CFLOAT:
-        r = view(s, 0.0f);
-        break;
-    case TYPE_DOUBLE:
-    case TYPE_CDOUBLE:
-        r = view(s, 0.0);
-        break;
-    }
+    var r = absAlloc(iVar);
     return r;
 }
 
@@ -849,18 +865,7 @@ void Mul::vector(
 
 var Dot::alloc(var iVar) const
 {
-    var r;
-    if (iVar.dim() > 1)
-    {
-        // Allocate an output array
-        var s = iVar.shape();
-        s[s.size()-1] = 1;
-        r = view(s, iVar.at(0));
-    }
-    else
-    {
-        r = iVar.at(0);
-    }
+    var r = scalarAlloc(iVar);
     return r;
 }
 
@@ -1031,46 +1036,7 @@ void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 
 var Sum::alloc(var iVar) const
 {
-    var r;
-    if (iVar.dim() > 1)
-    {
-        // Allocate an output array
-        var s = iVar.shape();
-        s[s.size()-1] = 1;
-        switch (iVar.atype())
-        {
-        case TYPE_FLOAT:
-            r = view(s, 0.0f);
-            break;
-        case TYPE_DOUBLE:
-            r = view(s, 0.0);
-            break;
-        case TYPE_CFLOAT:
-            r = view(s, cfloat(0.0f, 0.0f));
-            break;
-        case TYPE_CDOUBLE:
-            r = view(s, cdouble(0.0, 0.0));
-            break;
-        }
-    }
-    else
-    {
-        switch (iVar.atype())
-        {
-        case TYPE_FLOAT:
-            r = 0.0f;
-            break;
-        case TYPE_DOUBLE:
-            r = 0.0;
-            break;
-        case TYPE_CFLOAT:
-            r = cfloat(0.0f, 0.0f);
-            break;
-        case TYPE_CDOUBLE:
-            r = cdouble(0.0, 0.0);
-            break;
-        }
-    }
+    var r = scalarAlloc(iVar);
     return r;
 }
 
