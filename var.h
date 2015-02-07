@@ -471,7 +471,7 @@ namespace libvar
         var operator [](var iVar);
         var operator ()(int iFirst, ...) const;
         explicit operator bool() const { return defined(); };
-        var operator ,(var iVar) { return push(iVar); };
+        var operator ,(var iVar) { return append(iVar); };
 
         // Methods
         var& dereference();

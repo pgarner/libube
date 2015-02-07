@@ -319,6 +319,17 @@ int main(int argc, char** argv)
     nilPair[lv::nil] = 4;
     cout << "Nil pair: " << nilPair << endl;
 
+    // UTF-8
+    var utf;
+    utf["jp"] = "日本語です";
+    utf["fr"] = "C'est Français";
+    cout << utf << endl;
+
+    // Concat string
+    var concat;
+    concat = "one", " ", "two";
+    cout << concat << endl;
+
     // Phil, leave this at the end!
     return 0;
 }
