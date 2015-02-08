@@ -545,17 +545,12 @@ namespace libvar
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
         var join(const char* iStr) const;
-        var& sprintf(const char* iFormat, ...);
         var search(var iRE);
         var match(var iRE);
         var replace(var iRE, var iStr);
         var toupper() { return libvar::toupper(*this, *this); };
         var tolower() { return libvar::tolower(*this, *this); };
         var strip() { return libvar::strip(*this, *this); };
-
-        // Files
-        var& read(const char* iFile, const char* iType);
-        var& write(const char* iFile, const char* iType);
 
         // Tensors
         bool view() const;
@@ -688,7 +683,7 @@ namespace libvar
     class module
     {
     public:
-        module(const char* iType);
+        module(var iType);
         virtual ~module();
         Module* create(var iArg=nil);
     protected:
@@ -707,8 +702,8 @@ namespace libvar
     {
     public:
         virtual ~varfile() {};
-        virtual var read(const char* iFile) = 0;
-        virtual void write(const char* iFile, var iVar) = 0;
+        virtual var read(var iFile) = 0;
+        virtual void write(var iFile, var iVar) = 0;
     };
 
 
@@ -718,11 +713,11 @@ namespace libvar
     class vfile : public module
     {
     public:
-        vfile(const char* iType="txt", var iArg = nil);
-        var read(const char* iFile) {
+        vfile(var iType = "txt", var iArg = nil);
+        var read(var iFile) {
             return dynamic_cast<varfile*>(mInstance)->read(iFile);
         };
-        void write(const char* iFile, var iVar) {
+        void write(var iFile, var iVar) {
             return dynamic_cast<varfile*>(mInstance)->write(iFile, iVar);
         };
     };

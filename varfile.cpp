@@ -17,7 +17,7 @@
 using namespace libvar;
 
 
-module::module(const char* iType)
+module::module(var iType)
 {
     // Initialise
     mHandle = 0;
@@ -26,7 +26,7 @@ module::module(const char* iType)
 
     // Open the library
     vstream lib;
-    lib << "lib" << iType << ".so";
+    lib << "lib" << iType.str() << ".so";
     mHandle = dlopen(lib.str(), RTLD_LAZY);
     if ((error = dlerror()) != NULL)
         throw std::runtime_error(error);
@@ -64,7 +64,7 @@ Module* module::create(var iArg)
 }
 
 
-vfile::vfile(const char* iType, var iArg)
+vfile::vfile(var iType, var iArg)
     : module(iType)
 {
     create(iArg);

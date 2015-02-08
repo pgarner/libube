@@ -16,8 +16,8 @@ namespace libvar
     class inifile : public varfile
     {
     public:
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
+        virtual var read(var iFile);
+        virtual void write(var iFile, var iVar);
     };
 
     void factory(Module** oModule, var iArg)
@@ -30,9 +30,9 @@ namespace libvar
 using namespace libvar;
 
 
-var inifile::read(const char* iFile)
+var inifile::read(var iFile)
 {
-    std::ifstream is(iFile, std::ifstream::in);
+    std::ifstream is(iFile.str(), std::ifstream::in);
     if (is.fail())
         throw std::runtime_error("inifile::read(): Open failed");
 
@@ -71,9 +71,9 @@ var inifile::read(const char* iFile)
     return oVar;
 }
 
-void inifile::write(const char* iFile, var iVar)
+void inifile::write(var iFile, var iVar)
 {
-    std::ofstream os(iFile, std::ofstream::out);
+    std::ofstream os(iFile.str(), std::ofstream::out);
     if (os.fail())
         throw std::runtime_error("inifile::write(): Open failed");
     for (int i=0; i<iVar.size(); i++)

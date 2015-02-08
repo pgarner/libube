@@ -114,10 +114,6 @@ int main(int argc, char** argv)
     a.append("aaa");
     cout << "a is: " << a << endl;
 
-    // String sprintf
-    var str;
-    cout << "sprintf: " << str.sprintf("This string is %d %f", 1, 0.1) << endl;
-
     // Shifting of command line
     arg.insert("insert", 1);
     cout << "arg is: " << arg << endl;

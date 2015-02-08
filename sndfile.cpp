@@ -16,8 +16,8 @@ namespace libvar
     {
     public:
         sndfile(var iAttr) { mAttr = iAttr; };
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
+        virtual var read(var iFile);
+        virtual void write(var iFile, var iVar);
     private:
         var mAttr;
     };
@@ -37,12 +37,12 @@ using namespace libvar;
  * http://www.mega-nerd.com/libsndfile/api.html
  */
 
-var sndfile::read(const char* iFile)
+var sndfile::read(var iFile)
 {
     // Open the file
     SF_INFO sfInfo;
     sfInfo.format = 0;
-    SNDFILE* snd = sf_open(iFile, SFM_READ, &sfInfo);
+    SNDFILE* snd = sf_open(iFile.str(), SFM_READ, &sfInfo);
     if (!snd)
         throw vruntime_error("sndfile::read: Failed to open file");
 
@@ -63,14 +63,14 @@ var sndfile::read(const char* iFile)
     return data;
 }
 
-void sndfile::write(const char* iFile, var iVar)
+void sndfile::write(var iFile, var iVar)
 {
     // Open the file
     SF_INFO sfInfo;
     sfInfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16 | SF_ENDIAN_FILE;
     sfInfo.samplerate = mAttr["rate"].get<int>();
     sfInfo.channels = iVar.dim() > 1 ? iVar.shape(0) : 1;
-    SNDFILE* snd = sf_open(iFile, SFM_WRITE, &sfInfo);
+    SNDFILE* snd = sf_open(iFile.str(), SFM_WRITE, &sfInfo);
     if (!snd)
         throw vruntime_error("sndfile::write: Failed to open file");
 

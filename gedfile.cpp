@@ -20,9 +20,9 @@ namespace libvar
     {
     public:
         GEDCOM();
-        var loadFile(const char* iFileName);
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
+        var loadFile(var iFileName);
+        virtual var read(var iFile);
+        virtual void write(var iFile, var iVar);
 
     private:
         var individual();
@@ -167,9 +167,9 @@ int GEDCOM::readLine()
     return level;
 }
 
-var GEDCOM::loadFile(const char* iFileName)
+var GEDCOM::loadFile(var iFileName)
 {
-    mInStream.open(iFileName);
+    mInStream.open(iFileName.str());
     if (mInStream.fail())
         std::cout << "Open failed" << std::endl;
     doFile(readLine());
@@ -429,12 +429,12 @@ int GEDCOM::doContinue(int iLevel, var iToken)
 }
 
 
-var GEDCOM::read(const char* iFile)
+var GEDCOM::read(var iFile)
 {
     return loadFile(iFile);
 }
 
 
-void GEDCOM::write(const char* iFile, var iVar)
+void GEDCOM::write(var iFile, var iVar)
 {
 }

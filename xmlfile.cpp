@@ -22,8 +22,8 @@ namespace libvar
     class XMLFile : public varfile
     {
     public:
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
+        virtual var read(var iFile);
+        virtual void write(var iFile, var iVar);
     };
 
 
@@ -68,18 +68,18 @@ namespace libvar
 using namespace libvar;
 
 
-var XMLFile::read(const char* iFile)
+var XMLFile::read(var iFile)
 {
     // Instantiate an expat class and use it to parse the file
     Expat expat;
-    return expat.parse(iFile);
+    return expat.parse(iFile.str());
 }
 
-void XMLFile::write(const char* iFile, var iVar)
+void XMLFile::write(var iFile, var iVar)
 {
     // Instantiate an XML writer and write the file
     XMLWriter writer;
-    writer.write(iFile, iVar);
+    writer.write(iFile.str(), iVar);
 }
 
 

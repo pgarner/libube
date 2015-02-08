@@ -20,8 +20,8 @@ namespace libvar
         gnuplot();
         ~gnuplot();
         void puts(const char* iStr);
-        virtual var read(const char* iFile);
-        virtual void write(const char* iFile, var iVar);
+        virtual var read(var iFile);
+        virtual void write(var iFile, var iVar);
     private:
         FILE* mStream;
     };
@@ -59,14 +59,14 @@ void gnuplot::puts(const char* iStr)
 }
 
 
-var gnuplot::read(const char* iFile)
+var gnuplot::read(var iFile)
 {
     throw std::runtime_error("gnuplot::read() Read not defined");
     return var();
 }
 
 
-void gnuplot::write(const char* iFile, var iVar)
+void gnuplot::write(var iFile, var iVar)
 {
     var line;
     if (iFile)
@@ -74,8 +74,9 @@ void gnuplot::write(const char* iFile, var iVar)
         // Default to whatever gnuplot's default is, but if a file is supplied
         // then write eps to it.
         puts("set term post eps");
-        line.sprintf("set output \"%s\"", iFile);
-        puts(line.str());
+        vstream vs;
+        vs << "set output " << iFile;
+        puts(vs.str());
     }
 
     // Loop over the input var assuming it's an array of vars
