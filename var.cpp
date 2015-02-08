@@ -378,27 +378,10 @@ var::var(cdouble iData) : var()
     attach(new varheap(1, &iData));
 }
 
-var::var(int iSize, const char* iData) : var()
-{
-    assert(iSize >= 0);
-    VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
-    attach(new varheap(iSize, iData));
-}
-
-var::var(const char* iData)
-    : var(std::strlen(iData), iData)
+var::var(const char* iData) : var(std::strlen(iData), iData)
 {
     // It's all in the init
 }
-
-var::var(int iSize, const char* const* iData) : var()
-{
-    assert(iSize >= 0);
-    VDEBUG(std::cout << "Ctor(char**): " << iData[0] << std::endl);
-    for (int i=0; i<iSize; i++)
-        push(iData[i]);
-}
-
 
 var::var(const char* const* iData) : var()
 {
@@ -408,6 +391,20 @@ var::var(const char* const* iData) : var()
         push(iData[i]);
 }
 
+var::var(int iSize, const char* iData) : var()
+{
+    assert(iSize >= 0);
+    VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
+    attach(new varheap(iSize, iData));
+}
+
+var::var(int iSize, const char* const* iData) : var()
+{
+    assert(iSize >= 0);
+    VDEBUG(std::cout << "Ctor(char**): " << iData[0] << std::endl);
+    for (int i=0; i<iSize; i++)
+        push(iData[i]);
+}
 
 var::var(int iSize, const int* iData) : var()
 {
@@ -425,6 +422,13 @@ var::var(int iSize, var iVar) : var()
     resize(iSize);
     for (int i=1; i<iSize; i++)
         at(i) = iVar;
+}
+
+
+var::var(const std::initializer_list<var> iList) : var()
+{
+    for (const var* it=begin(iList); it!=end(iList); ++it)
+        push(*it);
 }
 
 

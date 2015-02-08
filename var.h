@@ -462,11 +462,12 @@ namespace libvar
         var(cfloat iData);
         var(cdouble iData);
         var(const char* iData);
+        var(const char* const* iData);
         var(int iSize, const char* iData);
         var(int iSize, const char* const* iData);
-        var(const char* const* iData);
         var(int iSize, const int* iData);
         var(int iSize, var iVar);
+        var(const std::initializer_list<var> iList);
 
         // Data accessor
         template<class T> T get() const;

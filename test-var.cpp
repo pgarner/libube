@@ -326,6 +326,10 @@ int main(int argc, char** argv)
     concat = "one", " ", "two";
     cout << concat << endl;
 
+    // Initialiser list
+    var init({strs, mix});
+    cout << "init: " << init << endl;
+
     // Phil, leave this at the end!
     return 0;
 }
