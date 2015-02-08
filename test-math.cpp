@@ -2,7 +2,7 @@
 
 using namespace std;
 
-// A test functor
+// A test unary functor
 class Unary : public lv::UnaryFunctor
 {
 public:
@@ -19,6 +19,25 @@ void Unary::vector(var iVar, var& oVar) const
     cout << "Unary: O: " << oVar.shape() << " " << oVar << endl;
 }
 
+
+// A test N-ary functor
+class Nary : public lv::NaryFunctor
+{
+public:
+    Nary() { mDim = 1; };
+protected:
+    void vector(var iVar, var& oVar) const;
+};
+
+void Nary::vector(var iVar, var& oVar) const
+{
+    for (int i=0; i<iVar[0].size(); i++)
+        oVar[i] = iVar[0][iVar.size()-1-i];
+    cout << "Nary[0]: " << iVar[0].shape() << " " << iVar[0] << endl;
+    cout << "Nary[1]: " << iVar[1].shape() << " " << iVar[1] << endl;
+    cout << "Nary[2]: " << iVar[2].shape() << " " << iVar[2] << endl;
+    cout << "Nary: O: " << oVar.shape() << " " << oVar << endl;
+}
 
 int main(int argc, char** argv)
 {
@@ -110,6 +129,29 @@ int main(int argc, char** argv)
     // Functor view broadcast
     Unary u;
     cout << u(r6) << endl;
+
+    // N-ary functor
+    var v1, v2, v3;
+    v1 =
+        0.0, 1.2, 1.4,
+        1.0, 1.2, 1.4,
+        2.0, 1.2, 1.4,
+        3.0, 1.2, 1.4;
+    v1 = v1.view({4,3});
+    v2 =
+        0.0, 2.2,
+        1.0, 2.2,
+        2.0, 2.2,
+        3.0, 2.2;
+    v2 = v2.view({4,2});
+    v3 = 1.0, 2.2, 3.3, 4.4;
+    Nary nary;
+    var vN;
+    vN.push(v1);
+    vN.push(v2);
+    vN.push(v3);
+    cout << "vN: " << vN << endl;
+    nary(vN);
 
     // Done
     return 0;

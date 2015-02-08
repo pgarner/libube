@@ -127,6 +127,118 @@ var Functor::alloc(var iVar) const
 
 
 /**
+ * The allocator for a N-ary functor
+ */
+var NaryFunctor::alloc(var iVar) const
+{
+    var r;
+    if (iVar)
+        r = iVar[0].copy(true);
+    else
+        throw std::runtime_error("NaryFunctor::alloc: must override alloc()");
+    return r;
+}
+
+
+/**
+ * The normal operation of operator() is to allocate space then call the
+ * protected method scalar().  Notice that it can't allocate space without
+ * other information, so the default alloc() will throw.
+ */
+var NaryFunctor::operator ()() const
+{
+    var v = alloc(nil);
+    scalar(nil, v);
+    return v;
+}
+
+
+/**
+ * The normal operation of operator(iVar) is to allocate space then call the
+ * protected method scalar().
+ */
+var NaryFunctor::operator ()(const var& iVar) const
+{
+    var v = alloc(iVar);
+    scalar(iVar, v);
+    return v;
+}
+
+
+/**
+ * The normal operation of operator(iVar, oVar) is to just call the protected
+ * method scalar().
+ */
+var NaryFunctor::operator ()(const var& iVar, var& oVar) const
+{
+    scalar(iVar, oVar);
+    return oVar;
+}
+
+
+/**
+ * The default behaviour of scalar(), hence operator(), is to broadcast.
+ */
+void NaryFunctor::scalar(const var& iVar, var& oVar) const
+{
+    broadcast(iVar, oVar);
+}
+
+
+/**
+ * The default vector() throws, meaning that it should have been overridden or
+ * implemented by scalar() or vector() with offsets.
+ */
+void NaryFunctor::vector(var iVar, var& oVar) const
+{
+    throw std::runtime_error("UnaryFunctor: not a vector operation");
+}
+
+
+/**
+ * Nary broadcaster
+ *
+ * Broadcasts the operation over the common dimension of each var in the array
+ * iVar.
+ */
+void NaryFunctor::broadcast(var iVar, var& oVar) const
+{
+    // Check that the arrays are broadcastable
+    for (int i=1; i<iVar.size(); i++)
+        if (iVar[0].atype() != iVar[i].atype())
+            throw std::runtime_error(
+                "var::broadcast: types must match (for now)"
+            );
+
+    // Find the common dimension.
+    int dimO = oVar.dim();
+    int cdim = dimO - mDim;
+    if (cdim < 0)
+        throw std::runtime_error("var::broadcast: input dimension too small");
+
+    // Assume that the common dimension is to be broadcast over.
+    int stepO = cdim > 0 ?  oVar.stride(cdim-1) : 0;
+    int nOps = cdim > 0 ? oVar.size() / stepO : 1;
+    for (int i=0; i<nOps; i++)
+    {
+        var iv;
+        for (int j=0; j<iVar.size(); j++)
+        {
+            int dim = iVar[j].dim();
+            int step = cdim > 0 ? iVar[j].stride(cdim-1) : 0;
+            if (nOps && (dim == cdim))
+                // Don't take a view of a single value
+                iv.push(iVar[j][i]);
+            else
+                iv.push(iVar[j].subview(dim-cdim, step*i));
+        }
+        var ov = oVar.subview(dimO-cdim, stepO*i);
+        vector(iv, ov);
+    }
+}
+
+
+/**
  * The normal operation of operator(iVar) is to allocate space then call the
  * protected method scalar().
  */

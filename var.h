@@ -89,6 +89,28 @@ namespace libvar
 
 
     /**
+     * N-ary functor
+     *
+     * An N-ary functor has N arguments.  It broadcasts over the common
+     * dimension of each.
+     */
+    class NaryFunctor : public Functor
+    {
+    public:
+        NaryFunctor() { mDim = 0; };
+        var operator ()() const;
+        var operator ()(const var& iVar) const;
+        var operator ()(const var& iVar, var& oVar) const;
+    protected:
+        int mDim;
+        virtual var alloc(var iVar) const;
+        virtual void broadcast(var iVar, var& oVar) const;
+        virtual void scalar(const var& iVar, var& oVar) const;
+        virtual void vector(var iVar, var& oVar) const;
+    };
+
+
+    /**
      * Unary functor
      *
      * A unary functor just acts on itself.

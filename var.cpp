@@ -1303,6 +1303,9 @@ int var::binary(var iData) const
 /* Common parts of the view() initialiser methods */
 void var::setStrides(var& iVar, int iSize, int iOffset)
 {
+    if (iSize < 1)
+        throw std::runtime_error("var::setstrides(): view must have dim > 0");
+
     // The second of each pair is the stride
     int p = 1;
     for (int i=iSize-1; i>=0; i--)
@@ -1418,6 +1421,8 @@ bool var::view() const
  */
 var var::subview(int iDim, ind iOffset)
 {
+    if (iDim < 1)
+        throw std::runtime_error("var::subview(): subview must have dim > 0");
     var is = shape();
     for (int i=dim()-iDim; i>0; --i)
         is.shift();
