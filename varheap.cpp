@@ -124,7 +124,6 @@ varheap::varheap(int iSize, const char* iData) : varheap()
     resize(iSize);
     for (int i=0; i<iSize; i++)
         mData.cp[i] = iData[i];
-    mData.cp[iSize] = 0;
 }
 
 
@@ -284,8 +283,8 @@ void varheap::resize(int iSize)
             else
                 std::memcpy(mData.cp, old.cp, sizeOf(mType)*toCopy);
             dealloc(old);
+            mCapacity = newSize;
         }
-        mCapacity = newSize;
     }
 
     // Put in the null terminator
