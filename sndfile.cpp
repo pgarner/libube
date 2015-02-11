@@ -54,9 +54,7 @@ var sndfile::read(var iFile)
     int nGot = sf_readf_float(snd, data.ptr<float>(), size);
     if (nGot != size)
         throw vruntime_error("sndfile::read: Size fuckup");
-    if (sfInfo.channels == 1)
-        data = data.view({sfInfo.channels, (int)sfInfo.frames});
-    else
+    if (sfInfo.channels != 1)
         // In place transpose for channels > 1
         data = data.view({(int)sfInfo.frames, sfInfo.channels}).transpose();
     sf_close(snd);

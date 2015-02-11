@@ -226,13 +226,12 @@ void NaryFunctor::broadcast(var iVar, var& oVar) const
         {
             int dim = iVar[j].dim();
             int step = cdim > 0 ? iVar[j].stride(cdim-1) : 0;
-            if (nOps && (dim == cdim))
-                // Don't take a view of a single value
-                iv.push(iVar[j][i]);
-            else
-                iv.push(iVar[j].subview(dim-cdim, step*i));
+            // Don't take a view of a single value
+            iv.push(
+                dim == cdim ? iVar[j][i] : iVar[j].subview(dim-cdim, step*i)
+            );
         }
-        var ov = oVar.subview(dimO-cdim, stepO*i);
+        var ov = (dimO == cdim) ? oVar[i] : oVar.subview(dimO-cdim, stepO*i);
         vector(iv, ov);
     }
 }
@@ -395,9 +394,12 @@ void ArithmeticFunctor::vector(
     int dim2 = iVar2.dim();
     int dimO =  oVar.dim();
     int cdim = dim1 - mDim;
-    var iv1 = iVar1.subview(dim1-cdim, iOffset1);
-    var iv2 = iVar2.subview(dim2-cdim, iOffset2);
-    var ov  =  oVar.subview(dimO-cdim, iOffsetO);
+    var iv1 =
+        (dim1 == cdim) ? iVar1[iOffset1] : iVar1.subview(dim1-cdim, iOffset1);
+    var iv2 =
+        (dim2 == cdim) ? iVar2[iOffset2] : iVar2.subview(dim2-cdim, iOffset2);
+    var ov =
+        (dimO == cdim) ?  oVar[iOffsetO] :  oVar.subview(dimO-cdim, iOffsetO);
     vector(iv1, iv2, ov);
 }
 
