@@ -52,6 +52,7 @@ int main(int argc, char** argv)
     t1(1,2) = 2.3f;
     t1 += 1;
     cout << "t1: " << t1 << endl;
+    cout << "t1*0.5: " << t1 * 0.5 << endl;
     t1 *= 1.5;
     cout << "t1: " << t1 << endl;
     t1 += t1;

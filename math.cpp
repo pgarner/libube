@@ -855,24 +855,55 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar1.size();
-    switch(iVar1.atype())
+    if (oVar.is(iVar1))
     {
-    case TYPE_FLOAT:
-    {
-        float alpha = iVar2.cast<float>();
-        float* x = iVar1.ptr<float>(iOffset);
-        cblas_sscal(size, alpha, x, 1);
-        break;
+        // Scale in place
+        switch(iVar1.atype())
+        {
+        case TYPE_FLOAT:
+        {
+            float alpha = iVar2.cast<float>();
+            float* x = iVar1.ptr<float>(iOffset);
+            cblas_sscal(size, alpha, x, 1);
+            break;
+        }
+        case TYPE_DOUBLE:
+        {
+            double alpha = iVar2.cast<double>();
+            double* x = iVar1.ptr<double>(iOffset);
+            cblas_dscal(size, alpha, x, 1);
+            break;
+        }
+        default:
+            throw std::runtime_error("Mul::scal: Unknown type");
+        }
     }
-    case TYPE_DOUBLE:
+    else
     {
-        double alpha = iVar2.cast<double>();
-        double* x = iVar1.ptr<double>(iOffset);
-        cblas_dscal(size, alpha, x, 1);
-        break;
-    }
-    default:
-        throw std::runtime_error("Mul::scal: Unknown type");
+        // Copy data before scaling
+        switch(iVar1.atype())
+        {
+        case TYPE_FLOAT:
+        {
+            float alpha = iVar2.cast<float>();
+            float* x = iVar1.ptr<float>(iOffset);
+            float* y =  oVar.ptr<float>(iOffset);
+            cblas_scopy(size, x, 1, y, 1);
+            cblas_sscal(size, alpha, y, 1);
+            break;
+        }
+        case TYPE_DOUBLE:
+        {
+            double alpha = iVar2.cast<double>();
+            double* x = iVar1.ptr<double>(iOffset);
+            double* y =  oVar.ptr<double>(iOffset);
+            cblas_dcopy(size, x, 1, y, 1);
+            cblas_dscal(size, alpha, y, 1);
+            break;
+        }
+        default:
+            throw std::runtime_error("Mul::scal: Unknown type");
+        }
     }
 }
 
