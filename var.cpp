@@ -1143,8 +1143,10 @@ var var::shift()
 var& var::unshift(var iVar)
 {
     if (!defined())
+    {
         *this = iVar;
-    return *this;
+        return *this;
+    }
 
     if (!heap())
         array();
