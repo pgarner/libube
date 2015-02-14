@@ -517,9 +517,9 @@ namespace libvar
         var& push(var iVar);
         var& insert(var iVar, int iIndex=0);
         var remove(int iIndex);
-        var& unshift(var iVar) { return insert(iVar); };
+        var& unshift(var iVar);
         var& append(var iVar) { return insert(iVar, size()); };
-        var shift() { return remove(0); };
+        var shift();
         var sort() const;
         ind index(var iVar) const;
         var& clear();

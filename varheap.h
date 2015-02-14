@@ -72,6 +72,8 @@ namespace libvar
         void setView(varheap* iVarHeap);
         bool view() const { return mView; };
         bool copyable(varheap* iHeap);
+        var shift();
+        void unshift(var iVar);
 
     private:
     

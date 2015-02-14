@@ -210,7 +210,13 @@ var::~var()
     VDEBUG(std::cout << "Dtor: ");
     VDEBUG(std::cout << typeOf(mType) << "[" << size() << "]");
     VDEBUG(std::cout << std::endl);
-    detach();
+    if (detach() == 0)
+    {
+        // Some functions, notably shift and unshift, call placement delete.
+        // So, the d'tor needs to be robust to multiple calls.
+        mData.hp = 0;
+        mType = TYPE_ARRAY;
+    }
 }
 
 
@@ -1122,6 +1128,28 @@ var var::remove(int iIndex)
         at(i-1) = at(i);
     resize(size()-1);
     return r;
+}
+
+
+var var::shift()
+{
+    if (heap())
+        return heap()->shift();
+    else
+        return *this;
+}
+
+
+var& var::unshift(var iVar)
+{
+    if (!defined())
+        *this = iVar;
+    return *this;
+
+    if (!heap())
+        array();
+    heap()->unshift(iVar);
+    return *this;
 }
 
 

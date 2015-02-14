@@ -640,3 +640,116 @@ void varheap::setView(varheap* iVarHeap)
     mView = iVarHeap->mView ? iVarHeap->mView : iVarHeap;
     mView->attach();
 }
+
+
+/**
+ * Shift the array contents down (backwards), returning the lowest indexed
+ * element that would have fallen off the bottom (front).
+ */
+var varheap::shift()
+{
+    // Move syntax is memmove(dest, src, n)
+    //
+    // var and pair use placement delete on the overwritten element (to delete
+    // it) and placement new on the exposed one (to reset it, rather than
+    // actually construct a new one).
+    var r;
+    switch (mType)
+    {
+    case TYPE_CHAR:
+        r = mData.cp[0];
+        memmove(mData.cp, mData.cp+1, (mSize-1)*sizeof(char));
+        break;
+    case TYPE_INT:
+        r = mData.ip[0];
+        memmove(mData.ip, mData.ip+1, (mSize-1)*sizeof(int));
+        break;
+    case TYPE_LONG:
+        r = mData.lp[0];
+        memmove(mData.lp, mData.lp+1, (mSize-1)*sizeof(long));
+        break;
+    case TYPE_FLOAT:
+        r = mData.fp[0];
+        memmove(mData.fp, mData.fp+1, (mSize-1)*sizeof(float));
+        break;
+    case TYPE_DOUBLE:
+        r = mData.dp[0];
+        memmove(mData.dp, mData.dp+1, (mSize-1)*sizeof(double));
+        break;
+    case TYPE_CFLOAT:
+        r = mData.cfp[0];
+        memmove(mData.cfp, mData.cfp+1, (mSize-1)*sizeof(cfloat));
+        break;
+    case TYPE_CDOUBLE:
+        r = mData.cdp[0];
+        memmove(mData.cdp, mData.cdp+1, (mSize-1)*sizeof(cdouble));
+        break;
+    case TYPE_VAR:
+        r = mData.vp[0];
+        mData.vp[0].~var();
+        memmove(mData.vp, mData.vp+1, (mSize-1)*sizeof(var));
+        new (&mData.vp[mSize-1]) var();
+        break;
+    case TYPE_PAIR:
+        r = mData.pp[0].val;
+        mData.pp[0].~pair();
+        memmove(mData.pp, mData.pp+1, (mSize-1)*sizeof(pair));
+        new (&mData.pp[mSize-1]) pair();
+        break;
+    default:
+        throw std::runtime_error("varheap::shift(): Unknown type");
+    }
+    resize(mSize-1);
+
+    // Done
+    return r;
+}
+
+
+/**
+ * Shift the array contents up (forwards).
+ */
+void varheap::unshift(var iVar)
+{
+    resize(mSize+1);
+    switch (mType)
+    {
+    case TYPE_CHAR:
+        memmove(mData.cp+1, mData.cp, (mSize-1)*sizeof(char));
+        mData.cp[0] = iVar.get<char>();
+        break;
+    case TYPE_INT:
+        memmove(mData.ip+1, mData.ip, (mSize-1)*sizeof(int));
+        mData.ip[0] = iVar.get<int>();
+        break;
+    case TYPE_LONG:
+        memmove(mData.lp+1, mData.lp, (mSize-1)*sizeof(long));
+        mData.lp[0] = iVar.get<long>();
+        break;
+    case TYPE_FLOAT:
+        memmove(mData.fp+1, mData.fp, (mSize-1)*sizeof(float));
+        mData.fp[0] = iVar.get<float>();
+        break;
+    case TYPE_DOUBLE:
+        memmove(mData.dp+1, mData.dp, (mSize-1)*sizeof(double));
+        mData.dp[0] = iVar.get<double>();
+        break;
+    case TYPE_CFLOAT:
+        memmove(mData.cfp+1, mData.cfp, (mSize-1)*sizeof(cfloat));
+        mData.cfp[0] = iVar.get<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        memmove(mData.cdp+1, mData.cdp, (mSize-1)*sizeof(cdouble));
+        mData.cdp[0] = iVar.get<cdouble>();
+        break;
+    case TYPE_VAR:
+        memmove(mData.vp+1, mData.vp, (mSize-1)*sizeof(var));
+        new (&mData.vp[0]) var();
+        mData.vp[0] = iVar;
+        break;
+    case TYPE_PAIR:
+        throw std::runtime_error("varheap::unshift(): Can't unshift a pair");
+    default:
+        throw std::runtime_error("varheap::unshift(): Unknown type");
+    }
+}
