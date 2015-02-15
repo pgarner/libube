@@ -65,21 +65,12 @@ template<> cdouble& var::data<cdouble>() {
 };
 
 
-/*
- * Value data accessor
- *
- * These return by value, so there can be no attempt to write to the result.
- * This means they can just dereference.
- */
-template<class T> T var::get() const {
-    var v(*this); return v.data<T>();
-}
-
-
 /**
  * Pointer data accessor
  *
- * We may wish to write to the resulting pointer; this means we can't
+ * get() returns by value, so there can be no attempt to write to the result.
+ * This means they can just dereference.  By contrast, in the case of pointers,
+ * we may wish to write to the resulting pointer; this means we can't
  * dereference as the resulting var will be a different copy.
  *
  * The pointer methods are rather basic in that they do not do any type or
@@ -97,7 +88,8 @@ template<class T> T* var::ptr(ind iIndex)
     return heap() ? heap()->ptr<T>(iIndex) : &data<T>();
 }
 
-// Dummies to cause the above template to get instantiated
+// Dummies to cause the above template to get instantiated.  There is probably
+// a better way than this.
 char* ptr_c(var v) { return v.ptr<char>(); };
 int* ptr_i(var v) { return v.ptr<int>(); };
 long* ptr_l(var v) { return v.ptr<long>(); };

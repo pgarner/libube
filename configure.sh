@@ -41,6 +41,6 @@ fi
 export USE_STATIC=0
 
 cmake \
-    -D CMAKE_BUILD_TYPE=debug \
+    -D CMAKE_BUILD_TYPE=minsizerel \
     -D CMAKE_INSTALL_PREFIX=~/local \
     .
