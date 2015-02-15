@@ -651,7 +651,9 @@ namespace libvar
         virtual const char* what() const noexcept;
     private:
         var mVar;
-        char* mStr;
+        const char* mStr;
+        int mNCalls;
+        void* mCallStack[64];
     };
 
 

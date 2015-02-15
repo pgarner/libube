@@ -204,6 +204,10 @@ add_test(
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-path.cmake
   )
 
+# A test file specifically for exceptions
+add_executable(throw throw.cpp)
+target_link_libraries(throw shared-lib)
+
 # Normal install path for the library
 install(
   TARGETS ${LIBVAR_TARGETS}

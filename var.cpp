@@ -11,6 +11,8 @@
 #include <cstring>
 #include <cstdarg>
 #include <stdexcept>
+#include <execinfo.h>
+#include <unistd.h>
 
 #include "var.h"
 #include "varheap.h"
@@ -1601,11 +1603,13 @@ vruntime_error::vruntime_error(var iVar)
     vstream vs;
     vs << iVar;
     mVar = var(vs);
-    mStr = mVar.ptr<char>();
+    mStr = mVar.str();
+    mNCalls = backtrace(mCallStack, 64);
 }
 
 const char* vruntime_error::what() const noexcept
 {
+    backtrace_symbols_fd(mCallStack, mNCalls, STDERR_FILENO);
     return mStr;
 }
 
