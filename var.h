@@ -650,10 +650,9 @@ namespace libvar
         vruntime_error(var iVar);
         virtual const char* what() const noexcept;
     private:
+        void backTrace(std::iostream& iStream);
         var mVar;
         const char* mStr;
-        int mNCalls;
-        void* mCallStack[64];
     };
 
 

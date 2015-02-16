@@ -12,7 +12,7 @@
 #include <cstdarg>
 #include <stdexcept>
 #include <execinfo.h>
-#include <unistd.h>
+#include <cxxabi.h>
 
 #include "var.h"
 #include "varheap.h"
@@ -1596,20 +1596,53 @@ vstream::vstream(class var iVar)
  * One thing wrong here is that what() should do the formatting, not the
  * constructor.  That is because memory is more likely to have been cleared by
  * the time what() gets executed.  It's this way because what() is const, and
- * "operator&" and all the things returning strings aren't.
+ * str() and all the things returning strings aren't.
  */
 vruntime_error::vruntime_error(var iVar)
 {
     vstream vs;
     vs << iVar;
+    backTrace(vs);
     mVar = var(vs);
     mStr = mVar.str();
-    mNCalls = backtrace(mCallStack, 64);
+}
+
+/**
+ * Implements a Linux/MacOS backtrace.  In general, this should end up being
+ * printed via what() by the terminate handler, and that puts a newline at the
+ * end, so this doesn't.  Notice it allocates memory, so not suitable for an
+ * out of memory exception.
+ */
+void vruntime_error::backTrace(std::iostream& iStream)
+{
+    // Backtrace of more than a screenfull is probably not useful
+    const int cBTSize = 64;
+    int nCalls;
+    void* callStack[cBTSize];
+
+    // Get a backtrace and convert to (mangled) symbols
+    nCalls = backtrace(callStack, cBTSize);
+    char** symbol = backtrace_symbols(callStack, nCalls);
+    int status;
+    size_t length = 64;
+    char* buffer = (char*)malloc(length);
+    iStream << "\nCall stack:";
+    for (int i=0; i<nCalls; i++)
+    {
+        // Demangle between open bracket and plus symbols
+        char* brac = strchr(symbol[i], '(');
+        char* plus = strchr(symbol[i], '+');
+        *plus = '\0';
+        char* str = abi::__cxa_demangle(brac+1, buffer, &length, &status);
+        if (status == 0)
+            iStream << "\n  " << str;
+    }
+    free(buffer);
+    free(symbol);
 }
 
 const char* vruntime_error::what() const noexcept
 {
-    backtrace_symbols_fd(mCallStack, mNCalls, STDERR_FILENO);
     return mStr;
 }
 
