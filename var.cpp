@@ -1617,16 +1617,20 @@ void vruntime_error::backTrace(std::iostream& iStream)
 {
     // Backtrace of more than a screenfull is probably not useful
     const int cBTSize = 64;
-    int nCalls;
     void* callStack[cBTSize];
 
     // Get a backtrace and convert to (mangled) symbols
-    nCalls = backtrace(callStack, cBTSize);
+    int nCalls = backtrace(callStack, cBTSize);
     char** symbol = backtrace_symbols(callStack, nCalls);
+    if (!symbol)
+    {
+        iStream << "\n  backtrace_symbols() failed";
+        return;
+    }
     int status;
     size_t length = 64;
     char* buffer = (char*)malloc(length);
-    iStream << "\nCall stack:";
+    iStream << "\nCall stack (size " << nCalls << "):";
     for (int i=0; i<nCalls; i++)
     {
         // Demangle between open bracket and plus symbols
@@ -1634,8 +1638,21 @@ void vruntime_error::backTrace(std::iostream& iStream)
         char* plus = strchr(symbol[i], '+');
         *plus = '\0';
         char* str = abi::__cxa_demangle(brac+1, buffer, &length, &status);
-        if (status == 0)
+        switch (status)
+        {
+        case 0:
             iStream << "\n  " << str;
+            break;
+        case -1:
+            iStream << "\n  Memory fuckup";
+            break;
+        case -2:
+            iStream << "\n  " << brac+1;
+            break;
+        case -3:
+            iStream << "\n  Invalid";
+            break;
+        }
     }
     free(buffer);
     free(symbol);
