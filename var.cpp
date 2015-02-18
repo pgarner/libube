@@ -1633,24 +1633,35 @@ void vruntime_error::backTrace(std::iostream& iStream)
     iStream << "\nCall stack (size " << nCalls << "):";
     for (int i=0; i<nCalls; i++)
     {
-        // Demangle between open bracket and plus symbols
-        char* brac = strchr(symbol[i], '(');
-        char* plus = strchr(symbol[i], '+');
+        // symbol[i] is of the form:
+        //   file(function+offset)someotherstuff
+        // We want to demangle the function name
+        char* paren1 = strchr(symbol[i], '(');
+        char* paren2 = strchr(symbol[i], ')');
+        *paren1 = '\0';
+        iStream << "\n  " << symbol[i] << ":\n    ";
+        if (paren2 == paren1+1)
+        {
+            // It's an empty name
+            iStream << "(undefined)";
+            return;
+        }
+        char* plus = strchr(paren1+1, '+');
         *plus = '\0';
-        char* str = abi::__cxa_demangle(brac+1, buffer, &length, &status);
+        char* str = abi::__cxa_demangle(paren1+1, buffer, &length, &status);
         switch (status)
         {
         case 0:
-            iStream << "\n  " << str;
+            iStream << str;
             break;
         case -1:
-            iStream << "\n  Memory fuckup";
+            iStream << "Memory fuckup";
             break;
         case -2:
-            iStream << "\n  " << brac+1;
+            iStream << paren1+1;
             break;
         case -3:
-            iStream << "\n  Invalid";
+            iStream << "Invalid";
             break;
         }
     }
