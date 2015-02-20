@@ -34,6 +34,7 @@ namespace libvar
     Sin sin;
     Cos cos;
     Tan tan;
+    ATan atan;
     Floor floor;
     Sqrt sqrt;
     Log log;
@@ -540,6 +541,7 @@ CMATH_UNARY_FUNCTOR(Floor,floor)
 COMPLEX_UNARY_FUNCTOR(Sin,sin)
 COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
+COMPLEX_UNARY_FUNCTOR(ATan,atan)
 COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
 COMPLEX_UNARY_FUNCTOR(Log,log)
 COMPLEX_UNARY_FUNCTOR(Exp,exp)

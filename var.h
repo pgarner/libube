@@ -210,6 +210,7 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Sin)
     BASIC_UNARY_FUNCTOR_DECL(Cos)
     BASIC_UNARY_FUNCTOR_DECL(Tan)
+    BASIC_UNARY_FUNCTOR_DECL(ATan)
     BASIC_UNARY_FUNCTOR_DECL(Floor)
     BASIC_UNARY_FUNCTOR_DECL(Sqrt)
     BASIC_UNARY_FUNCTOR_DECL(Log)
@@ -411,6 +412,7 @@ namespace libvar
     extern Sin sin;
     extern Cos cos;
     extern Tan tan;
+    extern ATan atan;
     extern Floor floor;
     extern Sqrt sqrt;
     extern Log log;
