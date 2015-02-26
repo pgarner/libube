@@ -636,7 +636,7 @@ namespace libvar
     {
     public:
         vstream(var iVar = nil);
-        explicit operator var() const { return var(mVarBuf); };
+        operator var() const { return var(mVarBuf); };
         const char* str() { return var(mVarBuf).str(); };
     private:
         class varbuf mVarBuf;
@@ -652,7 +652,7 @@ namespace libvar
         vruntime_error(var iVar);
         virtual const char* what() const noexcept;
     private:
-        void backTrace(std::iostream& iStream);
+        void backTrace(std::ostream& iStream);
         var mVar;
         const char* mStr;
     };

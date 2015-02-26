@@ -1613,7 +1613,7 @@ vruntime_error::vruntime_error(var iVar)
  * end, so this doesn't.  Notice it allocates memory, so not suitable for an
  * out of memory exception.
  */
-void vruntime_error::backTrace(std::iostream& iStream)
+void vruntime_error::backTrace(std::ostream& iStream)
 {
     // Backtrace of more than a screenfull is probably not useful
     const int cBTSize = 64;
@@ -1628,7 +1628,8 @@ void vruntime_error::backTrace(std::iostream& iStream)
         return;
     }
     int status;
-    size_t length = 64;
+    size_t length = 1024; // 64 is too small; causes errors below if a realloc
+                          // is needed
     char* buffer = (char*)malloc(length);
     iStream << "\nCall stack (size " << nCalls << "):";
     for (int i=0; i<nCalls; i++)
@@ -1639,7 +1640,8 @@ void vruntime_error::backTrace(std::iostream& iStream)
         char* paren1 = strchr(symbol[i], '(');
         char* paren2 = strchr(symbol[i], ')');
         *paren1 = '\0';
-        iStream << "\n  " << symbol[i] << ":\n    ";
+        // Just the file, not very helpful
+        //iStream << "\n  " << symbol[i] << ":\n    ";
         if (paren2 == paren1+1)
         {
             // It's an empty name
@@ -1649,6 +1651,7 @@ void vruntime_error::backTrace(std::iostream& iStream)
         char* plus = strchr(paren1+1, '+');
         *plus = '\0';
         char* str = abi::__cxa_demangle(paren1+1, buffer, &length, &status);
+        iStream << "\n  ";  // Indent
         switch (status)
         {
         case 0:

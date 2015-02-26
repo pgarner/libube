@@ -326,7 +326,12 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
     // Case 2: array operation (mDim is at least 1)
     // Check that the array is broadcastable
     if (mDim > dimI)
-        throw std::runtime_error("var::broadcast: op dimension too large");
+    {
+        vstream s;
+        s << "UnaryFunctor::broadcast: dimension too large ";
+        s << mDim << " > " << dimI;
+        throw vruntime_error(s);
+    }
 
     // If it didn't throw, then the array is broadcastable
     // In this case, loop over iVar (and oVar) with different offsets
@@ -445,7 +450,7 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
         throw std::runtime_error("var::broadcast: input dimension too large");
     if (iVar1.atype() != iVar2.atype())
         throw std::runtime_error("var::broadcast: types must match (for now)");
-    for (int i=0; i>dim2; i++)
+    for (int i=1; i<dim2; i++)
     {
         // The dimensions should match
         if (iVar1.shape(dim1-i) != iVar2.shape(dim2-i))
