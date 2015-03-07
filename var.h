@@ -646,10 +646,10 @@ namespace libvar
     /**
      * Exception class
      */
-    class vruntime_error : public std::exception
+    class error : public std::exception
     {
     public:
-        vruntime_error(var iVar);
+        error(var iVar);
         virtual const char* what() const noexcept;
     private:
         void backTrace(std::ostream& iStream);

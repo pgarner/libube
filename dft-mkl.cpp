@@ -33,7 +33,7 @@ void dftiCheck(MKL_LONG iReturn)
 {
     if (iReturn == DFTI_NO_ERROR)
         return;
-    throw std::runtime_error(DftiErrorMessage(iReturn));
+    throw error(DftiErrorMessage(iReturn));
 }
 
 
@@ -87,7 +87,7 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
         );
         break;
     default:
-        throw std::runtime_error("DFT::DFT: Unknown type");
+        throw error("DFT::DFT: Unknown type");
     }
     dftiCheck(r);
 
@@ -121,19 +121,19 @@ void DFT::scalar(const var& iVar, var& oVar) const
 {
     // Check the arrays are OK
     if (iVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::scalar: DFT input must be vector");
+        throw error("DFT::scalar: DFT input must be vector");
     if (oVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::scalar: DFT output must be vector");
+        throw error("DFT::scalar: DFT output must be vector");
     if (iVar.atype() != (mImpl->inverse
                          ? mImpl->inverseType.type()
                          : mImpl->forwardType.type()
         ))
-        throw std::runtime_error("DFT::scalar: wrong input type");
+        throw error("DFT::scalar: wrong input type");
     if (oVar.atype() != (mImpl->inverse
                           ? mImpl->forwardType.type()
                           : mImpl->inverseType.type()
         ))
-        throw std::runtime_error("DFT::scalar: wrong output type");
+        throw error("DFT::scalar: wrong output type");
 
     // DFT always broadcasts to vector()
     broadcast(iVar, oVar);
@@ -145,7 +145,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
     MKL_LONG r;
     if (iVar.is(oVar))
     {
-        throw std::runtime_error("DFT::vector(): not implemented");
+        throw error("DFT::vector(): not implemented");
         if (mImpl->inverse)
             r = DftiComputeBackward(mImpl->handle, oVar.ptr<float>(iOffsetO));
         else
@@ -184,7 +184,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             default:
-                throw std::runtime_error("DFT::vector(): unknown type");
+                throw error("DFT::vector(): unknown type");
             }
         else
             switch (mImpl->forwardType.type())
@@ -218,7 +218,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             default:
-                throw std::runtime_error("DFT::vector(): unknown type");
+                throw error("DFT::vector(): unknown type");
             }
     dftiCheck(r);
 }

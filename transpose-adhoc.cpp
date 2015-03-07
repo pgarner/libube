@@ -26,7 +26,7 @@ var Transpose::alloc(var iVar) const
     var s = iVar.shape();
     int dim = s.size();
     if (dim < 2)
-        throw std::runtime_error("Transpose::alloc: dimension < 2");
+        throw error("Transpose::alloc: dimension < 2");
 
     // This is a gotcha: Without the dereference(), s[dim-1] is an lvalue so
     // tmp will use the move semantic.  This means it will remain a reference;
@@ -152,7 +152,7 @@ void Transpose::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             inPlace<double>(oVar.ptr<double>(iOffsetO), rows, cols);
             break;
         default:
-            throw std::runtime_error("Transpose::vector(): unknown type");            
+            throw error("Transpose::vector(): unknown type");            
         }
     else
         // Transpose to new location
@@ -167,6 +167,6 @@ void Transpose::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                                oVar.ptr<double>(iOffsetO));
             break;
         default:
-            throw std::runtime_error("Transpose::vector(): unknown type");
+            throw error("Transpose::vector(): unknown type");
         }
 }

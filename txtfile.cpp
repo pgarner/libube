@@ -34,7 +34,7 @@ var txtfile::read(var iFile)
 {
     std::ifstream is(iFile.str(), std::ifstream::in);
     if (is.fail())
-        throw std::runtime_error("txtfile::read(): Open failed");
+        throw error("txtfile::read(): Open failed");
 
     var o;
     var f;
@@ -47,7 +47,7 @@ void txtfile::write(var iFile, var iVar)
 {
     std::ofstream os(iFile.str(), std::ofstream::out);
     if (os.fail())
-        throw std::runtime_error("txtfile::write(): Open failed");
+        throw error("txtfile::write(): Open failed");
     for (int i=0; i<iVar.size(); i++)
         os << iVar.at(i) << std::endl;
 }

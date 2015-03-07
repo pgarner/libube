@@ -279,7 +279,7 @@ var& var::operator =(var iVar)
             mData.hp->ptr<pair>(index)->val = iVar;
             break;
         default:
-            throw std::runtime_error("var::operator =(): Unknown type");
+            throw error("var::operator =(): Unknown type");
         }
     }
     else if ((mType == TYPE_ARRAY) &&
@@ -417,7 +417,7 @@ var::var(int iSize, const int* iData) : var()
 var::var(int iSize, var iVar) : var()
 {
     if (iVar.type() == TYPE_ARRAY)
-        throw std::runtime_error("initialise ctor: cannot init from array");
+        throw error("initialise ctor: cannot init from array");
     *this = iVar;
     resize(iSize);
     for (int i=1; i<iSize; i++)
@@ -488,7 +488,7 @@ bool var::operator !=(var iVar) const
     case TYPE_CDOUBLE:
         return (get<cdouble>() != iVar.get<cdouble>());
     default:
-        throw std::runtime_error("operator !=(): Unknown type");
+        throw error("operator !=(): Unknown type");
     }
 
     assert(0);
@@ -525,7 +525,7 @@ bool var::operator <(var iVar) const
     case TYPE_CDOUBLE:
         return (std::abs(get<cdouble>()) < std::abs(iVar.get<cdouble>()));
     default:
-        throw std::runtime_error("operator <(): Unknown type");
+        throw error("operator <(): Unknown type");
     }
 
     assert(0);
@@ -586,7 +586,7 @@ ind var::type() const
 ind var::atype() const
 {
     if (!defined())
-        throw std::runtime_error("var::atype(): Undefined");
+        throw error("var::atype(): Undefined");
     if (type() == TYPE_ARRAY)
         return heap()->type();
     return type();
@@ -645,7 +645,7 @@ void Cast<T>::scalar(const var& iVar, var& oVar) const
         oVar = static_cast<T>(iVar.get<cdouble>().real());
         break;
     default:
-        throw std::runtime_error("Cast::operator(): Unknown type");
+        throw error("Cast::operator(): Unknown type");
     }
 }
 
@@ -662,7 +662,7 @@ var var::operator [](int iIndex)
 {
     var& v = dereference();
     if (iIndex < 0)
-        throw std::runtime_error("operator [int]: Negative index");
+        throw error("operator [int]: Negative index");
     if (iIndex >= v.size())
         v.resize(iIndex+1);
     v.array();
@@ -758,12 +758,12 @@ var var::at(int iIndex) const
 {
     var v = *this;
     if (!v)
-        throw std::runtime_error("var::at(): uninitialised");
+        throw error("var::at(): uninitialised");
     if (v.type() == TYPE_ARRAY)
         return v.reference(iIndex);
     if (iIndex == 0)
         return v;
-    throw std::runtime_error("var::at(): Index out of bounds");
+    throw error("var::at(): Index out of bounds");
 }
 
 
@@ -777,10 +777,10 @@ var var::at(int iIndex) const
 var var::at(var iVar) const
 {
     if (!defined())
-        throw std::runtime_error("var::at(): uninitialised");
+        throw error("var::at(): uninitialised");
     else
         if (heap() && !atype<pair>())
-            throw std::runtime_error("operator [var]: Not a map");
+            throw error("operator [var]: Not a map");
 
     int index = binary(iVar);
     if ( (index >= size()) || (heap()->key(index) != iVar) )
@@ -792,7 +792,7 @@ var var::at(var iVar) const
 var var::key(int iIndex) const
 {
     if (!atype<pair>())
-        throw std::runtime_error("var::key(): Not a map");
+        throw error("var::key(): Not a map");
     return heap()->key(iIndex);
 }
 
@@ -833,10 +833,10 @@ void var::format(std::ostream& iStream, int iIndent) const
         break;
     case TYPE_CDOUBLE:
         //iStream << get<cdouble>();
-        throw std::runtime_error("var::format(): cdouble should be array");
+        throw error("var::format(): cdouble should be array");
         break;
     default:
-        throw std::runtime_error("var::format(): Unknown type");
+        throw error("var::format(): Unknown type");
     }
 }
 
@@ -994,7 +994,7 @@ const char* libvar::typeStr(ind iType)
     case TYPE_VAR: return "var";
     case TYPE_PAIR: return "pair";
     default:
-        throw std::runtime_error("libvar::typeStr(): Unknown type");
+        throw error("libvar::typeStr(): Unknown type");
     }
 }
 
@@ -1052,7 +1052,7 @@ var& var::push(var iVar)
     {
         // Already initialised
         if ( (type() != TYPE_ARRAY) && (iVar.type() != type()) )
-            throw std::runtime_error("push(): Incompatible types");
+            throw error("push(): Incompatible types");
     }
 
     (*this)[size()] = iVar;
@@ -1234,7 +1234,7 @@ bool var::reference() const
 var var::reference(int iIndex) const
 {
     if (type() != TYPE_ARRAY)
-        throw std::runtime_error("var::reference: cannot reference non array");
+        throw error("var::reference: cannot reference non array");
     var v(*this);
     v.mType = -iIndex-1;
     return v;
@@ -1295,7 +1295,7 @@ var& var::dereference()
             attach(new varheap(1, mData.hp->ptr<cdouble>(index)));
             break;
         default:
-            throw std::runtime_error("var::dereference(): Unknown type");
+            throw error("var::dereference(): Unknown type");
         }
         detach(tmp);
     }
@@ -1332,7 +1332,7 @@ int var::binary(var iData) const
 void var::setStrides(var& iVar, int iSize, int iOffset)
 {
     if (iSize < 1)
-        throw std::runtime_error("var::setstrides(): view must have dim > 0");
+        throw error("var::setstrides(): view must have dim > 0");
 
     // The second of each pair is the stride
     int p = 1;
@@ -1347,7 +1347,7 @@ void var::setStrides(var& iVar, int iSize, int iOffset)
         resize(p);
     else
         if (p+iOffset > size())
-            throw std::runtime_error("var::view(): Array too small for view");
+            throw error("var::view(): Array too small for view");
 
     // Tell the new heap object that it's a view of this
     array();
@@ -1450,7 +1450,7 @@ bool var::view() const
 var var::subview(int iDim, ind iOffset)
 {
     if (iDim < 1)
-        throw std::runtime_error("var::subview(): subview must have dim > 0");
+        throw error("var::subview(): subview must have dim > 0");
     var is = shape();
     for (int i=dim()-iDim; i>0; --i)
         is.shift();
@@ -1479,7 +1479,7 @@ int var::offset() const
 var& var::offset(int iOffset)
 {
     if (!view())
-        throw std::runtime_error("var::offset(): not a view");
+        throw error("var::offset(): not a view");
     heap()->offset(iOffset);
     return *this;
 }
@@ -1506,7 +1506,7 @@ int var::shape(int iDim) const
     if (view())
         return heap()->shape(iDim);
     if (iDim > 0)
-        throw std::runtime_error("var::shape(): dimension too large");
+        throw error("var::shape(): dimension too large");
     return size();
 }
 
@@ -1516,7 +1516,7 @@ int var::stride(int iDim) const
     if (view())
         return heap()->stride(iDim);
     if (iDim > 0)
-        throw std::runtime_error("var::stride(): dimension too large");
+        throw error("var::stride(): dimension too large");
     return 1;
 }
 
@@ -1524,7 +1524,7 @@ int var::stride(int iDim) const
 void var::bounds(int iDim, int iIndex) const
 {
     if (iIndex < 0 || iIndex >= shape(iDim))
-        throw std::runtime_error("var::bounds(): index out of bounds");
+        throw error("var::bounds(): index out of bounds");
 }
 
 
@@ -1587,18 +1587,20 @@ vstream::vstream(class var iVar)
 
 
 /**
- * vruntime_error constructor
+ * error constructor
  *
- * This is really just a runtime_error that takes a var as its argument.  The
+ * This is really just a std::exception that takes a var as its argument.  The
  * var is formatted, so you can have arbitrary values appear in the what()
  * string.
  *
  * One thing wrong here is that what() should do the formatting, not the
  * constructor.  That is because memory is more likely to have been cleared by
  * the time what() gets executed.  It's this way because what() is const, and
- * str() and all the things returning strings aren't.
+ * str() and all the things returning strings aren't.  It also backtraces, so
+ * there's perhaps some requirement for a non-backtracing exception that can be
+ * cought.
  */
-vruntime_error::vruntime_error(var iVar)
+error::error(var iVar)
 {
     vstream vs;
     vs << iVar;
@@ -1613,7 +1615,7 @@ vruntime_error::vruntime_error(var iVar)
  * end, so this doesn't.  Notice it allocates memory, so not suitable for an
  * out of memory exception.
  */
-void vruntime_error::backTrace(std::ostream& iStream)
+void error::backTrace(std::ostream& iStream)
 {
     // Backtrace of more than a screenfull is probably not useful
     const int cBTSize = 64;
@@ -1671,7 +1673,7 @@ void vruntime_error::backTrace(std::ostream& iStream)
     free(symbol);
 }
 
-const char* vruntime_error::what() const noexcept
+const char* error::what() const noexcept
 {
     return mStr;
 }

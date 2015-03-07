@@ -50,7 +50,7 @@ Path::Path(var iArg)
 var Path::dir()
 {
     if (!exists(mPath))
-        throw std::runtime_error("dir: path doesn't exist");
+        throw error("dir: path doesn't exist");
 
     var dir;
     fs::directory_iterator end;
@@ -63,7 +63,7 @@ var Path::dir()
 var Path::rdir()
 {
     if (!exists(mPath))
-        throw std::runtime_error("dir: path doesn't exist");
+        throw error("dir: path doesn't exist");
 
     var dir;
     fs::recursive_directory_iterator end;
@@ -81,7 +81,7 @@ var Path::tree()
 var Path::tree(boost::filesystem::path iPath)
 {
     if (!exists(iPath))
-        throw std::runtime_error("tree: path doesn't exist");
+        throw error("tree: path doesn't exist");
 
     var dir;
     fs::directory_iterator end;

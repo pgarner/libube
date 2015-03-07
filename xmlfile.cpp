@@ -97,7 +97,7 @@ static void DefaultHandler(
 
     var str(iLen, iStr);
     std::cout << "expat::DefaultHandler: " << str << std::endl;
-    throw std::runtime_error("xmlfile: default handler called");
+    throw error("xmlfile: default handler called");
 }
 
 
@@ -170,7 +170,7 @@ var Expat::parse(const char* iFile)
 {
     std::ifstream is(iFile, std::ifstream::in);
     if (is.fail())
-        throw std::runtime_error("xmlfile::read(): Open failed");
+        throw error("xmlfile::read(): Open failed");
 
     var f;
     XML_Status s;
@@ -178,13 +178,13 @@ var Expat::parse(const char* iFile)
     {
         s = XML_Parse(mParser, f.str(), f.size(), 0);
         if (!s)
-            throw std::runtime_error("xmlfile::parse(): Error!");
+            throw error("xmlfile::parse(): Error!");
     }
     s = XML_Parse(mParser, f.str(), 0, 0);
     if (!s)
-        throw std::runtime_error("xmlfile::parse(): Error!");
+        throw error("xmlfile::parse(): Error!");
     if (mStack.size() != 0)
-        throw std::runtime_error("xmlfile::parse(): Short file?");
+        throw error("xmlfile::parse(): Short file?");
 
     return mVar;
 }
@@ -224,7 +224,7 @@ void Expat::startElementHandler(const XML_Char *iName, const XML_Char **iAtts)
 void Expat::endElementHandler(const XML_Char *iName)
 {
     if (mStack.top()["name"] != iName)
-        throw std::runtime_error("Expat::endElementHandler: malformed xml");
+        throw error("Expat::endElementHandler: malformed xml");
     mStack.pop();
 }
 
@@ -241,14 +241,14 @@ void XMLWriter::write(const char* iFile, var iVar)
     // Output stream
     std::ofstream os(iFile, std::ofstream::out);
     if (os.fail())
-        throw std::runtime_error("xmlwriter::write(): Open failed");
+        throw error("xmlwriter::write(): Open failed");
 
     // XML declaration
     os << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
 
     // Loop over iVar
     if (!writeElem(os, iVar))
-        throw std::runtime_error("xmlwriter::write(): Top level not element");
+        throw error("xmlwriter::write(): Top level not element");
     os << std::endl;
 }
 

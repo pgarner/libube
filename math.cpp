@@ -131,7 +131,7 @@ var NaryFunctor::alloc(var iVar) const
     if (iVar)
         r = iVar[0].copy(true);
     else
-        throw std::runtime_error("NaryFunctor::alloc: must override alloc()");
+        throw error("NaryFunctor::alloc: must override alloc()");
     return r;
 }
 
@@ -187,7 +187,7 @@ void NaryFunctor::scalar(const var& iVar, var& oVar) const
  */
 void NaryFunctor::vector(var iVar, var& oVar) const
 {
-    throw std::runtime_error("UnaryFunctor: not a vector operation");
+    throw error("UnaryFunctor: not a vector operation");
 }
 
 
@@ -202,7 +202,7 @@ void NaryFunctor::broadcast(var iVar, var& oVar) const
     // Check that the arrays are broadcastable
     for (int i=1; i<iVar.size(); i++)
         if (iVar[0].atype() != iVar[i].atype())
-            throw std::runtime_error(
+            throw error(
                 "var::broadcast: types must match (for now)"
             );
 
@@ -210,7 +210,7 @@ void NaryFunctor::broadcast(var iVar, var& oVar) const
     int dimO = oVar.dim();
     int cdim = dimO - mDim;
     if (cdim < 0)
-        throw std::runtime_error("var::broadcast: input dimension too small");
+        throw error("var::broadcast: input dimension too small");
 
     // Assume that the common dimension is to be broadcast over.
     int stepO = cdim > 0 ?  oVar.stride(cdim-1) : 0;
@@ -290,7 +290,7 @@ void UnaryFunctor::vector(var iVar, ind iIOffset, var& oVar, ind iOOffset) const
  */
 void UnaryFunctor::vector(var iVar, var& oVar) const
 {
-    throw std::runtime_error("UnaryFunctor: not a vector operation");
+    throw error("UnaryFunctor: not a vector operation");
 }
 
 
@@ -325,7 +325,7 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
         vstream s;
         s << "UnaryFunctor::broadcast: dimension too large ";
         s << mDim << " > " << dimI;
-        throw vruntime_error(s);
+        throw error(s);
     }
 
     // If it didn't throw, then the array is broadcastable
@@ -411,7 +411,7 @@ void ArithmeticFunctor::vector(
  */
 void ArithmeticFunctor::vector(var iVar1, var iVar2, var& oVar) const
 {
-    throw std::runtime_error("ArithmeticFunctor: not a vector operation");
+    throw error("ArithmeticFunctor: not a vector operation");
 }
 
 
@@ -442,14 +442,14 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
     // Case 2: iVar2 is also an array
     // Check that the two arrays are broadcastable
     if (dim2 > dim1)
-        throw std::runtime_error("var::broadcast: input dimension too large");
+        throw error("var::broadcast: input dimension too large");
     if (iVar1.atype() != iVar2.atype())
-        throw std::runtime_error("var::broadcast: types must match (for now)");
+        throw error("var::broadcast: types must match (for now)");
     for (int i=1; i<dim2; i++)
     {
         // The dimensions should match
         if (iVar1.shape(dim1-i) != iVar2.shape(dim2-i))
-            throw std::runtime_error("var::broadcast: dimension mismatch");
+            throw error("var::broadcast: dimension mismatch");
     }
 
     // If it didn't throw, then the arrays are broadcastable
@@ -474,13 +474,13 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 {
     // Check that the two arrays are broadcastable
     if (iVar1.atype() != iVar2.atype())
-        throw std::runtime_error("var::broadcast: types must match (for now)");
+        throw error("var::broadcast: types must match (for now)");
 
     // Find the common dimension.
     int dim1 = iVar1.dim();
     int cdim = dim1 - mDim;
     if (cdim < 0)
-        throw std::runtime_error("var::broadcast: input dimension too small");
+        throw error("var::broadcast: input dimension too small");
 
     // Assume that the common dimension is to be broadcast over.
     int step1 = cdim > 0 ? iVar1.stride(cdim-1) : 0;
@@ -507,7 +507,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
             oVar = std::f(iVar.get<double>());                          \
             break;                                                      \
         default:                                                        \
-            throw std::runtime_error("#F##::scalar: Unknown type");     \
+            throw error("#F##::scalar: Unknown type");     \
         }                                                               \
     }
 
@@ -532,7 +532,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
             oVar = std::f(iVar.get<cdouble>());                         \
             break;                                                      \
         default:                                                        \
-            throw std::runtime_error("#F##::scalar(): Unknown type");   \
+            throw error("#F##::scalar(): Unknown type");   \
         }                                                               \
     }
 
@@ -568,7 +568,7 @@ void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         oVar = std::pow(iVar1.get<cdouble>(), iVar2.cast<cdouble>());
         break;
     default:
-        throw std::runtime_error("Pow::scalar: Unknown type");
+        throw error("Pow::scalar: Unknown type");
     }
 }
 
@@ -602,7 +602,7 @@ void Abs::scalar(const var& iVar, var& oVar) const
         oVar = std::abs(iVar.get<cdouble>());
         break;
     default:
-        throw std::runtime_error("Abs::operator(): Unknown type");
+        throw error("Abs::operator(): Unknown type");
     }
 }
 
@@ -636,7 +636,7 @@ void Norm::scalar(const var& iVar, var& oVar) const
         oVar = std::norm(iVar.get<cdouble>());
         break;
     default:
-        throw std::runtime_error("Abs::operator(): Unknown type");
+        throw error("Abs::operator(): Unknown type");
     }
 }
 
@@ -670,7 +670,7 @@ void Set::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         *oVar.ptr<cdouble>() = iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Set::scalar: Unknown type");
+        throw error("Set::scalar: Unknown type");
     }
 }
 
@@ -700,7 +700,7 @@ void Set::vector(
         break;
     }
     default:
-        throw std::runtime_error("Set::array: Unknown type");
+        throw error("Set::array: Unknown type");
     }
 }
 
@@ -734,7 +734,7 @@ void Add::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         *oVar.ptr<cdouble>() = iVar1.get<cdouble>() + iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Add::scalar: Unknown type");
+        throw error("Add::scalar: Unknown type");
     }
 }
 
@@ -765,7 +765,7 @@ void Add::vector(
         break;
     }
     default:
-        throw std::runtime_error("Add::vector: Unknown type");
+        throw error("Add::vector: Unknown type");
     }
 }
 
@@ -799,7 +799,7 @@ void Sub::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         *oVar.ptr<cdouble>() = iVar1.get<cdouble>() - iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Sub::scalar: Unknown type");
+        throw error("Sub::scalar: Unknown type");
     }
 }
 
@@ -830,7 +830,7 @@ void Sub::vector(
         break;
     }
     default:
-        throw std::runtime_error("Sub::vector: Unknown type");
+        throw error("Sub::vector: Unknown type");
     }
 }
 
@@ -877,7 +877,7 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
             break;
         }
         default:
-            throw std::runtime_error("Mul::scal: Unknown type");
+            throw error("Mul::scal: Unknown type");
         }
     }
     else
@@ -904,7 +904,7 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
             break;
         }
         default:
-            throw std::runtime_error("Mul::scal: Unknown type");
+            throw error("Mul::scal: Unknown type");
         }
     }
 }
@@ -939,7 +939,7 @@ void Mul::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         *oVar.ptr<cdouble>() = iVar1.get<cdouble>() * iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Mul::scalar: Unknown type");
+        throw error("Mul::scalar: Unknown type");
     }
 }
 
@@ -977,7 +977,7 @@ void Mul::vector(
             break;
         }
         default:
-            throw std::runtime_error("Mul::vector: Unknown type");
+            throw error("Mul::vector: Unknown type");
         }
     }
     else
@@ -1004,7 +1004,7 @@ void Mul::vector(
             break;
         }
         default:
-            throw std::runtime_error("Mul::vector: Unknown type");
+            throw error("Mul::vector: Unknown type");
         }
     }
 }
@@ -1026,7 +1026,7 @@ void Dot::vector(
     assert(type(iVar1) == TYPE_ARRAY);
     int size = iVar2.size();
     if (iVar1.is(oVar))
-        throw std::runtime_error("Dot::vector: Cannot operate in place");
+        throw error("Dot::vector: Cannot operate in place");
 
     switch(iVar1.atype())
     {
@@ -1059,7 +1059,7 @@ void Dot::vector(
         break;
     }
     default:
-        throw std::runtime_error("Dot::vector: Unknown type");
+        throw error("Dot::vector: Unknown type");
     }
 }
 
@@ -1093,7 +1093,7 @@ void Div::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         *oVar.ptr<cdouble>() = iVar1.get<cdouble>() / iVar2.cast<cdouble>();
         break;
     default:
-        throw std::runtime_error("Div::scalar: Unknown type");
+        throw error("Div::scalar: Unknown type");
     }
 }
 
@@ -1156,7 +1156,7 @@ void ASum::scalar(const var& iVar, var& oVar) const
         *oVar.ptr<cdouble>() = std::abs(iVar.get<cdouble>());
         break;
     default:
-        throw std::runtime_error("ASum::operator(): Unknown type");
+        throw error("ASum::operator(): Unknown type");
     }
 }
 
@@ -1176,7 +1176,7 @@ void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             cblas_dasum(size, iVar.ptr<double>(iOffsetI), 1);
         break;
     default:
-        throw std::runtime_error("ASum::array: Unknown type");
+        throw error("ASum::array: Unknown type");
     }
 }
 
@@ -1208,7 +1208,7 @@ void Sum::scalar(const var& iVar, var& oVar) const
         *oVar.ptr<cdouble>() = iVar.get<cdouble>();
         break;
     default:
-        throw std::runtime_error("Sum::operator(): Unknown type");
+        throw error("Sum::operator(): Unknown type");
     }
 }
 
@@ -1246,7 +1246,7 @@ void Sum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             sumArray(size, iVar.ptr<cdouble>(iOffsetI));
         break;
     default:
-        throw std::runtime_error("Sum::array: Unknown type");
+        throw error("Sum::array: Unknown type");
     }
 }
 
@@ -1275,7 +1275,7 @@ void IAMax::vector(
 {
     assert(type(iVar) == TYPE_ARRAY);
     if (iVar.is(oVar))
-        throw std::runtime_error("IAMax::vector: Cannot operate in place");
+        throw error("IAMax::vector: Cannot operate in place");
 
     int size = iVar.shape(iVar.dim()-1);
     switch(iVar.atype())
@@ -1305,7 +1305,7 @@ void IAMax::vector(
         break;
     }
     default:
-        throw std::runtime_error("IAMax::vector: Unknown type");
+        throw error("IAMax::vector: Unknown type");
     }
 }
 
@@ -1342,7 +1342,7 @@ void varheap::mul(
         break;
     }
     default:
-        throw std::runtime_error("varheap::mul: Unknown type");
+        throw error("varheap::mul: Unknown type");
     }
 }
 #endif

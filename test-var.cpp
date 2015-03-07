@@ -245,9 +245,9 @@ int main(int argc, char** argv)
 
     // Exception
     try {
-        throw lv::vruntime_error(ts);
+        throw lv::error(ts);
     }
-    catch (lv::vruntime_error e) {
+    catch (lv::error e) {
         cout << "Caught: " << e.what() << endl;
     };
 

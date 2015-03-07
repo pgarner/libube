@@ -53,7 +53,7 @@ int sizeOf(ind iType)
     case TYPE_VAR: return sizeof(var);
     case TYPE_PAIR: return sizeof(pair);
     default:
-        throw std::runtime_error("sizeOf(): Unknown type");
+        throw error("sizeOf(): Unknown type");
     }
 }
 
@@ -82,7 +82,7 @@ varheap::~varheap()
 {
     VDEBUG(std::cout << " Dtor" << std::endl);
     if (mRefCount)
-        throw std::runtime_error("~varheap: reference count not zero");
+        throw error("~varheap: reference count not zero");
     if (mView)
         mView->detach();
 }
@@ -147,9 +147,9 @@ varheap::varheap(int iSize, const cdouble* iData)
 int varheap::offset(int iOffset)
 {
     if (!view())
-        throw std::runtime_error("varheap::offset(): not a view");
+        throw error("varheap::offset(): not a view");
     if (iOffset + size() > mView->size())
-        throw std::runtime_error("varheap::offset(): offset too large");
+        throw error("varheap::offset(): offset too large");
     mData.ip[0] = iOffset;
     return iOffset;
 }
@@ -158,7 +158,7 @@ int varheap::offset(int iOffset)
 int& varheap::shape(int iDim) const
 {
     if (!view())
-        throw std::runtime_error("varheap::shape(): not a view");
+        throw error("varheap::shape(): not a view");
     int index = iDim*2 + 1;
     if ((index < 0) || (index >= mSize))
         throw std::range_error("varheap::shape(): dimension out of bounds");
@@ -169,7 +169,7 @@ int& varheap::shape(int iDim) const
 int& varheap::stride(int iDim) const
 {
     if (!view())
-        throw std::runtime_error("varheap::stride(): not a view");
+        throw error("varheap::stride(): not a view");
     int index = iDim*2 + 2;
     if ((index < 0) || (index >= mSize))
         throw std::range_error("varheap::stride(): dimension out of bounds");
@@ -330,7 +330,7 @@ void varheap::copy(const varheap* iHeap, int iSize)
             mData.pp[i] = iHeap->mData.pp[i];
         break;
     default:
-        throw std::runtime_error("varheap::copy(): Unknown type");
+        throw error("varheap::copy(): Unknown type");
     }
 }
 
@@ -373,7 +373,7 @@ void varheap::alloc(int iSize)
         mData.pp = new pair[iSize];
         break;
     default:
-        throw std::runtime_error("alloc(): Unknown type");
+        throw error("alloc(): Unknown type");
     }
 }
 
@@ -411,7 +411,7 @@ void varheap::dealloc(dataType iData)
         delete [] iData.pp;
         break;
     default:
-        throw std::runtime_error("dealloc(): Unknown type");
+        throw error("dealloc(): Unknown type");
     }
 }
 
@@ -595,7 +595,7 @@ var varheap::at(int iIndex, bool iKey) const
         r = iKey ? mData.pp[iIndex].key : mData.pp[iIndex].val;
         break;
     default:
-        throw std::runtime_error("varheap::at(): Unknown type");
+        throw error("varheap::at(): Unknown type");
     }
 
     // Done
@@ -606,7 +606,7 @@ var varheap::at(int iIndex, bool iKey) const
 var& varheap::key(int iIndex)
 {
     if (mType != TYPE_PAIR)
-        throw std::runtime_error("varheap::key(): Not a key:value pair");
+        throw error("varheap::key(): Not a key:value pair");
     if ( (iIndex < 0) || (iIndex >= mSize) )
         throw std::range_error("varheap::at(): index out of bounds");
     return mData.pp[iIndex].key;
@@ -697,7 +697,7 @@ var varheap::shift()
         new (&mData.pp[mSize-1]) pair();
         break;
     default:
-        throw std::runtime_error("varheap::shift(): Unknown type");
+        throw error("varheap::shift(): Unknown type");
     }
     resize(mSize-1);
 
@@ -748,8 +748,8 @@ void varheap::unshift(var iVar)
         mData.vp[0] = iVar;
         break;
     case TYPE_PAIR:
-        throw std::runtime_error("varheap::unshift(): Can't unshift a pair");
+        throw error("varheap::unshift(): Can't unshift a pair");
     default:
-        throw std::runtime_error("varheap::unshift(): Unknown type");
+        throw error("varheap::unshift(): Unknown type");
     }
 }

@@ -14,7 +14,7 @@ using namespace std;
 void function()
 {
     cout << "Throwing an exception" << endl;
-    throw lv::vruntime_error("This is the exception");
+    throw lv::error("This is the exception");
 }
 
 int main()

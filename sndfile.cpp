@@ -44,7 +44,7 @@ var sndfile::read(var iFile)
     sfInfo.format = 0;
     SNDFILE* snd = sf_open(iFile.str(), SFM_READ, &sfInfo);
     if (!snd)
-        throw vruntime_error("sndfile::read: Failed to open file");
+        throw error("sndfile::read: Failed to open file");
 
     // Read stuff
     mAttr["rate"] = sfInfo.samplerate;
@@ -53,7 +53,7 @@ var sndfile::read(var iFile)
     data.resize(size);
     int nGot = sf_readf_float(snd, data.ptr<float>(), size);
     if (nGot != size)
-        throw vruntime_error("sndfile::read: Size fuckup");
+        throw error("sndfile::read: Size fuckup");
     if (sfInfo.channels != 1)
         // In place transpose for channels > 1
         data = data.view({(int)sfInfo.frames, sfInfo.channels}).transpose();
@@ -70,7 +70,7 @@ void sndfile::write(var iFile, var iVar)
     sfInfo.channels = iVar.dim() > 1 ? iVar.shape(0) : 1;
     SNDFILE* snd = sf_open(iFile.str(), SFM_WRITE, &sfInfo);
     if (!snd)
-        throw vruntime_error("sndfile::write: Failed to open file");
+        throw error("sndfile::write: Failed to open file");
 
     // Write stuff
     int n;
@@ -83,5 +83,5 @@ void sndfile::write(var iFile, var iVar)
         n = (int)sf_writef_float(snd, iVar.ptr<float>(), iVar.size());
     sf_close(snd);
     if (iVar.size() != n)
-        throw vruntime_error("sndfile::write: Size fuckup");
+        throw error("sndfile::write: Size fuckup");
 }

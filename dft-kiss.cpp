@@ -66,7 +66,7 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
             mImpl->config = kiss_fftr_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_DOUBLE:
-        throw std::runtime_error("DFT::DFT: Kiss FFT float only");
+        throw error("DFT::DFT: Kiss FFT float only");
         break;
     case TYPE_CFLOAT:
         mImpl->inverseType = cfloat(0.0f, 0.0f);
@@ -77,10 +77,10 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
             mImpl->config = kiss_fft_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_CDOUBLE:
-        throw std::runtime_error("DFT::DFT: Kiss FFT float only");
+        throw error("DFT::DFT: Kiss FFT float only");
         break;
     default:
-        throw std::runtime_error("DFT::DFT: Unknown type");
+        throw error("DFT::DFT: Unknown type");
     }
     
     // Update the instance count
@@ -111,19 +111,19 @@ void DFT::scalar(const var& iVar, var& oVar) const
 {
     // Check the arrays are OK
     if (iVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::scalar: DFT input must be vector");
+        throw error("DFT::scalar: DFT input must be vector");
     if (oVar.type() != TYPE_ARRAY)
-        throw std::runtime_error("DFT::scalar: DFT output must be vector");
+        throw error("DFT::scalar: DFT output must be vector");
     if (iVar.atype() != (mImpl->inverse
                          ? mImpl->inverseType.type()
                          : mImpl->forwardType.type()
         ))
-        throw std::runtime_error("DFT::scalar: wrong input type");
+        throw error("DFT::scalar: wrong input type");
     if (oVar.atype() != (mImpl->inverse
                           ? mImpl->forwardType.type()
                           : mImpl->inverseType.type()
         ))
-        throw std::runtime_error("DFT::scalar: wrong output type");
+        throw error("DFT::scalar: wrong output type");
 
     // DFT always broadcasts to vector()
     broadcast(iVar, oVar);
@@ -134,7 +134,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
     assert(oVar);
     if (iVar.is(oVar))
     {
-        throw std::runtime_error("DFT::vector(): not implemented");
+        throw error("DFT::vector(): not implemented");
     }
     else
         if (mImpl->inverse)
@@ -148,7 +148,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_DOUBLE:
-                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
+                throw error("DFT::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
                 kiss_fft(
@@ -158,10 +158,10 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_CDOUBLE:
-                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
+                throw error("DFT::vector(): Kiss FFT float only");
                 break;
             default:
-                throw std::runtime_error("DFT::vector(): unknown type");
+                throw error("DFT::vector(): unknown type");
             }
         else
             switch (mImpl->forwardType.type())
@@ -174,7 +174,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_DOUBLE:
-                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
+                throw error("DFT::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
                 kiss_fft(
@@ -184,9 +184,9 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_CDOUBLE:
-                throw std::runtime_error("DFT::vector(): Kiss FFT float only");
+                throw error("DFT::vector(): Kiss FFT float only");
                 break;
             default:
-                throw std::runtime_error("DFT::vector(): unknown type");
+                throw error("DFT::vector(): unknown type");
             }
 }

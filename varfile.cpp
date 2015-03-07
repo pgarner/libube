@@ -22,21 +22,21 @@ module::module(var iType)
     // Initialise
     mHandle = 0;
     mInstance = 0;
-    char *error = dlerror();
+    char *dle = dlerror();
 
     // Open the library
     vstream lib;
     lib << "lib" << iType.str() << ".so";
     mHandle = dlopen(lib.str(), RTLD_LAZY);
-    if ((error = dlerror()) != NULL)
-        throw std::runtime_error(error);
+    if ((dle = dlerror()) != NULL)
+        throw error(dle);
     if (!mHandle)
-        throw std::runtime_error("module::module(): dlopen failed");
+        throw error("module::module(): dlopen failed");
 
     // Find the factory function
     *(void **)(&mFactory) = dlsym(mHandle, "factory");
-    if ((error = dlerror()) != NULL)
-        throw std::runtime_error(error);
+    if ((dle = dlerror()) != NULL)
+        throw error(dle);
 }
 
 
@@ -54,12 +54,12 @@ module::~module()
 Module* module::create(var iArg)
 {
     if (mInstance)
-        throw std::runtime_error("module::create(): just one instance for now");
+        throw error("module::create(): just one instance for now");
 
     // Run the dynamically loaded factory function
     (*mFactory)(&mInstance, iArg);
     if (!mInstance)
-        throw std::runtime_error("module::create(): factory() failed");
+        throw error("module::create(): factory() failed");
     return mInstance;
 }
 

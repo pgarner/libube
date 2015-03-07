@@ -34,7 +34,7 @@ var inifile::read(var iFile)
 {
     std::ifstream is(iFile.str(), std::ifstream::in);
     if (is.fail())
-        throw std::runtime_error("inifile::read(): Open failed");
+        throw error("inifile::read(): Open failed");
 
     var oVar;
     var f;
@@ -50,7 +50,7 @@ var inifile::read(var iFile)
             // It's a section line
             ind close = f.index(']');
             if (!close)
-                throw std::runtime_error("inifile::read(): can't find ]");
+                throw error("inifile::read(): can't find ]");
             section = f.copy();
             section.resize(close);
             section.shift();
@@ -62,7 +62,7 @@ var inifile::read(var iFile)
             if (kv.size() < 2)
                 kv = f.split(":");
             if (kv.size() < 2)
-                throw std::runtime_error("inifile::read(): couldn't split");
+                throw error("inifile::read(): couldn't split");
             kv[0].strip();
             kv[1].strip();
             oVar[section][kv[0]] = kv[1];
@@ -75,7 +75,7 @@ void inifile::write(var iFile, var iVar)
 {
     std::ofstream os(iFile.str(), std::ofstream::out);
     if (os.fail())
-        throw std::runtime_error("inifile::write(): Open failed");
+        throw error("inifile::write(): Open failed");
     for (int i=0; i<iVar.size(); i++)
         os << iVar.at(i) << std::endl;
 }

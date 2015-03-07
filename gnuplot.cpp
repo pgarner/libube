@@ -40,7 +40,7 @@ gnuplot::gnuplot()
 {
     mStream = popen("gnuplot -p", "w");
     if (!mStream)
-        throw std::runtime_error("gnuplot: Open failed");
+        throw error("gnuplot: Open failed");
 }
 
 
@@ -55,13 +55,13 @@ void gnuplot::puts(const char* iStr)
     int s = std::fputs(iStr, mStream);
     int n = std::fputs("\n", mStream);
     if (s < 0 || n < 0)
-        throw std::runtime_error("gnuplot::puts(): Failed to write");
+        throw error("gnuplot::puts(): Failed to write");
 }
 
 
 var gnuplot::read(var iFile)
 {
-    throw std::runtime_error("gnuplot::read() Read not defined");
+    throw error("gnuplot::read() Read not defined");
     return var();
 }
 
@@ -121,11 +121,11 @@ void gnuplot::write(var iFile, var iVar)
                 break;
             }
             default:
-                throw std::runtime_error("gnuplot::write(): Unknown dimension");
+                throw error("gnuplot::write(): Unknown dimension");
             }
             break;
         default:
-            throw std::runtime_error("gnuplot::write(): Unknown data type");
+            throw error("gnuplot::write(): Unknown data type");
         }
     }
 }
