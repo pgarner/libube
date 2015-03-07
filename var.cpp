@@ -1628,8 +1628,7 @@ void vruntime_error::backTrace(std::ostream& iStream)
         return;
     }
     int status;
-    size_t length = 1024; // 64 is too small; causes errors below if a realloc
-                          // is needed
+    size_t length = 64;
     char* buffer = (char*)malloc(length);
     iStream << "\nCall stack (size " << nCalls << "):";
     for (int i=0; i<nCalls; i++)
@@ -1650,12 +1649,12 @@ void vruntime_error::backTrace(std::ostream& iStream)
         }
         char* plus = strchr(paren1+1, '+');
         *plus = '\0';
-        char* str = abi::__cxa_demangle(paren1+1, buffer, &length, &status);
+        buffer = abi::__cxa_demangle(paren1+1, buffer, &length, &status);
         iStream << "\n  ";  // Indent
         switch (status)
         {
         case 0:
-            iStream << str;
+            iStream << buffer;
             break;
         case -1:
             iStream << "Memory fuckup";
