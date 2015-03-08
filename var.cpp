@@ -1503,6 +1503,8 @@ var var::shape() const
  */
 int var::shape(int iDim) const
 {
+    if (iDim < 0)
+        iDim = dim() + iDim;
     if (view())
         return heap()->shape(iDim);
     if (iDim > 0)

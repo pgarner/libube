@@ -507,7 +507,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
             oVar = std::f(iVar.get<double>());                          \
             break;                                                      \
         default:                                                        \
-            throw error("#F##::scalar: Unknown type");     \
+            throw error("#F##::scalar: Unknown type");                  \
         }                                                               \
     }
 
@@ -532,7 +532,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
             oVar = std::f(iVar.get<cdouble>());                         \
             break;                                                      \
         default:                                                        \
-            throw error("#F##::scalar(): Unknown type");   \
+            throw error("#F##::scalar(): Unknown type");                \
         }                                                               \
     }
 
@@ -1164,7 +1164,7 @@ void ASum::scalar(const var& iVar, var& oVar) const
 void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
-    int size = iVar.size();
+    int size = iVar.shape(-1);
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
@@ -1226,7 +1226,7 @@ T sumArray(int iSize, T* iPointer)
 void Sum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(type(iVar) == TYPE_ARRAY);
-    int size = iVar.size();
+    int size = iVar.shape(-1);
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
@@ -1277,7 +1277,7 @@ void IAMax::vector(
     if (iVar.is(oVar))
         throw error("IAMax::vector: Cannot operate in place");
 
-    int size = iVar.shape(iVar.dim()-1);
+    int size = iVar.shape(-1);
     switch(iVar.atype())
     {
     case TYPE_FLOAT:

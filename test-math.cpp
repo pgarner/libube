@@ -44,6 +44,9 @@ int main(int argc, char** argv)
     // BLAS
     var bt;
     bt = 1.0f, 1.2f, 0.8f, -2.0f;
+    cout << "dim: " << bt.dim() << " shape: " << bt.shape() << endl;
+    cout << "shape(0): " << bt.shape(0)
+         << " shape(-1): " << bt.shape(-1) << endl;
     cout << bt << "  sums to " << lv::sum(bt)  << endl;
     cout << bt << " asums to " << lv::asum(bt) << endl;
 
@@ -66,6 +69,8 @@ int main(int argc, char** argv)
     var sv = r12.view({4}, 4);
     cout << "sv: " << sv << endl;
     cout << "sv(0): " << sv(0) << endl;
+    cout << "sv[0]: " << sv[0] << endl;
+    cout << "sv.size(): " << sv.size() << endl;
     sv += 1;
     cout << "r12: " << r12 << endl;
     var rv;
