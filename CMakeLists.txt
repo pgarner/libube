@@ -204,6 +204,13 @@ add_test(
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-path.cmake
   )
 
+add_executable(test-lapack test-lapack.cpp)
+target_link_libraries(test-lapack shared-lib)
+add_test(
+  NAME lapack
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-lapack.cmake
+  )
+
 # A test file specifically for exceptions
 add_executable(throw throw.cpp)
 target_link_libraries(throw shared-lib)

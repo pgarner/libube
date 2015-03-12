@@ -46,6 +46,15 @@ then
     cp CBLAS/include/cblas.h .
 fi
 
+# And the reference LAPACKE headers
+for f in lapacke lapacke_config
+do
+    if [ ! -e $f.h ]
+    then
+        wget http://www.netlib.org/lapack/$f.h
+    fi
+done
+
 # Build the static library?
 export USE_STATIC=0
 
