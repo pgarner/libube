@@ -47,7 +47,7 @@ then
 fi
 
 # And the reference LAPACKE headers
-for f in lapacke lapacke_config
+for f in lapacke lapacke_config lapacke_mangling
 do
     if [ ! -e $f.h ]
     then
