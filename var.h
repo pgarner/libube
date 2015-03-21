@@ -133,6 +133,17 @@ namespace libvar
 
 
     /**
+     * Functor for things like imag() and abs() where the argument is complex
+     * but the return type is always real.
+     */
+    class RealUnaryFunctor : public UnaryFunctor
+    {
+    protected:
+        virtual var alloc(var iVar) const;
+    };
+
+
+    /**
      * Arithmetic functor
      *
      * An arithmetic functor is a binary functor, a functor of two variables,
@@ -181,6 +192,13 @@ namespace libvar
         void scalar(const var& iVar, var& oVar) const;      \
     };
 
+#   define REAL_UNARY_FUNCTOR_DECL(f)                       \
+    class f : public RealUnaryFunctor                       \
+    {                                                       \
+    protected:                                              \
+        void scalar(const var& iVar, var& oVar) const;      \
+    };
+
 #   define BASIC_ARITH_FUNCTOR_DECL(f)                      \
     class f : public ArithmeticFunctor                      \
     {                                                       \
@@ -216,6 +234,11 @@ namespace libvar
     BASIC_UNARY_FUNCTOR_DECL(Log)
     BASIC_UNARY_FUNCTOR_DECL(Exp)
     BASIC_ARITH_FUNCTOR_DECL(Pow)
+    REAL_UNARY_FUNCTOR_DECL(Real)
+    REAL_UNARY_FUNCTOR_DECL(Imag)
+    REAL_UNARY_FUNCTOR_DECL(Abs)
+    REAL_UNARY_FUNCTOR_DECL(Arg)
+    REAL_UNARY_FUNCTOR_DECL(Norm)
 
     // String functors
     BASIC_STRING_FUNCTOR_DECL(ToUpper)
@@ -315,28 +338,6 @@ namespace libvar
 
 
     /**
-     * Absolute value functor
-     */
-    class Abs : public UnaryFunctor
-    {
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Norm functor
-     */
-    class Norm : public UnaryFunctor
-    {
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-    };
-
-
-    /**
      * Absolute sum functor
      */
     class ASum : public UnaryFunctor
@@ -406,8 +407,6 @@ namespace libvar
     extern Cast<cdouble> castCDouble;
 
     // stdlib Functors
-    extern Abs abs;
-    extern Norm norm;
     extern NormC normc;
     extern Sin sin;
     extern Cos cos;
@@ -418,6 +417,11 @@ namespace libvar
     extern Log log;
     extern Exp exp;
     extern Pow pow;
+    extern Real real;
+    extern Imag imag;
+    extern Abs abs;
+    extern Arg arg;
+    extern Norm norm;
 
     // BLAS functors
     extern Set set;
@@ -531,8 +535,7 @@ namespace libvar
         void format(std::ostream& iStream, int iIndent = 0) const;
 
         // Math functors
-        var abs() { return libvar::abs(*this, *this); };
-        var norm() { return libvar::normc(*this, *this); };
+        var normc() { return libvar::normc(*this, *this); };
         var floor() { return libvar::floor(*this, *this); };
         var sin() { return libvar::sin(*this, *this); };
         var cos() { return libvar::cos(*this, *this); };
@@ -540,6 +543,11 @@ namespace libvar
         var log() { return libvar::log(*this, *this); };
         var exp() { return libvar::exp(*this, *this); };
         var pow(var iPow) { return libvar::pow(*this, iPow, *this); };
+        var real() { return libvar::real(*this, *this); };
+        var imag() { return libvar::imag(*this, *this); };
+        var abs() { return libvar::abs(*this, *this); };
+        var arg() { return libvar::arg(*this, *this); };
+        var norm() { return libvar::norm(*this, *this); };
 
         // Other functors
         var transpose() { return libvar::transpose(*this, *this); };

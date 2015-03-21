@@ -126,8 +126,12 @@ int main(int argc, char** argv)
     lv::DFT dft(10);
     fd = dft(td);
     cout << "Freq: " << fd << endl;
-    var ab = lv::abs(fd);
-    cout << "Abs: " << ab << endl;
+    cout << "Arg: " << lv::arg(fd) << endl;
+    cout << "Abs: " << lv::abs(fd) << endl;
+    cout << "Norm: " << lv::norm(fd) << endl;
+    cout << "NormC: " << lv::normc(fd) << endl;
+    cout << "Real: " << lv::real(fd) << endl;
+    cout << "Imag: " << lv::imag(fd) << endl;
 
     var im = lv::iamax(fd);
     cout << "IAMax: " << im << endl;

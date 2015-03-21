@@ -12,7 +12,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include <cblas.h>
+#include "c++blas.h"
 
 #include "var.h"
 
@@ -23,7 +23,6 @@ namespace libvar
      * The instantiations of the math and standard functors defined in this
      * module.  They are declared extern in var.h
      */
-    Abs abs;
     Norm norm;
     NormC normc;
     Sin sin;
@@ -34,6 +33,10 @@ namespace libvar
     Sqrt sqrt;
     Log log;
     Exp exp;
+    Real real;
+    Imag imag;
+    Abs abs;
+    Arg arg;
 
     Pow pow;
     Set set;
@@ -69,7 +72,7 @@ ind type(var iVar)
 /**
  * Allocator where the output is the same shape but always real
  */
-static var absAlloc(var iVar)
+var RealUnaryFunctor::alloc(var iVar) const
 {
     // The idea is to copy iVar, but change the type to the real version.
     var r;
@@ -538,6 +541,7 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 
 
 CMATH_UNARY_FUNCTOR(Floor,floor)
+COMPLEX_UNARY_FUNCTOR(NormC,norm)
 COMPLEX_UNARY_FUNCTOR(Sin,sin)
 COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)
@@ -545,7 +549,11 @@ COMPLEX_UNARY_FUNCTOR(ATan,atan)
 COMPLEX_UNARY_FUNCTOR(Sqrt,sqrt)
 COMPLEX_UNARY_FUNCTOR(Log,log)
 COMPLEX_UNARY_FUNCTOR(Exp,exp)
-COMPLEX_UNARY_FUNCTOR(NormC,norm)
+COMPLEX_UNARY_FUNCTOR(Real,real)
+COMPLEX_UNARY_FUNCTOR(Imag,imag)
+COMPLEX_UNARY_FUNCTOR(Abs,abs)
+COMPLEX_UNARY_FUNCTOR(Arg,arg)
+COMPLEX_UNARY_FUNCTOR(Norm,norm)
 
 
 void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
@@ -571,75 +579,6 @@ void Pow::scalar(const var& iVar1, const var& iVar2, var& oVar) const
         throw error("Pow::scalar: Unknown type");
     }
 }
-
-
-var Abs::alloc(var iVar) const
-{
-    var r = absAlloc(iVar);
-    return r;
-}
-
-
-void Abs::scalar(const var& iVar, var& oVar) const
-{
-    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
-    // returns real.
-    switch (type(iVar))
-    {
-    case TYPE_ARRAY:
-        broadcast(iVar, oVar);
-        break;
-    case TYPE_FLOAT:
-        oVar = std::abs(iVar.get<float>());
-        break;
-    case TYPE_DOUBLE:
-        oVar = std::abs(iVar.get<double>());
-        break;
-    case TYPE_CFLOAT:
-        oVar = std::abs(iVar.get<cfloat>());
-        break;
-    case TYPE_CDOUBLE:
-        oVar = std::abs(iVar.get<cdouble>());
-        break;
-    default:
-        throw error("Abs::operator(): Unknown type");
-    }
-}
-
-
-var Norm::alloc(var iVar) const
-{
-    var r = absAlloc(iVar);
-    return r;
-}
-
-
-void Norm::scalar(const var& iVar, var& oVar) const
-{
-    // Not a COMPLEX_UNARY_FUNCTOR as it takes real or complex but always
-    // returns real.
-    switch (type(iVar))
-    {
-    case TYPE_ARRAY:
-        broadcast(iVar, oVar);
-        break;
-    case TYPE_FLOAT:
-        oVar = std::norm(iVar.get<float>());
-        break;
-    case TYPE_DOUBLE:
-        oVar = std::norm(iVar.get<double>());
-        break;
-    case TYPE_CFLOAT:
-        oVar = std::norm(iVar.get<cfloat>());
-        break;
-    case TYPE_CDOUBLE:
-        oVar = std::norm(iVar.get<cdouble>());
-        break;
-    default:
-        throw error("Abs::operator(): Unknown type");
-    }
-}
-
 
 void Set::scalar(const var& iVar1, const var& iVar2, var& oVar) const
 {
@@ -686,19 +625,19 @@ void Set::vector(
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
-    {
-        float* x = iVar2.ptr<float>(iOffset2);
-        float* y = iVar1.ptr<float>(iOffset1);
-        cblas_scopy(size, x, 1, y, 1);
+        blas::copy(
+            size,
+            iVar2.ptr<float>(iOffset2),
+            iVar1.ptr<float>(iOffset1)
+        );
         break;
-    }
     case TYPE_DOUBLE:
-    {
-        double* x = iVar2.ptr<double>(iOffset2);
-        double* y = iVar1.ptr<double>(iOffset1);
-        cblas_dcopy(size, x, 1, y, 1);
+        blas::copy(
+            size,
+            iVar2.ptr<double>(iOffset2),
+            iVar1.ptr<double>(iOffset1)
+        );
         break;
-    }
     default:
         throw error("Set::array: Unknown type");
     }
@@ -751,19 +690,19 @@ void Add::vector(
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
-    {
-        float* x = iVar2.ptr<float>(iOffset2);
-        float* y = iVar1.ptr<float>(iOffset1);
-        cblas_saxpy(size, 1.0f, x, 1, y, 1);
+        blas::axpy(
+            size, 1.0f,
+            iVar2.ptr<float>(iOffset2),
+            iVar1.ptr<float>(iOffset1)
+        );
         break;
-    }
     case TYPE_DOUBLE:
-    {
-        double* x = iVar2.ptr<double>(iOffset2);
-        double* y = iVar1.ptr<double>(iOffset1);
-        cblas_daxpy(size, 1.0, x, 1, y, 1);
+        blas::axpy(
+            size, 1.0,
+            iVar2.ptr<double>(iOffset2),
+            iVar1.ptr<double>(iOffset1)
+        );
         break;
-    }
     default:
         throw error("Add::vector: Unknown type");
     }
@@ -816,19 +755,19 @@ void Sub::vector(
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
-    {
-        float* x = iVar2.ptr<float>(iOffset2);
-        float* y = iVar1.ptr<float>(iOffset1);
-        cblas_saxpy(size, -1.0f, x, 1, y, 1);
+        blas::axpy(
+            size, -1.0f,
+            iVar2.ptr<float>(iOffset2),
+            iVar1.ptr<float>(iOffset1)
+        );
         break;
-    }
     case TYPE_DOUBLE:
-    {
-        double* x = iVar2.ptr<double>(iOffset2);
-        double* y = iVar1.ptr<double>(iOffset1);
-        cblas_daxpy(size, -1.0, x, 1, y, 1);
+        blas::axpy(
+            size, -1.0,
+            iVar2.ptr<double>(iOffset2),
+            iVar1.ptr<double>(iOffset1)
+        );
         break;
-    }
     default:
         throw error("Sub::vector: Unknown type");
     }
@@ -863,19 +802,19 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
         switch(iVar1.atype())
         {
         case TYPE_FLOAT:
-        {
-            float alpha = iVar2.cast<float>();
-            float* x = iVar1.ptr<float>(iOffset);
-            cblas_sscal(size, alpha, x, 1);
+            blas::scal(
+                size,
+                iVar2.cast<float>(),
+                iVar1.ptr<float>(iOffset)
+            );
             break;
-        }
         case TYPE_DOUBLE:
-        {
-            double alpha = iVar2.cast<double>();
-            double* x = iVar1.ptr<double>(iOffset);
-            cblas_dscal(size, alpha, x, 1);
+            blas::scal(
+                size,
+                iVar2.cast<double>(),
+                iVar1.ptr<double>(iOffset)
+            );
             break;
-        }
         default:
             throw error("Mul::scal: Unknown type");
         }
@@ -890,8 +829,8 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
             float alpha = iVar2.cast<float>();
             float* x = iVar1.ptr<float>(iOffset);
             float* y =  oVar.ptr<float>(iOffset);
-            cblas_scopy(size, x, 1, y, 1);
-            cblas_sscal(size, alpha, y, 1);
+            blas::copy(size, x, y);
+            blas::scal(size, alpha, y);
             break;
         }
         case TYPE_DOUBLE:
@@ -899,8 +838,8 @@ void Mul::scale(var iVar1, var iVar2, var& oVar, int iOffset) const
             double alpha = iVar2.cast<double>();
             double* x = iVar1.ptr<double>(iOffset);
             double* y =  oVar.ptr<double>(iOffset);
-            cblas_dcopy(size, x, 1, y, 1);
-            cblas_dscal(size, alpha, y, 1);
+            blas::copy(size, x, y);
+            blas::scal(size, alpha, y);
             break;
         }
         default:
@@ -957,52 +896,42 @@ void Mul::vector(
     int size = iVar2.size();
     if (iVar1.is(oVar))
     {
-        // xtbmv() (triangular band) overwrites the current location.
+        // tbmv() (triangular band) overwrites the current location.
         switch(iVar1.atype())
         {
         case TYPE_FLOAT:
-        {
-            float* A = iVar2.ptr<float>(iOffset2);
-            float* x = iVar1.ptr<float>(iOffset1);
-            cblas_stbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                        size, 0, A, 1, x, 1);
+            blas::tbmv(
+                size, 0,
+                iVar2.ptr<float>(iOffset2), iVar1.ptr<float>(iOffset1)
+            );
             break;
-        }
         case TYPE_DOUBLE:
-        {
-            double* A = iVar2.ptr<double>(iOffset2);
-            double* x = iVar1.ptr<double>(iOffset1);
-            cblas_dtbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                        size, 0, A, 1, x, 1);
+            blas::tbmv(
+                size, 0,
+                iVar2.ptr<double>(iOffset2), iVar1.ptr<double>(iOffset1)
+            );
             break;
-        }
         default:
             throw error("Mul::vector: Unknown type");
         }
     }
     else
     {
-        // xsbmv() (symmetric band) puts the result in a new location.
+        // sbmv() (symmetric band) puts the result in a new location.
         switch(iVar1.atype())
         {
         case TYPE_FLOAT:
-        {
-            float* A = iVar2.ptr<float>(iOffset2);
-            float* x = iVar1.ptr<float>(iOffset1);
-            float* y = oVar.ptr<float>(iOffsetO);
-            cblas_ssbmv(CblasRowMajor, CblasUpper, size, 0,
-                        1.0f, A, 1, x, 1, 0.0f, y, 1);
+            blas::sbmv(size, 0,
+                       1.0f, iVar2.ptr<float>(iOffset2),
+                             iVar1.ptr<float>(iOffset1),
+                       0.0f, oVar.ptr<float>(iOffsetO));
             break;
-        }
         case TYPE_DOUBLE:
-        {
-            double* A = iVar2.ptr<double>(iOffset2);
-            double* x = iVar1.ptr<double>(iOffset1);
-            double* y = oVar.ptr<double>(iOffsetO);
-            cblas_dsbmv(CblasRowMajor, CblasUpper, size, 0,
-                        1.0, A, 1, x, 1, 0.0, y, 1);
+            blas::sbmv(size, 0,
+                       1.0, iVar2.ptr<double>(iOffset2),
+                            iVar1.ptr<double>(iOffset1),
+                       0.0, oVar.ptr<double>(iOffsetO));
             break;
-        }
         default:
             throw error("Mul::vector: Unknown type");
         }
@@ -1031,33 +960,37 @@ void Dot::vector(
     switch(iVar1.atype())
     {
     case TYPE_FLOAT:
-    {
-        float* x = iVar1.ptr<float>(iOffset1);
-        float* y = iVar2.ptr<float>(iOffset2);
-        *oVar.ptr<float>(iOffsetO) = cblas_sdot(size, x, 1, y, 1);
+        *oVar.ptr<float>(iOffsetO) =
+            blas::dot(
+                size,
+                iVar1.ptr<float>(iOffset1),
+                iVar2.ptr<float>(iOffset2)
+            );
         break;
-    }
     case TYPE_DOUBLE:
-    {
-        double* x = iVar1.ptr<double>(iOffset1);
-        double* y = iVar2.ptr<double>(iOffset2);
-        *oVar.ptr<double>(iOffsetO) = cblas_ddot(size, x, 1, y, 1);
+        *oVar.ptr<double>(iOffsetO) =
+            blas::dot(
+                size,
+                iVar1.ptr<double>(iOffset1),
+                iVar2.ptr<double>(iOffset2)
+            );
         break;
-    }
     case TYPE_CFLOAT:
-    {
-        cfloat* x = iVar1.ptr<cfloat>(iOffset1);
-        cfloat* y = iVar2.ptr<cfloat>(iOffset2);
-        cblas_cdotc_sub(size, x, 1, y, 1, oVar.ptr<cfloat>(iOffsetO));
+        *oVar.ptr<cfloat>(iOffsetO) =
+            blas::dot(
+                size,
+                iVar1.ptr<cfloat>(iOffset1),
+                iVar2.ptr<cfloat>(iOffset2)
+            );
         break;
-    }
     case TYPE_CDOUBLE:
-    {
-        cdouble* x = iVar1.ptr<cdouble>(iOffset1);
-        cdouble* y = iVar2.ptr<cdouble>(iOffset2);
-        cblas_zdotc_sub(size, x, 1, y, 1, oVar.ptr<cdouble>(iOffsetO));
+        *oVar.ptr<cdouble>(iOffsetO) =
+            blas::dot(
+                size,
+                iVar1.ptr<cdouble>(iOffset1),
+                iVar2.ptr<cdouble>(iOffset2)
+            );
         break;
-    }
     default:
         throw error("Dot::vector: Unknown type");
     }
@@ -1168,12 +1101,12 @@ void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-        *(oVar.ptr<float>(iOffsetO)) =
-            cblas_sasum(size, iVar.ptr<float>(iOffsetI), 1);
+        *oVar.ptr<float>(iOffsetO) =
+            blas::asum(size, iVar.ptr<float>(iOffsetI));
         break;
     case TYPE_DOUBLE:
-        *(oVar.ptr<double>(iOffsetO)) =
-            cblas_dasum(size, iVar.ptr<double>(iOffsetI), 1);
+        *oVar.ptr<double>(iOffsetO) =
+            blas::asum(size, iVar.ptr<double>(iOffsetI));
         break;
     default:
         throw error("ASum::array: Unknown type");
@@ -1281,29 +1214,21 @@ void IAMax::vector(
     switch(iVar.atype())
     {
     case TYPE_FLOAT:
-    {
-        float* x = iVar.ptr<float>(iOffsetI);
-        *oVar.ptr<long>(iOffsetO) = cblas_isamax(size, x, 1);
+        *oVar.ptr<long>(iOffsetO) =
+            blas::iamax(size, iVar.ptr<float>(iOffsetI));
         break;
-    }
     case TYPE_DOUBLE:
-    {
-        double* x = iVar.ptr<double>(iOffsetI);
-        *oVar.ptr<long>(iOffsetO) = cblas_idamax(size, x, 1);
+        *oVar.ptr<long>(iOffsetO) =
+            blas::iamax(size, iVar.ptr<double>(iOffsetI));
         break;
-    }
     case TYPE_CFLOAT:
-    {
-        cfloat* x = iVar.ptr<cfloat>(iOffsetI);
-        *oVar.ptr<long>(iOffsetO) = cblas_icamax(size, x, 1);
+        *oVar.ptr<long>(iOffsetO) =
+            blas::iamax(size, iVar.ptr<cfloat>(iOffsetI));
         break;
-    }
     case TYPE_CDOUBLE:
-    {
-        cdouble* x = iVar.ptr<cdouble>(iOffsetI);
-        *oVar.ptr<long>(iOffsetO) = cblas_izamax(size, x, 1);
+        *oVar.ptr<long>(iOffsetO) =
+            blas::iamax(size, iVar.ptr<cdouble>(iOffsetI));
         break;
-    }
     default:
         throw error("IAMax::vector: Unknown type");
     }
