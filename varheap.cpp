@@ -418,7 +418,7 @@ void varheap::dealloc(dataType iData)
 void varheap::format(std::ostream& iStream, int iIndent)
 {
     if (mView)
-        return formatView(iStream);
+        return formatView(iStream, iIndent);
 
     switch (type())
     {
@@ -496,7 +496,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
 }
 
 
-void varheap::formatView(std::ostream& iStream)
+void varheap::formatView(std::ostream& iStream, int iIndent)
 {
     assert(mData.vp); // Any of the pointers
     assert(mType == TYPE_INT);
@@ -538,20 +538,23 @@ void varheap::formatView(std::ostream& iStream)
     int nCols = shape(nDim-1);
     for (int k=0; k<nMats; k++)
     {
-        iStream << "{";
+        iStream << "{\n";
         for (int j=0; j<nRows; j++)
         {
-            if (j != 0)
+            for (int k=0; k<iIndent+2; k++)
                 iStream << " ";
             for (int i=0; i<nCols; i++)
             {
                 iStream << mView->at(k*nRows*nCols + j*nCols + i + offset());
-                if ( (i != nCols-1 ) || (j != nRows-1) )
-                    iStream << ", ";
+                if ( (j != nRows-1) || (i != nCols-1) )
+                    iStream << ",";
+                if (i != nCols-1)
+                    iStream << " ";
             }
-            if (j != nRows-1)
-                iStream << std::endl;
+            iStream << "\n";
         }
+        for (int j=0; j<iIndent; j++)
+            iStream << " ";
         iStream << "}";
         if (k != nMats-1)
             iStream << std::endl;

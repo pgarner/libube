@@ -102,7 +102,7 @@ namespace libvar
         void copy(const varheap* iHeap, int iSize);
         void alloc(int iSize);
         void dealloc(dataType iData);
-        void formatView(std::ostream& iStream);
+        void formatView(std::ostream& iStream, int iIndent);
     };
 }
 
