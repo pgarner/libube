@@ -28,9 +28,9 @@ namespace blas
     template<class T> T dot(long iSize, T* iX, T* iY);
     template<class T> long iamax(long iSize, T* iX);
     template<class T> T asum(long iSize, T* iX);
-    template<class T> void tbmv(long iSize, long iK, T* iA, T* iX);
+    template<class T> void tbmv(long iSize, long iK, T* iA, T* ioX);
     template<class T> void sbmv(long iSize, long iK,
-                                T iAlpha, T* iA, T* iX, T iBeta, T* iY);
+                                T iAlpha, T* iA, T* iX, T iBeta, T* ioY);
 
     template<>
     void copy<float>(long iSize, float* iX, float* iY) {
@@ -107,33 +107,33 @@ namespace blas
     }
 
     template<>
-    void tbmv<float>(long iSize, long iK, float* iA, float* iX) {
+    void tbmv<float>(long iSize, long iK, float* iA, float* ioX) {
         cblas_stbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    iSize, iK, iA, 1, iX, 1);
+                    iSize, iK, iA, 1, ioX, 1);
     }
     template<>
-    void tbmv<double>(long iSize, long iK, double* iA, double* iX) {
+    void tbmv<double>(long iSize, long iK, double* iA, double* ioX) {
         cblas_dtbmv(CblasRowMajor, CblasUpper, CblasNoTrans, CblasNonUnit,
-                    iSize, iK, iA, 1, iX, 1);
+                    iSize, iK, iA, 1, ioX, 1);
     }
 
     template<>
     void sbmv<float>(
         long iSize, long iK,
-        float iAlpha, float* iA, float* iX, float iBeta, float* iY
+        float iAlpha, float* iA, float* iX, float iBeta, float* ioY
     ) {
         cblas_ssbmv(CblasRowMajor, CblasUpper,
                     iSize, iK,
-                    iAlpha, iA, 1, iX, 1, iBeta, iY, 1);
+                    iAlpha, iA, 1, iX, 1, iBeta, ioY, 1);
     }
     template<>
     void sbmv<double>(
         long iSize, long iK,
-        double iAlpha, double* iA, double* iX, double iBeta, double* iY
+        double iAlpha, double* iA, double* iX, double iBeta, double* ioY
     ) {
         cblas_dsbmv(CblasRowMajor, CblasUpper,
                     iSize, iK,
-                    iAlpha, iA, 1, iX, 1, iBeta, iY, 1);
+                    iAlpha, iA, 1, iX, 1, iBeta, ioY, 1);
     }
 }
 

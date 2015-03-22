@@ -24,7 +24,6 @@ namespace libvar
      * module.  They are declared extern in var.h
      */
     Norm norm;
-    NormC normc;
     Sin sin;
     Cos cos;
     Tan tan;
@@ -541,7 +540,6 @@ void BinaryFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
 
 
 CMATH_UNARY_FUNCTOR(Floor,floor)
-COMPLEX_UNARY_FUNCTOR(NormC,norm)
 COMPLEX_UNARY_FUNCTOR(Sin,sin)
 COMPLEX_UNARY_FUNCTOR(Cos,cos)
 COMPLEX_UNARY_FUNCTOR(Tan,tan)

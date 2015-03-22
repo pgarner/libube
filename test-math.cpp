@@ -126,12 +126,17 @@ int main(int argc, char** argv)
     lv::DFT dft(10);
     fd = dft(td);
     cout << "Freq: " << fd << endl;
+
+    // Check the complex operators
+    cout << "Real: " << lv::real(fd) << endl;
+    cout << "Imag: " << lv::imag(fd) << endl;
     cout << "Arg: " << lv::arg(fd) << endl;
     cout << "Abs: " << lv::abs(fd) << endl;
     cout << "Norm: " << lv::norm(fd) << endl;
-    cout << "NormC: " << lv::normc(fd) << endl;
-    cout << "Real: " << lv::real(fd) << endl;
-    cout << "Imag: " << lv::imag(fd) << endl;
+
+    // Real output writing to complex storage
+    var cd = var(12, lv::cfloat(0.0f,0.0f)).view({2,6});
+    cout << "NormC: "<< lv::norm(fd, cd) << endl;
 
     var im = lv::iamax(fd);
     cout << "IAMax: " << im << endl;

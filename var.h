@@ -224,7 +224,6 @@ namespace libvar
     };
 
     // Math functors
-    BASIC_UNARY_FUNCTOR_DECL(NormC)
     BASIC_UNARY_FUNCTOR_DECL(Sin)
     BASIC_UNARY_FUNCTOR_DECL(Cos)
     BASIC_UNARY_FUNCTOR_DECL(Tan)
@@ -407,7 +406,6 @@ namespace libvar
     extern Cast<cdouble> castCDouble;
 
     // stdlib Functors
-    extern NormC normc;
     extern Sin sin;
     extern Cos cos;
     extern Tan tan;
@@ -535,7 +533,6 @@ namespace libvar
         void format(std::ostream& iStream, int iIndent = 0) const;
 
         // Math functors
-        var normc() { return libvar::normc(*this, *this); };
         var floor() { return libvar::floor(*this, *this); };
         var sin() { return libvar::sin(*this, *this); };
         var cos() { return libvar::cos(*this, *this); };
