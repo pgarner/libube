@@ -393,6 +393,19 @@ namespace libvar
     };
 
 
+    /**
+     * Polynomial roots functor
+     */
+    class Roots : public UnaryFunctor
+    {
+    public:
+        Roots() { mDim = 1; };
+    protected:
+        var alloc(var iVar) const;
+        void vector(var iVar, var& oVar) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -434,6 +447,9 @@ namespace libvar
 
     // BLAS-like
     extern Transpose transpose;
+
+    // Lapack based functors
+    extern Roots roots;
 
     // String functors
     extern ToUpper toupper;

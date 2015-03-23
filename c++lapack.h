@@ -14,6 +14,12 @@
 #define HAVE_LAPACK_CONFIG_H
 #include "lapacke.h"
 
+// Probably already defined in c++blas
+#ifndef CFLOAT
+# define CFLOAT lapack_complex_float
+# define CDOUBLE lapack_complex_double
+#endif
+
 /**
  * Templated LAPACK calls
  * Probably incomplete; just add as needed.
@@ -24,10 +30,23 @@
 namespace lapack
 {
     template<class T> long geev(long n, T* a, T* wr, T* wi, T* vl, T* vr);
+
     template<> long geev<float>(
         long n, float* a, float* wr, float* wi, float* vl, float* vr
     ) {
         return LAPACKE_sgeev(
+            LAPACK_ROW_MAJOR,
+            (vl ? 'V' : 'N'),
+            (vr ? 'V' : 'N'),
+            n, a, n, wr, wi,
+            (vl ? vl : 0), n,
+            (vr ? vr : 0), n
+        );
+    }
+    template<> long geev<double>(
+        long n, double* a, double* wr, double* wi, double* vl, double* vr
+    ) {
+        return LAPACKE_dgeev(
             LAPACK_ROW_MAJOR,
             (vl ? 'V' : 'N'),
             (vr ? 'V' : 'N'),

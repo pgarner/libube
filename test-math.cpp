@@ -168,6 +168,11 @@ int main(int argc, char** argv)
     cout << "vN: " << vN << endl;
     nary(vN);
 
+    // Polynomial stuff
+    var poly({1.0f, 0.0f, 0.0f, -1.0f});
+    var root = lv::roots(poly);
+    cout << "Roots of x^3-1=0: " << root << endl;
+
     // Done
     return 0;
 }

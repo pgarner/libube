@@ -13,6 +13,7 @@
 #include <stdexcept>
 
 #include "c++blas.h"
+#include "c++lapack.h"
 
 #include "var.h"
 
@@ -23,6 +24,8 @@ namespace libvar
      * The instantiations of the math and standard functors defined in this
      * module.  They are declared extern in var.h
      */
+
+    // std math
     Norm norm;
     Sin sin;
     Cos cos;
@@ -36,8 +39,9 @@ namespace libvar
     Imag imag;
     Abs abs;
     Arg arg;
-
     Pow pow;
+
+    // BLAS
     Set set;
     Add add;
     Sub sub;
@@ -47,6 +51,9 @@ namespace libvar
     ASum asum;
     Sum sum;
     IAMax iamax;
+
+    // LAPACK
+    Roots roots;
 }
 
 
@@ -1269,3 +1276,106 @@ void varheap::mul(
     }
 }
 #endif
+
+/**
+ * Allocator where the output is the same shape but always complex
+ */
+var Roots::alloc(var iVar) const
+{
+    // The idea is to copy iVar, but change the type to the complex version.
+    var r;
+    var s = iVar.shape();
+    s[s.size()-1] -= 1;
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+    case TYPE_CFLOAT:
+        r = view(s, cfloat(0.0f, 0.0f));
+        break;
+    case TYPE_DOUBLE:
+    case TYPE_CDOUBLE:
+        r = view(s, cfloat(0.0, 0.0));
+        break;
+    }
+    return r;
+}
+
+void Roots::vector(var iVar, var& oVar) const
+{
+    // Form the companion matrix of the polynomial
+    int size = oVar.size();
+    var a = var(size*size, iVar.at(0)).view({size, size});
+    for (int r=1; r<size; r++)
+        a(r, size-1) = 0.0;
+    for (int r=0; r<size-1; r++)
+        for (int c=0; c<size-1; c++)
+            a(r+1,c) = (r == c) ? 1.0 : 0.0;
+    for (int c=0; c<size; c++)
+        a(0,c) = iVar(c+1)/iVar(0) * -1;
+    //std::cout << a << std::endl;
+
+    // Find the eigenvalues of the matrix
+    var re, im;
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+        re = var(size, 1.0f);
+        im = var(size, 1.0f);
+        lapack::geev(
+            size,
+            a.ptr<float>(),
+            re.ptr<float>(), im.ptr<float>(),
+            (float*)0, (float*)0
+        );
+        break;
+    case TYPE_DOUBLE:
+        re = var(size, 1.0);
+        im = var(size, 1.0);
+        lapack::geev(
+            size,
+            a.ptr<double>(),
+            re.ptr<double>(), im.ptr<double>(),
+            (double*)0, (double*)0
+        );
+        break;
+#if 0
+    case TYPE_CFLOAT:
+        re = var(size, 1.0f);
+        im = var(size, 1.0f);
+        lapack::geev(
+            size,
+            a.ptr<cfloat>(),
+            re.ptr<cfloat>(), im.ptr<cfloat>(),
+            (cfloat*)0, (cfloat*)0
+        );
+        break;
+    case TYPE_CDOUBLE:
+        re = var(size, 1.0);
+        im = var(size, 1.0);
+        lapack::geev(
+            size,
+            a.ptr<cdouble>(),
+            re.ptr<cdouble>(), im.ptr<cdouble>(),
+            (cdouble*)0, (cdouble*)0
+        );
+        break;
+#endif
+    default:
+        throw error("Unknown type");
+    }
+
+    // Convert (re,im) into complex
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+    case TYPE_CFLOAT:
+        for (int i=0; i<size; i++)
+            oVar(i) = cfloat(re[i].get<float>(), im[i].get<float>());
+        break;
+    case TYPE_DOUBLE:
+    case TYPE_CDOUBLE:
+        for (int i=0; i<size; i++)
+            oVar(i) = cdouble(re[i].get<double>(), im[i].get<double>());
+        break;
+    }
+}
