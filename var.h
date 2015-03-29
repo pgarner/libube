@@ -509,6 +509,7 @@ namespace libvar
         var operator -(var iVar) const { return sub(*this, iVar); };
         var operator *(var iVar) const { return mul(*this, iVar); };
         var operator /(var iVar) const { return div(*this, iVar); };
+        var operator -() const { return *this * -1; };
         var operator [](int iIndex);
         var operator [](int iIndex) const { return at(iIndex); };
         var operator [](var iVar);

@@ -1525,8 +1525,14 @@ int var::stride(int iDim) const
 
 void var::bounds(int iDim, int iIndex) const
 {
-    if (iIndex < 0 || iIndex >= shape(iDim))
-        throw error("var::bounds(): index out of bounds");
+    int d = shape(iDim);
+    if (iIndex < 0 || iIndex >= d)
+    {
+        vstream s("var::bounds(): index = ");
+        s << iIndex;
+        s << ", but shape(" << iDim << ") is " << d;
+        throw error(s);
+    }
 }
 
 

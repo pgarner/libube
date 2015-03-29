@@ -73,6 +73,7 @@ int main(int argc, char** argv)
     y -= 1;
     cout << x << endl;
     cout << y << endl;
+    cout << -y << endl;
 
     // Reference the same object & reference counting
     var a = s;
