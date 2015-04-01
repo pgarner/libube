@@ -406,6 +406,19 @@ namespace libvar
     };
 
 
+    /**
+     * Polynomial functor
+     */
+    class Poly : public UnaryFunctor
+    {
+    public:
+        Poly() { mDim = 1; };
+    protected:
+        var alloc(var iVar) const;
+        void vector(var iVar, var& oVar) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -450,6 +463,7 @@ namespace libvar
 
     // Lapack based functors
     extern Roots roots;
+    extern Poly poly;
 
     // String functors
     extern ToUpper toupper;

@@ -54,6 +54,7 @@ namespace libvar
 
     // LAPACK
     Roots roots;
+    Poly poly;
 }
 
 
@@ -1377,5 +1378,68 @@ void Roots::vector(var iVar, var& oVar) const
         for (int i=0; i<size; i++)
             oVar(i) = cdouble(re[i].get<double>(), im[i].get<double>());
         break;
+    }
+}
+
+var Poly::alloc(var iVar) const
+{
+    var r;
+    var s = iVar.shape();
+    s[s.size()-1] += 1;
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+        r = view(s, 0.0f);
+        break;
+    case TYPE_DOUBLE:
+        r = view(s, 0.0);
+        break;
+    case TYPE_CFLOAT:
+        r = view(s, cfloat(0.0f, 0.0f));
+        break;
+    case TYPE_CDOUBLE:
+        r = view(s, cfloat(0.0, 0.0));
+        break;
+    }
+    return r;
+}
+
+
+template<class T>
+void polyt(int iOrder, T* iData, T* oData)
+{
+    oData[0] = (T)1.0;
+    for (int i=0; i<iOrder; i++)
+    {
+        oData[i+1] = (T)0.0;
+        T tmp0 = oData[0];
+        for (int j=0; j<=i; j++)
+        {
+            T tmp1 = oData[j+1];
+            oData[j+1] -= iData[i]*tmp0;
+            tmp0 = tmp1;
+        }
+    }
+}
+
+void Poly::vector(var iVar, var& oVar) const
+{
+    int order = iVar.shape(-1);
+    switch (iVar.atype())
+    {
+    case TYPE_FLOAT:
+        polyt(order, iVar.ptr<float>(), oVar.ptr<float>());
+        break;
+    case TYPE_DOUBLE:
+        polyt(order, iVar.ptr<double>(), oVar.ptr<double>());
+        break;
+    case TYPE_CFLOAT:
+        polyt(order, iVar.ptr<cfloat>(), oVar.ptr<cfloat>());
+        break;
+    case TYPE_CDOUBLE:
+        polyt(order, iVar.ptr<cdouble>(), oVar.ptr<cdouble>());
+        break;
+    default:
+        throw error("Poly::vector: Unknown type");
     }
 }
