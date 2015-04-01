@@ -709,6 +709,20 @@ void Add::vector(
             iVar1.ptr<double>(iOffset1)
         );
         break;
+    case TYPE_CFLOAT:
+        blas::axpy(
+            size, cfloat(1.0f,0.0f),
+            iVar2.ptr<cfloat>(iOffset2),
+            iVar1.ptr<cfloat>(iOffset1)
+        );
+        break;
+    case TYPE_CDOUBLE:
+        blas::axpy(
+            size, cdouble(1.0,0.0),
+            iVar2.ptr<cdouble>(iOffset2),
+            iVar1.ptr<cdouble>(iOffset1)
+        );
+        break;
     default:
         throw error("Add::vector: Unknown type");
     }

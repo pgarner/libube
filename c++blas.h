@@ -49,6 +49,14 @@ namespace blas
     void axpy<double>(long iSize, double iAlpha, double* iX, double* iY) {
         cblas_daxpy(iSize, iAlpha, iX, 1, iY, 1);
     }
+    template<>
+    void axpy<CFLOAT>(long iSize, CFLOAT iAlpha, CFLOAT* iX, CFLOAT* iY) {
+        cblas_caxpy(iSize, &iAlpha, iX, 1, iY, 1);
+    }
+    template<>
+    void axpy<CDOUBLE>(long iSize, CDOUBLE iAlpha, CDOUBLE* iX, CDOUBLE* iY) {
+        cblas_zaxpy(iSize, &iAlpha, iX, 1, iY, 1);
+    }
 
     template<>
     void scal<float>(long iSize, float iAlpha, float* ioX) {
