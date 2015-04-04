@@ -29,6 +29,25 @@
  */
 namespace lapack
 {
+    template<class T> long gees(long n, T* a, T* wr, T* wi, T* vs);
+
+    template<class T> lapack_logical selectall(const T* v1, const T* v2) {
+        return true;
+    };
+
+    template<> long gees<float>(
+        long n, float* a, float* wr, float* wi, float* vs
+    ) {
+        lapack_int sdim;
+        return LAPACKE_sgees(
+            LAPACK_ROW_MAJOR,
+            (vs ? 'V' : 'N'),
+            'S', selectall<float>,
+            n, a, n, &sdim, wr, wi,
+            (vs ? vs : 0), n
+        );
+    }
+
     template<class T> long geev(long n, T* a, T* wr, T* wi, T* vl, T* vr);
 
     template<> long geev<float>(
