@@ -419,6 +419,18 @@ namespace libvar
     };
 
 
+    /**
+     * Sorting functor
+     */
+    class Sort : public UnaryFunctor
+    {
+    public:
+        Sort() { mDim = 1; };
+    protected:
+        void vector(var iVar, var& oVar) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -464,6 +476,9 @@ namespace libvar
     // Lapack based functors
     extern Roots roots;
     extern Poly poly;
+
+    // stdlib
+    extern Sort sort;
 
     // String functors
     extern ToUpper toupper;

@@ -11,6 +11,7 @@
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
+#include <algorithm>
 
 #include "c++blas.h"
 #include "c++lapack.h"
@@ -55,6 +56,9 @@ namespace libvar
     // LAPACK
     Roots roots;
     Poly poly;
+
+    // Std C++
+    Sort sort;
 }
 
 
@@ -1452,5 +1456,42 @@ void Poly::vector(var iVar, var& oVar) const
         break;
     default:
         throw error("Poly::vector: Unknown type");
+    }
+}
+
+
+void Sort::vector(var iVar, var& oVar) const
+{
+    if (!iVar.is(oVar))
+        throw error("Sort::vector: in place only for the moment");
+    int size = iVar.shape(-1);
+    switch (iVar.atype())
+    {
+    case TYPE_CHAR:
+        std::sort(iVar.ptr<char>(), iVar.ptr<char>()+size);
+        break;
+    case TYPE_INT:
+        std::sort(iVar.ptr<int>(), iVar.ptr<int>()+size);
+        break;
+    case TYPE_LONG:
+        std::sort(iVar.ptr<long>(), iVar.ptr<long>()+size);
+        break;
+    case TYPE_FLOAT:
+        std::sort(iVar.ptr<float>(), iVar.ptr<float>()+size);
+        break;
+    case TYPE_DOUBLE:
+        std::sort(iVar.ptr<double>(), iVar.ptr<double>()+size);
+        break;
+#if 0
+        // Sorting CFLOAT and CDOUBLE is undefined
+    case TYPE_CFLOAT:
+        std::sort(iVar.ptr<cfloat>(), iVar.ptr<cfloat>()+size);
+        break;
+    case TYPE_CDOUBLE:
+        std::sort(iVar.ptr<cdouble>(), iVar.ptr<cdouble>()+size);
+        break;
+#endif
+    default:
+        throw error("Sort::vector: Unknown type");
     }
 }

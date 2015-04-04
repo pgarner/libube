@@ -175,6 +175,14 @@ int main(int argc, char** argv)
     xpoly = lv::poly(xroot);
     cout << "Poly is: " << xpoly << endl;
 
+    // Sort
+    var fsrt({1.0, -1.0, 2.1, -2.1, 3.0});
+    cout << "Usrt is: " << fsrt << endl;
+    cout << "Sort is: " << lv::sort(fsrt, fsrt) << endl;
+    var csrt("Super duper strING");
+    cout << "Usrt is: " << csrt << endl;
+    cout << "Sort is: " << lv::sort(csrt, csrt) << endl;
+
     // Done
     return 0;
 }

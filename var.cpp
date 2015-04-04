@@ -742,7 +742,7 @@ bool var::is(var& iVar) const
     varheap* h2 = iVar.heap();
     if (!h2)
         return false;
-    if (h1 == h2)
+    if (h1->ptr<char>() == h2->ptr<char>())
         return true;
     return false;
 }
