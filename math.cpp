@@ -1327,7 +1327,6 @@ void Roots::vector(var iVar, var& oVar) const
             a(r+1,c) = (r == c) ? 1.0 : 0.0;
     for (int c=0; c<size; c++)
         a(0,c) = iVar(c+1)/iVar(0) * -1;
-    //std::cout << a << std::endl;
 
     // Find the eigenvalues of the matrix
     var re, im;
@@ -1339,8 +1338,7 @@ void Roots::vector(var iVar, var& oVar) const
         lapack::geev(
             size,
             a.ptr<float>(),
-            re.ptr<float>(), im.ptr<float>(),
-            (float*)0, (float*)0
+            re.ptr<float>(), im.ptr<float>()
         );
         break;
     case TYPE_DOUBLE:
@@ -1349,8 +1347,7 @@ void Roots::vector(var iVar, var& oVar) const
         lapack::geev(
             size,
             a.ptr<double>(),
-            re.ptr<double>(), im.ptr<double>(),
-            (double*)0, (double*)0
+            re.ptr<double>(), im.ptr<double>()
         );
         break;
 #if 0

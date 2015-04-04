@@ -37,8 +37,7 @@ int main(int argc, char** argv)
     x = lv::range(1.0f, 9.0f).view({3,3});
     ret = lapack::gees(
         3, x.ptr<float>(),
-        wr.ptr<float>(), wi.ptr<float>(),
-        z
+        wr.ptr<float>(), wi.ptr<float>()
     );
     cout << "wr: " << wr << endl;
     cout << "wi: " << wi << endl;
