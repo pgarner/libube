@@ -126,6 +126,9 @@ int main(int argc, char** argv)
     lv::DFT dft(10);
     fd = dft(td);
     cout << "Freq: " << fd << endl;
+    lv::DFT idft(10, true);
+    var ifd = idft(fd);
+    cout << "IFreq: " << ifd << endl;
 
     // Check the complex operators
     cout << "Real: " << lv::real(fd) << endl;
