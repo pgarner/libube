@@ -171,6 +171,10 @@ int main(int argc, char** argv)
     cout << "vN: " << vN << endl;
     nary(vN);
 
+    // Concatenate
+    var vc = lv::concatenate({v1, v2});
+    cout << "vc: " << v1 << v2 << vc << endl;
+
     // Polynomial stuff
     var xpoly({1.0f, 0.0f, 0.0f, -1.0f});
     var xroot = lv::roots(xpoly);

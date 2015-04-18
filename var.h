@@ -52,8 +52,6 @@ namespace libvar
     {
     public:
         virtual ~Functor() {};
-    protected:
-        virtual var alloc(var iVar) const;
     };
 
 
@@ -68,6 +66,7 @@ namespace libvar
         var operator ()(const var& iVar) const;
         var operator ()(const var& iVar, var& oVar) const;
     protected:
+        virtual var alloc(var iVar) const;
         virtual void broadcast(var iVar, var& oVar) const;
         virtual void string(const var& iVar, var& oVar) const;
     };
@@ -123,6 +122,7 @@ namespace libvar
         var operator ()(const var& iVar, var& oVar) const;
     protected:
         int mDim;
+        virtual var alloc(var iVar) const;
         virtual void broadcast(var iVar, var& oVar) const;
         virtual void scalar(const var& iVar, var& oVar) const;
         virtual void vector(
@@ -161,6 +161,7 @@ namespace libvar
         ) const;
     protected:
         int mDim;
+        virtual var alloc(var iVar1, var iVar2) const;
         virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
         virtual void scalar(
             const var& iVar1, const var& iVar2, var& oVar
@@ -316,7 +317,7 @@ namespace libvar
     class Dot : public ArithmeticFunctor
     {
     protected:
-        var alloc(var iVar) const;
+        var alloc(var iVar1, var iVar2) const;
         void vector(
             var iVar1, ind iOffset1,
             var iVar2, ind iOffset2,
@@ -431,6 +432,19 @@ namespace libvar
     };
 
 
+    /**
+     * Concatenating functor
+     */
+    class Concatenate : public NaryFunctor
+    {
+    public:
+        Concatenate() { mDim = 1; };
+    protected:
+        var alloc(var iVar) const;
+        virtual void vector(var iVar, var& oVar) const;
+    };
+
+
     // Statics
     extern const var nil;
 
@@ -472,6 +486,7 @@ namespace libvar
 
     // BLAS-like
     extern Transpose transpose;
+    extern Concatenate concatenate;
 
     // Lapack based functors
     extern Roots roots;

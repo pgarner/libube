@@ -53,6 +53,9 @@ namespace libvar
     Sum sum;
     IAMax iamax;
 
+    // BLAS-like
+    Concatenate concatenate;
+
     // LAPACK
     Roots roots;
     Poly poly;
@@ -77,6 +80,34 @@ ind type(var iVar)
     if (iVar.atype<cdouble>())
         type = TYPE_CDOUBLE;
     return type;
+}
+
+
+/**
+ * The default allocator is simply to make a copy of the input variable with
+ * the same type and shape.  Only the allocation is done; data is not copied.
+ */
+var UnaryFunctor::alloc(var iVar) const
+{
+    var r;
+    r = iVar.copy(true);
+    return r;
+}
+
+
+var StringFunctor::alloc(var iVar) const
+{
+    var r;
+    r = iVar.copy(true);
+    return r;
+}
+
+
+var ArithmeticFunctor::alloc(var iVar1, var iVar2) const
+{
+    var r;
+    r = iVar1.copy(true);
+    return r;
 }
 
 
@@ -120,18 +151,6 @@ static var scalarAlloc(var iVar)
     {
         r = iVar.at(0);
     }
-    return r;
-}
-
-
-/**
- * The default allocator is simply to make a copy of the input variable with
- * the same type and shape.  Only the allocation is done; data is not copied.
- */
-var Functor::alloc(var iVar) const
-{
-    var r;
-    r = iVar.copy(true);
     return r;
 }
 
@@ -361,7 +380,7 @@ var ArithmeticFunctor::operator ()(
     const var& iVar1, const var& iVar2
 ) const
 {
-    var v = alloc(iVar1);
+    var v = alloc(iVar1, iVar2);
     scalar(iVar1, iVar2, v);
     return v;
 }
@@ -963,9 +982,9 @@ void Mul::vector(
 }
 
 
-var Dot::alloc(var iVar) const
+var Dot::alloc(var iVar1, var iVar2) const
 {
-    var r = scalarAlloc(iVar);
+    var r = scalarAlloc(iVar1);
     return r;
 }
 
@@ -1493,5 +1512,82 @@ void Sort::vector(var iVar, var& oVar) const
 #endif
     default:
         throw error("Sort::vector: Unknown type");
+    }
+}
+
+
+var Concatenate::alloc(var iVar) const
+{
+    // Basically check that the shapes match
+    int dim = iVar[0].dim();
+    int sum = iVar[0].shape(-1);
+    for (int v=1; v<iVar.size(); v++)
+    {
+        for (int d=0; d<dim-1; d++)
+            if (iVar[v].shape(d) != iVar[0].shape(d))
+                throw error("Concatenate: dimensions differ");
+        // ...and sum the low dimensions
+        sum += iVar[v].shape(-1);
+    }
+
+    // Allocate a new shape with the summed low dimension
+    var s = iVar[0].shape();
+    s[dim-1] = sum;;
+    var r = view(s, iVar[0].at(0));
+    return r;
+}
+
+
+void Concatenate::vector(var iVar, var& oVar) const
+{
+    int sum = 0;
+    switch(oVar.atype())
+    {
+    case TYPE_FLOAT:
+        for (int i=0; i<iVar.size(); i++)
+        {
+            assert(!iVar[i].is(oVar));
+            int s = iVar[i].shape(-1);
+            blas::copy(
+                s, iVar[i].ptr<float>(), oVar.ptr<float>(sum)
+            );
+            sum += s;
+        }
+        break;
+    case TYPE_DOUBLE:
+        for (int i=0; i<iVar.size(); i++)
+        {
+            assert(!iVar[i].is(oVar));
+            int s = iVar[i].shape(-1);
+            blas::copy(
+                s, iVar[i].ptr<double>(), oVar.ptr<double>(sum)
+            );
+            sum += s;
+        }
+        break;
+    case TYPE_CFLOAT:
+        for (int i=0; i<iVar.size(); i++)
+        {
+            assert(!iVar[i].is(oVar));
+            int s = iVar[i].shape(-1);
+            blas::copy(
+                s, iVar[i].ptr<CFLOAT>(), oVar.ptr<CFLOAT>(sum)
+            );
+            sum += s;
+        }
+        break;
+    case TYPE_CDOUBLE:
+        for (int i=0; i<iVar.size(); i++)
+        {
+            assert(!iVar[i].is(oVar));
+            int s = iVar[i].shape(-1);
+            blas::copy(
+                s, iVar[i].ptr<CDOUBLE>(), oVar.ptr<CDOUBLE>(sum)
+            );
+            sum += s;
+        }
+        break;
+    default:
+        throw error("Concatenate::vector: Unknown type");
     }
 }

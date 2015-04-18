@@ -40,6 +40,14 @@ namespace blas
     void copy<double>(long iSize, double* iX, double* iY) {
         cblas_dcopy(iSize, iX, 1, iY, 1);
     }
+    template<>
+    void copy<CFLOAT>(long iSize, CFLOAT* iX, CFLOAT* iY) {
+        cblas_ccopy(iSize, iX, 1, iY, 1);
+    }
+    template<>
+    void copy<CDOUBLE>(long iSize, CDOUBLE* iX, CDOUBLE* iY) {
+        cblas_zcopy(iSize, iX, 1, iY, 1);
+    }
 
     template<>
     void axpy<float>(long iSize, float iAlpha, float* iX, float* iY) {
