@@ -33,6 +33,7 @@ set(SOURCES
   varfile.cpp
   math.cpp
   string.cpp
+  config.cpp
   )
 
 # If we have MKL then we should use the DFT and matrix transpose in MKL (in
@@ -209,6 +210,13 @@ target_link_libraries(test-lapack shared-lib)
 add_test(
   NAME lapack
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-lapack.cmake
+  )
+
+add_executable(test-config test-config.cpp)
+target_link_libraries(test-config shared-lib)
+add_test(
+  NAME config
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-config.cmake
   )
 
 # A test file specifically for exceptions
