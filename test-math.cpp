@@ -174,6 +174,8 @@ int main(int argc, char** argv)
     // Concatenate
     var vc = lv::concatenate({v1, v2});
     cout << "vc: " << v1 << v2 << vc << endl;
+    var vc1({4.0,3.0,2.0,1.0});
+    cout << "vc1: " << vc1 << lv::concatenate({vc,vc1.view({4,1})}) << endl;
 
     // Polynomial stuff
     var xpoly({1.0f, 0.0f, 0.0f, -1.0f});

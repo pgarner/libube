@@ -46,3 +46,17 @@ rows.  Row 1 of var2 is applied to row 1 of var1.
 
 4. Matrix multiplication.  var2 is a fixed matrix; it is broadcast over each
 row of var1.
+
+
+Scalars and vectors interpretted as views
+
+There are cases where something is defined in terms of a view, but the argument
+might be a scalar or vector.  How do we handle these?
+
+In C, a vector is a row vector.  To make it explicitly a column vector we need
+to say y = x.view({n,1}).
+
+There is an issue about whether to interpret a row vector as a column vector if
+it is not otherwise indicated by a view.
+
+Concatenate seems to need a column vector.
