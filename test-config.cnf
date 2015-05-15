@@ -1,0 +1,7 @@
+[Main]
+integer = 2
+string  = This is a string
+
+[Test]
+float = 2.3
+;double = 3.2
