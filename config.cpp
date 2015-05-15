@@ -21,6 +21,12 @@ Option::Option(int iArgc, char** iArgv, var iOptString)
     mOpt = -1;
 }
 
+/**
+ * A kind of trick: The getopt() call is issued by evaluating the class in a
+ * boolean context.  This is basically a while (opt) call, which is pretty much
+ * what you want.  The expression to put in the switch() is then opt.get(); no
+ * temporary variables should be needed.
+ */
 Option::operator bool()
 {
     // Should be const, but .str() isn't, so something is wrong.
@@ -54,3 +60,17 @@ Config::Config(var iStr)
     mStr = iStr.copy();
 }
 
+void Config::read(var iConfigFile)
+{
+    // Config files are .ini format
+    vfile ini("ini");
+    mCnf = ini.read(iConfigFile);
+}
+
+var Config::config()
+{
+    // If it doesn't exist, this will make the [mStr] entry
+    if (mStr)
+        return mCnf[mStr];
+    return mCnf["Main"];
+}

@@ -23,7 +23,7 @@ namespace libvar
     public:
         Option(int iArgc, char** iArgv, var iOptString=nil);
         operator bool();
-        int get() const { return mOpt; };
+        int get() const { return mOpt; }; /** Put this call in the switch() */
         ind ind() const;
         var arg() const;
         operator var();
@@ -43,10 +43,12 @@ namespace libvar
     {
     public:
         Config(var iStr=nil);
+        void read(var iConfigFile);
     protected:
-        var mAttr;
-    private:
+        var config();
         var mStr;
+    private:
+        var mCnf;
     };
 }
 

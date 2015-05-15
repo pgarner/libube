@@ -7,10 +7,24 @@
  *   Phil Garner, May 2015
  */
 
+// First so we know the includes in the header are sufficient
 #include "config.h"
+
 #include "lv.h"
 
 using namespace std;
+
+class Configurable : public lv::Config
+{
+public:
+    Configurable(lv::Config& iConfig, var iStr="Test")
+        : Config(iConfig)
+    {
+        mStr = iStr;
+    };
+
+    void dump() { std::cout << config() << std::endl; };
+};
 
 int main(int argc, char** argv)
 {
@@ -35,7 +49,15 @@ int main(int argc, char** argv)
     // The remaining opts are in context var
     var arg = opt;
     cout << "Remaining opts: " << arg << endl;
-    
+
+    // Load a config file
+    lv::Config cnf;
+    cnf.read("test-config.cnf");
+
+    // A new configurable thing
+    Configurable conf(cnf);
+    conf.dump();
+
     // Done
     return 0;
 }
