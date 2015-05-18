@@ -26,7 +26,7 @@ find_package(Boost COMPONENTS
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 
-set(HEADERS var.h ind.h lv.h varpath.h)
+set(HEADERS var.h ind.h lv.h varpath.h config.h)
 set(SOURCES
   var.cpp
   varheap.cpp
