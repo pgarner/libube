@@ -610,7 +610,7 @@ void Cast<T>::scalar(const var& iVar, var& oVar) const
     if (iVar.heap() && iVar.atype<char>())
     {
         T t;
-        vstream s(iVar);
+        varstream s(iVar);
         s.exceptions(std::ios_base::badbit | std::ios_base::failbit);
         s >> t;
         oVar = t;
@@ -1019,7 +1019,7 @@ var var::atypeStr() const
 {
     if (type() == TYPE_ARRAY)
     {
-        vstream s;
+        varstream s;
         s << "array[" << libvar::typeStr(heap()->type()) << "]";
         return var(s);
     }
@@ -1528,7 +1528,7 @@ void var::bounds(int iDim, int iIndex) const
     int d = shape(iDim);
     if (iIndex < 0 || iIndex >= d)
     {
-        vstream s("var::bounds(): index = ");
+        varstream s("var::bounds(): index = ");
         s << iIndex;
         s << ", but shape(" << iDim << ") is " << d;
         throw error(s);
@@ -1586,7 +1586,7 @@ varbuf::int_type varbuf::underflow()
     return traits_type::eof();
 }
 
-vstream::vstream(class var iVar)
+varstream::varstream(class var iVar)
     : std::iostream(0), mVarBuf(iVar)
 {
     // Tell the base class to use the buffer in the derived class
@@ -1610,7 +1610,7 @@ vstream::vstream(class var iVar)
  */
 error::error(var iVar)
 {
-    vstream vs;
+    varstream vs;
     vs << iVar;
     backTrace(vs);
     mVar = var(vs);

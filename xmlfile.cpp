@@ -19,7 +19,7 @@ namespace libvar
     /**
      * The main file handler class
      */
-    class XMLFile : public varfile
+    class XMLFile : public File
     {
     public:
         virtual var read(var iFile);

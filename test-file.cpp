@@ -19,12 +19,12 @@ int main(int argc, char** argv)
     cout << t << endl;
 
     // Read a text file via a dynamic library
-    vfile txtf("txt");
+    file txtf("txt");
     var txt = txtf.read("test.txt");
     cout << "Loaded: " << txt << endl;
 
     // Read a .ini file via a dynamic library
-    vfile inif("ini");
+    file inif("ini");
     var ini = inif.read("test.ini");
     cout << "Loaded: " << ini << endl;
 
@@ -37,16 +37,16 @@ int main(int argc, char** argv)
     var gnu;
     gnu.push("plot sin(x), \"-\"");
     gnu.push(ai);
-    vfile gnuf("gnuplot");
+    file gnuf("gnuplot");
     gnuf.write("test.eps", gnu);
 
     // gedcom
-    vfile gedf("ged");
+    file gedf("ged");
     var ged = gedf.read("test.ged");
     cout << "Loaded: " << ged << endl;
 
     // XML
-    vfile xmlf("xml");
+    file xmlf("xml");
     var xml = xmlf.read("test.xml");
     cout << "Loaded: " << xml << endl;
     xmlf.write("test-out.xml", xml);
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     // wav
     var sndAttr;
     sndAttr[lv::nil];
-    vfile wavf("snd", sndAttr);
+    file wavf("snd", sndAttr);
     var wav = wavf.read("test.wav");
     int dim = wav.dim();
     cout << "Loaded wav file:" << endl;

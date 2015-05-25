@@ -698,10 +698,10 @@ namespace libvar
     /**
      * An ostream that uses a var as the buffer
      */
-    class vstream : public std::iostream
+    class varstream : public std::iostream
     {
     public:
-        vstream(var iVar = nil);
+        varstream(var iVar = nil);
         operator var() const { return var(mVarBuf); };
         const char* str() { return var(mVarBuf).str(); };
     private:
@@ -768,10 +768,10 @@ namespace libvar
      * Abstract class for dynamically loaded file handlers.  Defines the
      * interface that file handlers must implement.
      */
-    class varfile : public Module
+    class File : public Module
     {
     public:
-        virtual ~varfile() {};
+        virtual ~File() {};
         virtual var read(var iFile) = 0;
         virtual void write(var iFile, var iVar) = 0;
     };
@@ -780,15 +780,15 @@ namespace libvar
     /**
      * Class to dynamically load a file handler
      */
-    class vfile : public module
+    class file : public module
     {
     public:
-        vfile(var iType = "txt", var iArg = nil);
+        file(var iType = "txt", var iArg = nil);
         var read(var iFile) {
-            return dynamic_cast<varfile*>(mInstance)->read(iFile);
+            return dynamic_cast<File*>(mInstance)->read(iFile);
         };
         void write(var iFile, var iVar) {
-            return dynamic_cast<varfile*>(mInstance)->write(iFile, iVar);
+            return dynamic_cast<File*>(mInstance)->write(iFile, iVar);
         };
     };
 

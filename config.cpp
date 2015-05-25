@@ -43,7 +43,7 @@ var Option::arg() const
 {
     if (!optarg)
     {
-        vstream e;
+        varstream e;
         e << "at argument " << mOpt << " optarg is null";
         throw error(e);
     }
@@ -63,7 +63,7 @@ Config::Config(var iStr)
 void Config::read(var iConfigFile)
 {
     // Config files are .ini format
-    vfile ini("ini");
+    file ini("ini");
     mCnf = ini.read(iConfigFile);
 }
 

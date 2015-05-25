@@ -12,7 +12,7 @@
 
 namespace libvar
 {
-    class sndfile : public varfile
+    class sndfile : public File
     {
     public:
         sndfile(var iAttr) { mAttr = iAttr; };

@@ -16,7 +16,7 @@ namespace libvar
     /**
      * Ad-hoc parser for GEDCOM files.
      */
-    class GEDCOM : public varfile
+    class GEDCOM : public File
     {
     public:
         GEDCOM();

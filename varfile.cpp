@@ -25,7 +25,7 @@ module::module(var iType)
     char *dle = dlerror();
 
     // Open the library
-    vstream lib;
+    varstream lib;
     lib << "lib" << iType.str() << ".so";
     mHandle = dlopen(lib.str(), RTLD_LAZY);
     if ((dle = dlerror()) != NULL)
@@ -64,7 +64,7 @@ Module* module::create(var iArg)
 }
 
 
-vfile::vfile(var iType, var iArg)
+file::file(var iType, var iArg)
     : module(iType)
 {
     create(iArg);

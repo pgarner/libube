@@ -355,7 +355,7 @@ void UnaryFunctor::broadcast(var iVar, var& oVar) const
     // Check that the array is broadcastable
     if (mDim > dimI)
     {
-        vstream s;
+        varstream s;
         s << "UnaryFunctor::broadcast: dimension too large ";
         s << mDim << " > " << dimI;
         throw error(s);

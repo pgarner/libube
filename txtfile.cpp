@@ -13,7 +13,7 @@
 
 namespace libvar
 {
-    class txtfile : public varfile
+    class txtfile : public File
     {
     public:
         virtual var read(var iFile);

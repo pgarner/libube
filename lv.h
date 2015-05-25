@@ -13,7 +13,7 @@
 namespace lv = libvar;
 typedef lv::ind ind;
 typedef lv::var var;
-typedef lv::vfile vfile;
-typedef lv::vstream vstream;
+typedef lv::file file;
+typedef lv::varstream varstream;
 
 #endif // LV_H

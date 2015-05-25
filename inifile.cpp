@@ -13,7 +13,7 @@
 
 namespace libvar
 {
-    class inifile : public varfile
+    class inifile : public File
     {
     public:
         virtual var read(var iFile);

@@ -14,7 +14,7 @@
 
 namespace libvar
 {
-    class gnuplot : public varfile
+    class gnuplot : public File
     {
     public:
         gnuplot();
@@ -74,7 +74,7 @@ void gnuplot::write(var iFile, var iVar)
         // Default to whatever gnuplot's default is, but if a file is supplied
         // then write eps to it.
         puts("set term post eps");
-        vstream vs;
+        varstream vs;
         vs << "set output " << iFile;
         puts(vs.str());
     }
@@ -100,7 +100,7 @@ void gnuplot::write(var iFile, var iVar)
                 // It's a vector of some description; data for the plot
                 for (int j=0; j<line.size(); j++)
                 {
-                    vstream vs;
+                    varstream vs;
                     vs << line.at(j);
                     puts(vs.str());
                 }
@@ -109,7 +109,7 @@ void gnuplot::write(var iFile, var iVar)
             case 2:
             {
                 // It's a matrix; write it out as a transpose
-                vstream vs;
+                varstream vs;
                 for (int j=0; j<line.shape(1); j++)
                 {
                     for (int i=0; i<line.shape(0); i++)

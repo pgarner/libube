@@ -219,15 +219,15 @@ int main(int argc, char** argv)
     cout << "New view: " << t3 << endl;
 
     // Stream
-    vstream vstr;
+    varstream vstr;
     float fl = 23e-1f;
     vstr << "H";
     cout << var(vstr) << endl;
     vstr << "ello: " << fl;
     cout << var(vstr) << endl;
 
-    // vstream as iostream
-    vstream iostr("1");
+    // varstream as std::iostream
+    varstream iostr("1");
     iostr.exceptions(ios_base::badbit | ios_base::failbit);
     iostr << " 2 3.4";
     iostr << " end";
