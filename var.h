@@ -23,7 +23,7 @@ namespace libvar
     typedef std::complex<float> cfloat;
     typedef std::complex<double> cdouble;
 
-    class varheap;
+    class Heap;
     class var;
     struct pair;
 
@@ -576,7 +576,7 @@ namespace libvar
         ind atype() const;
         var typeStr() const;
         var atypeStr() const;
-        varheap* heap() const;
+        Heap* heap() const;
         var pop();
         var top() { return at(size() - 1); };
         var& push(var iVar);
@@ -645,7 +645,7 @@ namespace libvar
             float f;
             double d;
             cfloat cf;
-            varheap* hp;
+            Heap* hp;
         };
 
         // Putting the data first makes sure it will be aligned on an
@@ -658,8 +658,8 @@ namespace libvar
         var& varderef();
         bool reference() const;
         var reference(int iIndex) const;
-        int attach(varheap* iHeap=0);
-        int detach(varheap* iHeap=0);
+        int attach(Heap* iHeap=0);
+        int detach(Heap* iHeap=0);
         int binary(var iData) const;
         void setStrides(var& iVar, int iSize, int iOffset);
     };

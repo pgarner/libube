@@ -7,8 +7,8 @@
  *   Phil Garner, August 2013
  */
 
-#ifndef VARHEAP_H
-#define VARHEAP_H
+#ifndef HEAP_H
+#define HEAP_H
 
 #include "var.h"
 
@@ -29,14 +29,14 @@ namespace libvar
      * It's just a reference counted array.  It would make sense to allocate
      * these from a pool, but for the moment they're done individually.
      */
-    class varheap
+    class Heap
     {
     public:
 
         // Special member functions
-        varheap();
-        ~varheap();
-        varheap(const varheap& iHeap, bool iAllocOnly=false);
+        Heap();
+        ~Heap();
+        Heap(const Heap& iHeap, bool iAllocOnly=false);
 
         // Templates
         template<class T> T* ptr(int iIndex=0) const {
@@ -46,10 +46,10 @@ namespace libvar
         }
 
         // Overloaded constructors
-        varheap(int iSize, ind iType);
-        varheap(int iSize, const char* iData);
-        varheap(int iSize, const int* iData);
-        varheap(int iSize, const cdouble* iData);
+        Heap(int iSize, ind iType);
+        Heap(int iSize, const char* iData);
+        Heap(int iSize, const int* iData);
+        Heap(int iSize, const cdouble* iData);
 
         // Trivial accessors
         ind type() const { return mView ? mView->type() : mType; };
@@ -67,11 +67,11 @@ namespace libvar
         void format(std::ostream& iStream, int iIndent = 0);
         var at(int iIndex, bool iKey=false) const;
         var& key(int iIndex);
-        bool neq(varheap* iHeap);
-        bool lt(varheap* iHeap);
-        void setView(varheap* iVarHeap);
+        bool neq(Heap* iHeap);
+        bool lt(Heap* iHeap);
+        void setView(Heap* iHeap);
         bool view() const { return mView; };
-        bool copyable(varheap* iHeap);
+        bool copyable(Heap* iHeap);
         var shift();
         void unshift(var iVar);
 
@@ -95,15 +95,15 @@ namespace libvar
         int mCapacity ; ///< The allocation size
         int mRefCount;  ///< Reference count
         ind mType;      ///< The data type
-        varheap* mView; ///< If this is a view, the real storage
+        Heap* mView; ///< If this is a view, the real storage
 
         // Methods
         template<class T> T* data() const;
-        void copy(const varheap* iHeap, int iSize);
+        void copy(const Heap* iHeap, int iSize);
         void alloc(int iSize);
         void dealloc(dataType iData);
         void formatView(std::ostream& iStream, int iIndent);
     };
 }
 
-#endif // VARHEAP_H
+#endif // HEAP_H

@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 #include "var.h"
-#include "varheap.h"
+#include "heap.h"
 
 #ifdef VARBOSE
 # include <cstdlib>
@@ -28,15 +28,15 @@ using namespace libvar;
 /*
  * Allow data access to be templated
  */
-template<> char* varheap::data<char>() const { return mData.cp; };
-template<> int* varheap::data<int>() const { return mData.ip; };
-template<> long* varheap::data<long>() const { return mData.lp; };
-template<> float* varheap::data<float>() const { return mData.fp; };
-template<> double* varheap::data<double>() const { return mData.dp; };
-template<> cfloat* varheap::data<cfloat>() const { return mData.cfp; };
-template<> cdouble* varheap::data<cdouble>() const { return mData.cdp; };
-template<> var* varheap::data<var>() const { return mData.vp; };
-template<> pair* varheap::data<pair>() const { return mData.pp; };
+template<> char* Heap::data<char>() const { return mData.cp; };
+template<> int* Heap::data<int>() const { return mData.ip; };
+template<> long* Heap::data<long>() const { return mData.lp; };
+template<> float* Heap::data<float>() const { return mData.fp; };
+template<> double* Heap::data<double>() const { return mData.dp; };
+template<> cfloat* Heap::data<cfloat>() const { return mData.cfp; };
+template<> cdouble* Heap::data<cdouble>() const { return mData.cdp; };
+template<> var* Heap::data<var>() const { return mData.vp; };
+template<> pair* Heap::data<pair>() const { return mData.pp; };
 
 
 int sizeOf(ind iType)
@@ -60,7 +60,7 @@ int sizeOf(ind iType)
 /**
  * Default constructor; should all be zero.
  */
-varheap::varheap()
+Heap::Heap()
 {
     mData.vp = 0;
     mSize = 0;
@@ -78,11 +78,11 @@ varheap::varheap()
  * the refcount should already be zero here.  The memory will have
  * been freed by the dealloc().
  */
-varheap::~varheap()
+Heap::~Heap()
 {
     VDEBUG(std::cout << " Dtor" << std::endl);
     if (mRefCount)
-        throw error("~varheap: reference count not zero");
+        throw error("~Heap: reference count not zero");
     if (mView)
         mView->detach();
 }
@@ -96,11 +96,11 @@ varheap::~varheap()
  * implicitly bumped.  However, if it's a view then the heap of which
  * it's a view is copied.
  */
-varheap::varheap(const varheap& iHeap, bool iAllocOnly) : varheap()
+Heap::Heap(const Heap& iHeap, bool iAllocOnly) : Heap()
 {
     mType = iHeap.mType;
     resize(iHeap.mSize);
-    mView = iHeap.mView ? new varheap(*iHeap.mView, iAllocOnly) : 0;
+    mView = iHeap.mView ? new Heap(*iHeap.mView, iAllocOnly) : 0;
     if (mView)
         mView->attach();
     if (mView || !iAllocOnly)
@@ -108,7 +108,7 @@ varheap::varheap(const varheap& iHeap, bool iAllocOnly) : varheap()
 }
 
 
-varheap::varheap(int iSize, ind iType) : varheap()
+Heap::Heap(int iSize, ind iType) : Heap()
 {
     VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
@@ -116,7 +116,7 @@ varheap::varheap(int iSize, ind iType) : varheap()
     resize(iSize);
 }
 
-varheap::varheap(int iSize, const char* iData) : varheap()
+Heap::Heap(int iSize, const char* iData) : Heap()
 {
     VDEBUG(std::cout << " Ctor: " << iData << std::endl);
     assert(iSize >= 0);
@@ -127,8 +127,8 @@ varheap::varheap(int iSize, const char* iData) : varheap()
 }
 
 
-varheap::varheap(int iSize, const int* iData)
-    : varheap(iSize, TYPE_INT)
+Heap::Heap(int iSize, const int* iData)
+    : Heap(iSize, TYPE_INT)
 {
     VDEBUG(std::cout << " Ctor(int*): " << iData << std::endl);
     for (int i=0; i<iSize; i++)
@@ -136,48 +136,48 @@ varheap::varheap(int iSize, const int* iData)
 }
 
 
-varheap::varheap(int iSize, const cdouble* iData)
-    : varheap(iSize, TYPE_CDOUBLE)
+Heap::Heap(int iSize, const cdouble* iData)
+    : Heap(iSize, TYPE_CDOUBLE)
 {
     for (int i=0; i<iSize; i++)
         mData.cdp[i] = iData[i];
 }
 
 
-int varheap::offset(int iOffset)
+int Heap::offset(int iOffset)
 {
     if (!view())
-        throw error("varheap::offset(): not a view");
+        throw error("Heap::offset(): not a view");
     if (iOffset + size() > mView->size())
-        throw error("varheap::offset(): offset too large");
+        throw error("Heap::offset(): offset too large");
     mData.ip[0] = iOffset;
     return iOffset;
 }
 
 
-int& varheap::shape(int iDim) const
+int& Heap::shape(int iDim) const
 {
     if (!view())
-        throw error("varheap::shape(): not a view");
+        throw error("Heap::shape(): not a view");
     int index = iDim*2 + 1;
     if ((index < 0) || (index >= mSize))
-        throw std::range_error("varheap::shape(): dimension out of bounds");
+        throw std::range_error("Heap::shape(): dimension out of bounds");
     return mData.ip[index];
 }
 
 
-int& varheap::stride(int iDim) const
+int& Heap::stride(int iDim) const
 {
     if (!view())
-        throw error("varheap::stride(): not a view");
+        throw error("Heap::stride(): not a view");
     int index = iDim*2 + 2;
     if ((index < 0) || (index >= mSize))
-        throw std::range_error("varheap::stride(): dimension out of bounds");
+        throw std::range_error("Heap::stride(): dimension out of bounds");
     return mData.ip[index];
 }
 
 
-int varheap::size() const
+int Heap::size() const
 {
     if (mView)
         return stride(0) * shape(0);
@@ -187,11 +187,11 @@ int varheap::size() const
 
 /**
  * Normally, x = y will copy the var such that both x and y point to
- * the same varheap.  However, if x is a view, we want the data from y
+ * the same Heap.  However, if x is a view, we want the data from y
  * to be copied into the thing of which x is a view.  This checks
  * whether that copy is possible, i.e., the types and sizes match.
  */
-bool varheap::copyable(varheap* iHeap)
+bool Heap::copyable(Heap* iHeap)
 {
     if (!view())
         return false;
@@ -228,13 +228,13 @@ int allocSize(int iSize)
     return size;
 }
 
-int varheap::attach()
+int Heap::attach()
 {
     assert(mRefCount >= 0);
     return ++mRefCount;
 }
 
-int varheap::detach()
+int Heap::detach()
 {
     assert(mRefCount > 0);
     int count = --mRefCount;
@@ -246,7 +246,7 @@ int varheap::detach()
     return count;
 }
 
-void varheap::resize(int iSize)
+void Heap::resize(int iSize)
 {
     // It is possible to resize to zero; the capacity stays the same
     assert(mCapacity >= 0);
@@ -302,7 +302,7 @@ void varheap::resize(int iSize)
  * view data itself (the array of ints).  The copy constructor calls
  * copy() twice: once for the view and once for the data.
  */
-void varheap::copy(const varheap* iHeap, int iSize)
+void Heap::copy(const Heap* iHeap, int iSize)
 {
     switch(mType)
     {
@@ -330,12 +330,12 @@ void varheap::copy(const varheap* iHeap, int iSize)
             mData.pp[i] = iHeap->mData.pp[i];
         break;
     default:
-        throw error("varheap::copy(): Unknown type");
+        throw error("Heap::copy(): Unknown type");
     }
 }
 
 
-void varheap::alloc(int iSize)
+void Heap::alloc(int iSize)
 {
     assert(iSize >= 0);
     if (iSize == 0)
@@ -377,7 +377,7 @@ void varheap::alloc(int iSize)
     }
 }
 
-void varheap::dealloc(dataType iData)
+void Heap::dealloc(dataType iData)
 {
     if (!iData.cp)
         return;
@@ -415,7 +415,7 @@ void varheap::dealloc(dataType iData)
     }
 }
 
-void varheap::format(std::ostream& iStream, int iIndent)
+void Heap::format(std::ostream& iStream, int iIndent)
 {
     if (mView)
         return formatView(iStream, iIndent);
@@ -496,7 +496,7 @@ void varheap::format(std::ostream& iStream, int iIndent)
 }
 
 
-void varheap::formatView(std::ostream& iStream, int iIndent)
+void Heap::formatView(std::ostream& iStream, int iIndent)
 {
     assert(mData.vp); // Any of the pointers
     assert(mType == TYPE_INT);
@@ -562,10 +562,10 @@ void varheap::formatView(std::ostream& iStream, int iIndent)
 }
 
 
-var varheap::at(int iIndex, bool iKey) const
+var Heap::at(int iIndex, bool iKey) const
 {
     if ( (iIndex < 0) || (iIndex >= mSize) )
-        throw std::range_error("varheap::at(): index out of bounds");
+        throw std::range_error("Heap::at(): index out of bounds");
 
     var r;
     switch (mType)
@@ -598,7 +598,7 @@ var varheap::at(int iIndex, bool iKey) const
         r = iKey ? mData.pp[iIndex].key : mData.pp[iIndex].val;
         break;
     default:
-        throw error("varheap::at(): Unknown type");
+        throw error("Heap::at(): Unknown type");
     }
 
     // Done
@@ -606,17 +606,17 @@ var varheap::at(int iIndex, bool iKey) const
 }
 
 
-var& varheap::key(int iIndex)
+var& Heap::key(int iIndex)
 {
     if (mType != TYPE_PAIR)
-        throw error("varheap::key(): Not a key:value pair");
+        throw error("Heap::key(): Not a key:value pair");
     if ( (iIndex < 0) || (iIndex >= mSize) )
-        throw std::range_error("varheap::at(): index out of bounds");
+        throw std::range_error("Heap::at(): index out of bounds");
     return mData.pp[iIndex].key;
 }
 
 
-bool varheap::neq(varheap* iHeap)
+bool Heap::neq(Heap* iHeap)
 {
     for (int i=0; i<mSize; i++)
         if (at(i) != iHeap->at(i))
@@ -625,7 +625,7 @@ bool varheap::neq(varheap* iHeap)
 }
 
 
-bool varheap::lt(varheap* iHeap)
+bool Heap::lt(Heap* iHeap)
 {
     if ( (mType == TYPE_CHAR) && (iHeap->mType == TYPE_CHAR) )
         return (std::strcmp(ptr<char>(), iHeap->ptr<char>()) < 0);
@@ -636,11 +636,11 @@ bool varheap::lt(varheap* iHeap)
 }
 
 
-void varheap::setView(varheap* iVarHeap)
+void Heap::setView(Heap* iHeap)
 {
     if (mView)
         mView->detach();
-    mView = iVarHeap->mView ? iVarHeap->mView : iVarHeap;
+    mView = iHeap->mView ? iHeap->mView : iHeap;
     mView->attach();
 }
 
@@ -649,7 +649,7 @@ void varheap::setView(varheap* iVarHeap)
  * Shift the array contents down (backwards), returning the lowest indexed
  * element that would have fallen off the bottom (front).
  */
-var varheap::shift()
+var Heap::shift()
 {
     // Move syntax is memmove(dest, src, n)
     //
@@ -700,7 +700,7 @@ var varheap::shift()
         new (&mData.pp[mSize-1]) pair();
         break;
     default:
-        throw error("varheap::shift(): Unknown type");
+        throw error("Heap::shift(): Unknown type");
     }
     resize(mSize-1);
 
@@ -712,7 +712,7 @@ var varheap::shift()
 /**
  * Shift the array contents up (forwards).
  */
-void varheap::unshift(var iVar)
+void Heap::unshift(var iVar)
 {
     resize(mSize+1);
     switch (mType)
@@ -751,8 +751,8 @@ void varheap::unshift(var iVar)
         mData.vp[0] = iVar;
         break;
     case TYPE_PAIR:
-        throw error("varheap::unshift(): Can't unshift a pair");
+        throw error("Heap::unshift(): Can't unshift a pair");
     default:
-        throw error("varheap::unshift(): Unknown type");
+        throw error("Heap::unshift(): Unknown type");
     }
 }

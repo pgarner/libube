@@ -29,7 +29,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 set(HEADERS var.h ind.h lv.h path.h config.h)
 set(SOURCES
   var.cpp
-  varheap.cpp
+  heap.cpp
   file.cpp
   math.cpp
   string.cpp

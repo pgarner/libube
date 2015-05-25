@@ -15,7 +15,7 @@
 #include <cxxabi.h>
 
 #include "var.h"
-#include "varheap.h"
+#include "heap.h"
 
 #ifdef VARBOSE
 # include <cstdlib>
@@ -286,14 +286,14 @@ var& var::operator =(var iVar)
              mData.hp && mData.hp->copyable(iVar.heap()))
     {
         // Not a reference, but we are a copyable view.
-        // This is the broadcastable set(); could use varheap::copy() instead?
+        // This is the broadcastable set(); could use Heap::copy() instead?
         set(*this, iVar, *this);
     }
     else
     {
         // Not a reference.  Record whether the old value was a heap
         // allocation. If so, detach it after attaching the new value.
-        varheap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
+        Heap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
         mData = iVar.mData;
         mType = iVar.mType;
         attach();
@@ -375,7 +375,7 @@ var::var(cfloat iData)
 var::var(cdouble iData) : var()
 {
     // cdouble is always heap-only storage
-    attach(new varheap(1, &iData));
+    attach(new Heap(1, &iData));
 }
 
 var::var(const char* iData) : var(std::strlen(iData), iData)
@@ -395,7 +395,7 @@ var::var(int iSize, const char* iData) : var()
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(char*): " << iData << std::endl);
-    attach(new varheap(iSize, iData));
+    attach(new Heap(iSize, iData));
 }
 
 var::var(int iSize, const char* const* iData) : var()
@@ -410,7 +410,7 @@ var::var(int iSize, const int* iData) : var()
 {
     assert(iSize >= 0);
     VDEBUG(std::cout << "Ctor(int*): " << iData << std::endl);
-    attach(new varheap(iSize, iData));
+    attach(new Heap(iSize, iData));
 }
 
 
@@ -547,7 +547,7 @@ var var::copy(bool iAllocOnly) const
 
     // It's a heap
     var r;
-    r.attach(new varheap(*heap(), iAllocOnly));
+    r.attach(new Heap(*heap(), iAllocOnly));
     return r;
 }
 
@@ -687,7 +687,7 @@ var var::operator [](var iVar)
     if (!v)
     {
         // A kind of constructor
-        v.attach(new varheap(0, TYPE_PAIR));
+        v.attach(new Heap(0, TYPE_PAIR));
     }
     else
         if (v.heap() && !v.atype<pair>())
@@ -736,10 +736,10 @@ bool var::is(var& iVar) const
         return true;
 
     // Are they both arrays and point to the same heap?
-    varheap* h1 = heap();
+    Heap* h1 = heap();
     if (!h1)
         return false;
-    varheap* h2 = iVar.heap();
+    Heap* h2 = iVar.heap();
     if (!h2)
         return false;
     if (h1->ptr<char>() == h2->ptr<char>())
@@ -904,7 +904,7 @@ var& var::array()
     {
         var tmp = v;
         v.mType = TYPE_ARRAY;
-        v.attach(new varheap(1, tmp.mType));
+        v.attach(new Heap(1, tmp.mType));
         v.at(0) = tmp;
     }
     return *this;
@@ -925,13 +925,13 @@ var& var::resize(int iSize)
             // Need to allocate
             if (!v)
             {
-                v.attach(new varheap(iSize, v.mType));
+                v.attach(new Heap(iSize, v.mType));
             }
             else
             {
                 var tmp = v;
                 v.mType = TYPE_ARRAY;
-                v.attach(new varheap(iSize, tmp.mType));
+                v.attach(new Heap(iSize, tmp.mType));
                 v.at(0) = tmp;
             }
         }
@@ -946,9 +946,9 @@ var& var::resize(int iSize)
 
 
 /**
- * Attaches a var to a varheap.
+ * Attaches a var to a Heap.
  */
-int var::attach(varheap* iHeap)
+int var::attach(Heap* iHeap)
 {
     if (iHeap)
     {
@@ -962,10 +962,10 @@ int var::attach(varheap* iHeap)
 
 
 /**
- * Detaches a var from a varheap.  If a varheap is passed as argument, detaches
- * from that varheap, otherwise detaches from the current one if it exists.
+ * Detaches a var from a Heap.  If a Heap is passed as argument, detaches
+ * from that Heap, otherwise detaches from the current one if it exists.
  */
-int var::detach(varheap* iHeap)
+int var::detach(Heap* iHeap)
 {
     if (iHeap)
         return iHeap->detach();
@@ -1207,7 +1207,7 @@ var& var::presize(int iSize)
  * Usable both as a boolean (if this var uses a heap allocation) and as a means
  * to get the pointer.
  */
-varheap* var::heap() const
+Heap* var::heap() const
 {
     var v(*this);
     return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
@@ -1268,7 +1268,7 @@ var& var::dereference()
         assert(mData.hp);
         int index = ~mType;
         ind type = mData.hp->type();
-        varheap* tmp = mData.hp;
+        Heap* tmp = mData.hp;
         mType = type;
         switch (type)
         {
@@ -1292,7 +1292,7 @@ var& var::dereference()
             break;
         case TYPE_CDOUBLE:
             mType = TYPE_ARRAY;
-            attach(new varheap(1, mData.hp->ptr<cdouble>(index)));
+            attach(new Heap(1, mData.hp->ptr<cdouble>(index)));
             break;
         default:
             throw error("var::dereference(): Unknown type");

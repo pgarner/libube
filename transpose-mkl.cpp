@@ -10,7 +10,7 @@
 #include <cassert>
 #include <mkl.h>
 #include "var.h"
-#include "varheap.h" // for the view transpose
+#include "heap.h" // for the view transpose
 
 namespace libvar
 {
@@ -55,7 +55,7 @@ void Transpose::scalar(const var& iVar, var& oVar) const
     {
         // Swap the trailing dimensions
         int d = iVar.dim();
-        varheap* h = iVar.heap();
+        Heap* h = iVar.heap();
         int& str1 = h->stride(d-1);
         int& shp1 = h->shape(d-1);
         int& str2 = h->stride(d-2);
