@@ -7,8 +7,8 @@
  *   Phil Garner, December 2014
  */
 
-#include <lv.h>
-#include <varpath.h>
+#include "lv.h"
+#include "path.h"
 
 int main()
 {

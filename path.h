@@ -7,8 +7,8 @@
  *   Phil Garner, December 2014
  */
 
-#ifndef VARPATH_H
-#define VARPATH_H
+#ifndef PATH_H
+#define PATH_H
 
 #include <var.h>
 
@@ -29,4 +29,4 @@ namespace libvar
     };
 };
 
-#endif // VARPATH_H
+#endif // PATH_H

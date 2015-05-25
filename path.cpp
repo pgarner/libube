@@ -13,7 +13,7 @@
  * boils down to being careful with namespaces.
  */
 
-#include "varpath.h"
+#include "path.h"
 #include "boost/filesystem/operations.hpp"
 
 namespace fs = boost::filesystem;

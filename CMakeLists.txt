@@ -26,11 +26,11 @@ find_package(Boost COMPONENTS
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 
-set(HEADERS var.h ind.h lv.h varpath.h config.h)
+set(HEADERS var.h ind.h lv.h path.h config.h)
 set(SOURCES
   var.cpp
   varheap.cpp
-  varfile.cpp
+  file.cpp
   math.cpp
   string.cpp
   config.cpp
@@ -111,7 +111,7 @@ endif (USE_STATIC)
 # directory.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(path-lib MODULE varpath.cpp)
+add_library(path-lib MODULE path.cpp)
 target_link_libraries(path-lib ${Boost_LIBRARIES})
 set_target_properties(path-lib
   PROPERTIES OUTPUT_NAME "path"
