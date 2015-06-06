@@ -7,13 +7,13 @@
  *   Phil Garner, December 2014
  */
 
-#include "lv.h"
-#include "path.h"
+#include "lube.h"
+#include "lube/path.h"
 
 int main()
 {
-    lv::module m("path");
-    lv::path* p = lv::create(m, "cmake");
+    lube::module m("path");
+    lube::path* p = lube::create(m, "cmake");
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();

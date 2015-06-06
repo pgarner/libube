@@ -12,7 +12,7 @@
 #include "kiss_fft.h"
 #include "kiss_fftr.h"
 
-#include "var.h"
+#include "lube/var.h"
 
 
 namespace kissfft
@@ -24,7 +24,7 @@ namespace kissfft
 /**
  * The Kiss DFT implementation
  */
-struct libvar::DFTImpl
+struct libube::DFTImpl
 {
     void* config;
     var forwardType;
@@ -34,7 +34,7 @@ struct libvar::DFTImpl
 };
 
 
-using namespace libvar;
+using namespace libube;
 
 
 /**

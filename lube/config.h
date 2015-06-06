@@ -10,9 +10,9 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <var.h>
+#include <lube/var.h>
 
-namespace libvar
+namespace libube
 {
     /**
      * Option class.  A thin wrapper for getopt() from the standard unix

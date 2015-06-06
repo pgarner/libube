@@ -13,13 +13,13 @@
 #include <stdexcept>
 #include <algorithm>
 
-#include "c++blas.h"
-#include "c++lapack.h"
+#include "lube/c++blas.h"
+#include "lube/c++lapack.h"
 
-#include "var.h"
+#include "lube/var.h"
 
 
-namespace libvar
+namespace libube
 {
     /*
      * The instantiations of the math and standard functors defined in this
@@ -65,7 +65,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 /**

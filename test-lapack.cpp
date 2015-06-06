@@ -7,15 +7,15 @@
  *   Phil Garner, March 2015
  */
 
-#include "lv.h"
-#include "c++lapack.h"
+#include "lube.h"
+#include "lube/c++lapack.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
     // This matrix is singular
-    var x = lv::range(1.0f, 9.0f).view({3,3});
+    var x = lube::range(1.0f, 9.0f).view({3,3});
     cout << "x is: " << x << endl;
 
     var vl = var(9, 0.0f).view({3,3});
@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     cout << "vl: " << vl << endl;
     cout << "vr: " << vr << endl;
 
-    x = lv::range(1.0f, 9.0f).view({3,3});
+    x = lube::range(1.0f, 9.0f).view({3,3});
     ret = lapack::gees(
         3, x.ptr<float>(),
         wr.ptr<float>(), wi.ptr<float>()

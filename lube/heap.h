@@ -13,7 +13,7 @@
 #include "var.h"
 
 
-namespace libvar
+namespace libube
 {
     /** Two vars */
     struct pair

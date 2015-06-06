@@ -9,16 +9,16 @@
 
 #include <cassert>
 #include <mkl.h>
-#include "var.h"
-#include "heap.h" // for the view transpose
+#include "lube/var.h"
+#include "lube/heap.h" // for the view transpose
 
-namespace libvar
+namespace libube
 {
     // The instantiation of the class
     Transpose transpose;
 }
 
-using namespace libvar;
+using namespace libube;
 
 var Transpose::alloc(var iVar) const
 {

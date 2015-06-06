@@ -12,7 +12,7 @@
 
 #include <cstdint>
 
-namespace libvar
+namespace libube
 {
     /**
      * Index type

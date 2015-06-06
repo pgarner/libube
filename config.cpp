@@ -9,9 +9,9 @@
 
 #include <unistd.h>
 
-#include "config.h"
+#include "lube/config.h"
 
-using namespace libvar;
+using namespace libube;
 
 Option::Option(int iArgc, char** iArgv, var iOptString)
 {

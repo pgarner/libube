@@ -10,9 +10,9 @@
 #include <cstdio>
 #include <stdexcept>
 
-#include <var.h>
+#include <lube/var.h>
 
-namespace libvar
+namespace libube
 {
     class gnuplot : public File
     {
@@ -33,7 +33,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 gnuplot::gnuplot()

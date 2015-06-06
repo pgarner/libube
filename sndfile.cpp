@@ -8,9 +8,9 @@
  */
 
 #include <sndfile.h>
-#include <var.h>
+#include <lube/var.h>
 
-namespace libvar
+namespace libube
 {
     class sndfile : public File
     {
@@ -30,7 +30,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 /*

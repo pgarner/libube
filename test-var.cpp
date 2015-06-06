@@ -1,7 +1,7 @@
 #include <cassert>
 #include <map>
 
-#include <lv.h>
+#include "lube.h"
 
 using namespace std;
 
@@ -23,7 +23,7 @@ void useString(var s)
 int main(int argc, char** argv)
 {
     // Timer; commented as it will never match the reference output
-    //lv::timer d("Program duration");
+    //lube::timer d("Program duration");
 
     // Copy the command line
     var arg(argc, argv);
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
     w = 'w';
     x = 2;
     y = 3.14;
-    z = lv::cos(y);
+    z = lube::cos(y);
     s = "Hello!";
     cout << (s ? "true" : "false") << endl;
     cout << (!s ? "true" : "false") << endl;
@@ -246,9 +246,9 @@ int main(int argc, char** argv)
 
     // Exception
     try {
-        throw lv::error(ts);
+        throw lube::error(ts);
     }
-    catch (lv::error e) {
+    catch (lube::error e) {
         cout << "Caught: " << e.what() << endl;
     };
 
@@ -278,18 +278,18 @@ int main(int argc, char** argv)
     cout << "Ones:  " << ones << endl;
 
     // Because it works
-    var cv = lv::range('a', 'z').view({2,13});
+    var cv = lube::range('a', 'z').view({2,13});
     cout << "cv:\n" << cv << endl;
 
     // Complex
     var fc = complex<float>(0.5, 0.7);
     cout << "fc: " << fc << endl;
-    cout << "pow(fc,2): " << lv::pow(fc, 2) << endl;
-    cout << "tan(fc): " << lv::tan(fc) << endl;
+    cout << "pow(fc,2): " << lube::pow(fc, 2) << endl;
+    cout << "tan(fc): " << lube::tan(fc) << endl;
     var dc = complex<double>(0.2, 0.8);
     cout << "dc: " << dc << endl;
-    cout << "pow(dc,2): " << lv::pow(dc, 2) << endl;
-    cout << "tan(dc): " << lv::tan(dc) << endl;
+    cout << "pow(dc,2): " << lube::pow(dc, 2) << endl;
+    cout << "tan(dc): " << lube::tan(dc) << endl;
     var dd = complex<double>(1.0, 1.2);
     dc += dd;
     cout << "dc: " << dc << endl;
@@ -303,17 +303,17 @@ int main(int argc, char** argv)
     var strs;
     strs.push("One two three o'clock four o'clock rock");
     strs.push("Five six seven o'clock eight o'clock rock");
-    var STRS = lv::toupper(strs);
+    var STRS = lube::toupper(strs);
     cout << "Lower: " << strs.tolower() << endl;
     cout << "Upper: " << STRS << endl;
 
     // Initialise an empty pair
     var nilPair;
-    nilPair[lv::nil];
+    nilPair[lube::nil];
     cout << "Nil pair: " << nilPair << endl;
     nilPair["Hi"] = 3;
     cout << "Nil pair: " << nilPair << endl;
-    nilPair[lv::nil] = 4;
+    nilPair[lube::nil] = 4;
     cout << "Nil pair: " << nilPair << endl;
 
     // UTF-8

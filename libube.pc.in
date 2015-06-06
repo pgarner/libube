@@ -5,11 +5,11 @@ exec_prefix=@EXEC_PREFIX@
 includedir=@INCLUDEDIR@
 libdir=@LIBDIR@
 
-Name: libvar
+Name: libube
 Description: A C++ class with dynamic type behaviour
-URL: https://github.com/pgarner/libvar
+URL: https://github.com/pgarner/libube
 Version: @VERSION@
-Requires: @LIBVAR_REQUIRES@
-Libs: -L${libdir} -lvar
+Requires: @LIBUBE_REQUIRES@
+Libs: -L${libdir} -lube
 Libs.private: -ldl
 Cflags: -I${includedir}

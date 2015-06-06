@@ -11,8 +11,8 @@
 #include <cstring>
 #include <stdexcept>
 
-#include "var.h"
-#include "heap.h"
+#include "lube/var.h"
+#include "lube/heap.h"
 
 #ifdef VARBOSE
 # include <cstdlib>
@@ -22,7 +22,7 @@
 #endif
 
 
-using namespace libvar;
+using namespace libube;
 
 
 /*

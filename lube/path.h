@@ -10,9 +10,9 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include <var.h>
+#include <lube/var.h>
 
-namespace libvar
+namespace libube
 {
     /** Virtual interface to path module */
     class path : public Module

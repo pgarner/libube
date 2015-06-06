@@ -8,16 +8,16 @@
  */
 
 // First so we know the includes in the header are sufficient
-#include "config.h"
+#include "lube/config.h"
 
-#include "lv.h"
+#include "lube.h"
 
 using namespace std;
 
-class Configurable : public lv::Config
+class Configurable : public lube::Config
 {
 public:
-    Configurable(lv::Config& iConfig, var iStr="Test")
+    Configurable(lube::Config& iConfig, var iStr="Test")
         : Config(iConfig)
     {
         mStr = iStr;
@@ -29,7 +29,7 @@ public:
 int main(int argc, char** argv)
 {
     // Use Option to parse the command line
-    lv::Option opt(argc, argv, "abc:");
+    lube::Option opt(argc, argv, "abc:");
     while(opt)
         switch (opt.get())
         {
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     cout << "Remaining opts: " << arg << endl;
 
     // Load a config file
-    lv::Config cnf;
+    lube::Config cnf;
     cnf.read("test-config.cnf");
 
     // A new configurable thing

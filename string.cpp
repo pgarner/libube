@@ -16,10 +16,10 @@
 // Waiting for std::regex_xxx(), but currently boost appears more reliable.
 #include <boost/regex.hpp>
 
-#include "var.h"
+#include "lube/var.h"
 
 
-namespace libvar
+namespace libube
 {
     /*
      * The instantiations of the string functors defined in this module.  They
@@ -31,7 +31,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 var StringFunctor::operator ()(const var& iVar) const

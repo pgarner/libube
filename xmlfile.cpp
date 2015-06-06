@@ -9,12 +9,12 @@
 
 #include <fstream>
 #include <stdexcept>
-#include <var.h>
+#include <lube/var.h>
 
 #include "expat.h"
 
 
-namespace libvar
+namespace libube
 {
     /**
      * The main file handler class
@@ -65,7 +65,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 var XMLFile::read(var iFile)

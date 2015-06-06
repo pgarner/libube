@@ -10,13 +10,13 @@
 #include <cassert>
 #include <mkl_dfti.h>
 
-#include "var.h"
+#include "lube/var.h"
 
 
 /**
  * The MKL DFT implementation (aka DFTI)
  */
-struct libvar::DFTImpl
+struct libube::DFTImpl
 {
     DFTI_DESCRIPTOR_HANDLE handle;
     var forwardType;
@@ -26,7 +26,7 @@ struct libvar::DFTImpl
 };
 
 
-using namespace libvar;
+using namespace libube;
 
 
 void dftiCheck(MKL_LONG iReturn)

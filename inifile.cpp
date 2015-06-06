@@ -9,9 +9,9 @@
 
 #include <fstream>
 #include <stdexcept>
-#include <var.h>
+#include <lube/var.h>
 
-namespace libvar
+namespace libube
 {
     class inifile : public File
     {
@@ -27,7 +27,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 var inifile::read(var iFile)

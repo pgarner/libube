@@ -7,14 +7,14 @@
  *   Phil Garner, February 2015
  */
 
-#include "lv.h"
+#include "lube.h"
 
 using namespace std;
 
 void function()
 {
     cout << "Throwing an exception" << endl;
-    throw lv::error("This is the exception");
+    throw lube::error("This is the exception");
 }
 
 int main()

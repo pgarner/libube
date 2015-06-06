@@ -1,5 +1,5 @@
 #include <fstream>
-#include <lv.h>
+#include <lube.h>
 
 using namespace std;
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
 
     // wav
     var sndAttr;
-    sndAttr[lv::nil];
+    sndAttr[lube::nil];
     file wavf("snd", sndAttr);
     var wav = wavf.read("test.wav");
     int dim = wav.dim();

@@ -8,13 +8,13 @@
  */
 
 // First so we know the includes in the header are sufficient
-#include "ind.h"
+#include "lube/ind.h"
 
 #include <iostream>
 #include <cassert>
 
 using namespace std;
-using namespace libvar;
+using namespace libube;
 
 int main(int argc, char** argv)
 {

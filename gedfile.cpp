@@ -8,10 +8,10 @@
  */
 
 #include <fstream>
-#include <var.h>
+#include <lube/var.h>
 
 
-namespace libvar
+namespace libube
 {
     /**
      * Ad-hoc parser for GEDCOM files.
@@ -82,7 +82,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 GEDCOM::GEDCOM()

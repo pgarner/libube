@@ -13,12 +13,12 @@
  * boils down to being careful with namespaces.
  */
 
-#include "path.h"
+#include "lube/path.h"
 #include "boost/filesystem/operations.hpp"
 
 namespace fs = boost::filesystem;
 
-namespace libvar
+namespace libube
 {
     /** Concrete implementation of path module */
     class Path : public path
@@ -40,7 +40,7 @@ namespace libvar
     }
 };
 
-using namespace libvar;
+using namespace libube;
 
 Path::Path(var iArg)
 {

@@ -9,7 +9,7 @@
 cmake_minimum_required(VERSION 3.0)
 
 # Package information
-project(libvar)
+project(libube)
 set(VERSION 0.1)
 # enable_language(Fortran)
 
@@ -26,7 +26,12 @@ find_package(Boost COMPONENTS
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 
-set(HEADERS var.h ind.h lv.h path.h config.h)
+set(HEADERS
+  lube/var.h
+  lube/ind.h
+  lube/path.h
+  lube/config.h
+  )
 set(SOURCES
   var.cpp
   heap.cpp
@@ -79,12 +84,12 @@ set(TARGET_LIBS
 # about modules.
 add_library(shared-lib SHARED ${SOURCES})
 set_target_properties(shared-lib
-  PROPERTIES OUTPUT_NAME "var"
+  PROPERTIES OUTPUT_NAME "ube"
   PUBLIC_HEADER "${HEADERS}"
-  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/libvar"
+  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/lube"
   )
 target_link_libraries(shared-lib ${TARGET_LIBS})
-list(APPEND LIBVAR_TARGETS shared-lib)
+list(APPEND LIBUBE_TARGETS shared-lib)
 
 # Static library
 #
@@ -97,10 +102,10 @@ set(USE_STATIC $ENV{USE_STATIC}
 if (USE_STATIC)
   add_library(static-lib STATIC ${SOURCES})
   set_target_properties(static-lib
-    PROPERTIES OUTPUT_NAME "var"
+    PROPERTIES OUTPUT_NAME "ube"
     )
   target_link_libraries(static-lib ${TARGET_LIBS})
-  list(APPEND LIBVAR_TARGETS static-lib)
+  list(APPEND LIBUBE_TARGETS static-lib)
 endif (USE_STATIC)
 
 # Shared dynamic libraries
@@ -225,17 +230,23 @@ target_link_libraries(throw shared-lib)
 
 # Normal install path for the library
 install(
-  TARGETS ${LIBVAR_TARGETS}
+  TARGETS ${LIBUBE_TARGETS}
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
-  PUBLIC_HEADER DESTINATION include
+  PUBLIC_HEADER DESTINATION include/lube
   )
 
 # Slightly different location for the modules
 install(
   TARGETS ${MODULE_TARGETS}
-  LIBRARY DESTINATION lib/libvar
+  LIBRARY DESTINATION lib/lube
+  )
+
+# The header "lube.h" is in the system include directory
+install(
+  FILES "lube.h"
+  DESTINATION include
   )
 
 # pkgconfig install lines
@@ -243,9 +254,9 @@ set(PREFIX ${CMAKE_INSTALL_PREFIX})
 set(EXEC_PREFIX "\${prefix}")
 set(LIBDIR "\${exec_prefix}/lib")
 set(INCLUDEDIR "\${prefix}/include")
-configure_file(libvar.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc @ONLY)
+configure_file(libube.pc.in ${CMAKE_CURRENT_BINARY_DIR}/libube.pc @ONLY)
 
 install(
-  FILES ${CMAKE_CURRENT_BINARY_DIR}/libvar.pc
+  FILES ${CMAKE_CURRENT_BINARY_DIR}/libube.pc
   DESTINATION lib/pkgconfig
   )

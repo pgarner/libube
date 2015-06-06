@@ -14,8 +14,8 @@
 #include <execinfo.h>
 #include <cxxabi.h>
 
-#include "var.h"
-#include "heap.h"
+#include "lube/var.h"
+#include "lube/heap.h"
 
 #ifdef VARBOSE
 # include <cstdlib>
@@ -25,7 +25,7 @@
 #endif
 
 
-namespace libvar
+namespace libube
 {
     /**
      * The nil var
@@ -49,7 +49,7 @@ namespace libvar
 }
 
 
-using namespace libvar;
+using namespace libube;
 
 
 /*
@@ -846,7 +846,7 @@ void var::format(std::ostream& iStream, int iIndent) const
  * in that the higher value is not included, and it starts at 0 if the lower
  * value is omitted.  To start at 1 and include the higher value, use range().
  */
-var libvar::irange(var iLo, var iHi, var iStep)
+var libube::irange(var iLo, var iHi, var iStep)
 {
     var r;
     while (iLo < iHi)
@@ -858,9 +858,9 @@ var libvar::irange(var iLo, var iHi, var iStep)
 }
 
 
-var libvar::irange(var iHi)
+var libube::irange(var iHi)
 {
-    return libvar::irange(iHi-iHi, iHi);
+    return libube::irange(iHi-iHi, iHi);
 }
 
 
@@ -872,7 +872,7 @@ var libvar::irange(var iHi)
  * a loop iterator so you tend to want {0,1,2,3}; in C++, loops use the
  * traditional for (i=0; i<N, i++) syntax, so irange() is less useful.
  */
-var libvar::range(var iLo, var iHi, var iStep)
+var libube::range(var iLo, var iHi, var iStep)
 {
     var r;
     while (iLo <= iHi)
@@ -884,13 +884,13 @@ var libvar::range(var iLo, var iHi, var iStep)
 }
 
 
-var libvar::range(var iHi)
+var libube::range(var iHi)
 {
-    return libvar::range(iHi-iHi+1, iHi);
+    return libube::range(iHi-iHi+1, iHi);
 }
 
 
-std::ostream& libvar::operator <<(std::ostream& iStream, var iVar)
+std::ostream& libube::operator <<(std::ostream& iStream, var iVar)
 {
     iVar.format(iStream);
     return iStream;
@@ -979,7 +979,7 @@ int var::detach(Heap* iHeap)
  * Maps types to strings.  Cannot be a method as it should handle
  * heap()->type() style calls too.
  */
-const char* libvar::typeStr(ind iType)
+const char* libube::typeStr(ind iType)
 {
     switch (iType)
     {
@@ -994,7 +994,7 @@ const char* libvar::typeStr(ind iType)
     case TYPE_VAR: return "var";
     case TYPE_PAIR: return "pair";
     default:
-        throw error("libvar::typeStr(): Unknown type");
+        throw error("libube::typeStr(): Unknown type");
     }
 }
 
@@ -1006,7 +1006,7 @@ const char* libvar::typeStr(ind iType)
  */
 var var::typeStr() const
 {
-    return libvar::typeStr(type());
+    return libube::typeStr(type());
 }
 
 
@@ -1020,7 +1020,7 @@ var var::atypeStr() const
     if (type() == TYPE_ARRAY)
     {
         varstream s;
-        s << "array[" << libvar::typeStr(heap()->type()) << "]";
+        s << "array[" << libube::typeStr(heap()->type()) << "]";
         return var(s);
     }
     return typeStr();
@@ -1411,7 +1411,7 @@ var var::view(var iShape, int iOffset)
  * View initialiser function.  Allocates the underlying array as well as the
  * view.
  */
-var libvar::view(const std::initializer_list<int> iShape, var iType)
+var libube::view(const std::initializer_list<int> iShape, var iType)
 {
     int s = 1;
     for (const int* it=begin(iShape); it!=end(iShape); ++it)
@@ -1426,7 +1426,7 @@ var libvar::view(const std::initializer_list<int> iShape, var iType)
  * View initialiser function.  Allocates the underlying array as well as the
  * view.
  */
-var libvar::view(var iShape, var iType)
+var libube::view(var iShape, var iType)
 {
     int s = 1;
     for (int i=0; i<iShape.size(); i++)

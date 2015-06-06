@@ -11,10 +11,10 @@
 #include <stdexcept>
 #include <dlfcn.h>
 
-#include "var.h"
+#include "lube/var.h"
 
 
-using namespace libvar;
+using namespace libube;
 
 
 module::module(var iType)

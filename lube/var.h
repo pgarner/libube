@@ -16,9 +16,9 @@
 #include <complex>
 #include <chrono>
 
-#include <ind.h>
+#include <lube/ind.h>
 
-namespace libvar
+namespace libube
 {
     typedef std::complex<float> cfloat;
     typedef std::complex<double> cdouble;
@@ -594,21 +594,21 @@ namespace libvar
         void format(std::ostream& iStream, int iIndent = 0) const;
 
         // Math functors
-        var floor() { return libvar::floor(*this, *this); };
-        var sin() { return libvar::sin(*this, *this); };
-        var cos() { return libvar::cos(*this, *this); };
-        var sqrt() { return libvar::sqrt(*this, *this); };
-        var log() { return libvar::log(*this, *this); };
-        var exp() { return libvar::exp(*this, *this); };
-        var pow(var iPow) { return libvar::pow(*this, iPow, *this); };
-        var real() { return libvar::real(*this, *this); };
-        var imag() { return libvar::imag(*this, *this); };
-        var abs() { return libvar::abs(*this, *this); };
-        var arg() { return libvar::arg(*this, *this); };
-        var norm() { return libvar::norm(*this, *this); };
+        var floor() { return libube::floor(*this, *this); };
+        var sin() { return libube::sin(*this, *this); };
+        var cos() { return libube::cos(*this, *this); };
+        var sqrt() { return libube::sqrt(*this, *this); };
+        var log() { return libube::log(*this, *this); };
+        var exp() { return libube::exp(*this, *this); };
+        var pow(var iPow) { return libube::pow(*this, iPow, *this); };
+        var real() { return libube::real(*this, *this); };
+        var imag() { return libube::imag(*this, *this); };
+        var abs() { return libube::abs(*this, *this); };
+        var arg() { return libube::arg(*this, *this); };
+        var norm() { return libube::norm(*this, *this); };
 
         // Other functors
-        var transpose() { return libvar::transpose(*this, *this); };
+        var transpose() { return libube::transpose(*this, *this); };
 
         // String functors
         var& getline(std::istream& iStream);
@@ -617,9 +617,9 @@ namespace libvar
         var search(var iRE);
         var match(var iRE);
         var replace(var iRE, var iStr);
-        var toupper() { return libvar::toupper(*this, *this); };
-        var tolower() { return libvar::tolower(*this, *this); };
-        var strip() { return libvar::strip(*this, *this); };
+        var toupper() { return libube::toupper(*this, *this); };
+        var tolower() { return libube::tolower(*this, *this); };
+        var strip() { return libube::strip(*this, *this); };
 
         // Tensors
         bool view() const;
