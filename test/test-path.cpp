@@ -13,7 +13,7 @@
 int main()
 {
     lube::module m("path");
-    lube::path* p = lube::create(m, "cmake");
+    lube::path* p = lube::create(m, "../cmake");
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();
