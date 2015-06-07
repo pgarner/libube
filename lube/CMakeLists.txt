@@ -19,7 +19,9 @@ set(HEADERS
   ind.h
   path.h
   config.h
+  graph.h
   )
+
 set(SOURCES
   var.cpp
   heap.cpp
@@ -155,6 +157,12 @@ if (EXPAT_FOUND)
     )
   list(APPEND MODULE_TARGETS xml-lib)
 endif (EXPAT_FOUND)
+
+add_library(graph-lib MODULE graph.cpp)
+set_target_properties(graph-lib
+  PROPERTIES OUTPUT_NAME "graph"
+  )
+list(APPEND MODULE_TARGETS graph-lib)
 
 # Normal install path for the library
 install(

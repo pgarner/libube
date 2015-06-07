@@ -1165,6 +1165,8 @@ var var::sort() const
 ind var::index(var iVar) const
 {
     int index;
+    if (!defined())
+        return -1;
     switch (atype())
     {
     case TYPE_PAIR:

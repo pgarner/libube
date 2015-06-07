@@ -60,3 +60,10 @@ add_test(
   NAME config
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-config.cmake
   )
+
+add_executable(test-graph test-graph.cpp)
+target_link_libraries(test-graph shared-lib)
+add_test(
+  NAME graph
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-graph.cmake
+  )
