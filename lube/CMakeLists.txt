@@ -45,7 +45,7 @@ if (USE_MKL)
   add_definitions(-DHAVE_MKL)
   message(STATUS "MKL BLAS seems available; using it for DFT & transpose")
 else (USE_MKL)
-  set(KISSDIR $ENV{KISSDIR}
+  set(KISSDIR "${CMAKE_SOURCE_DIR}/$ENV{KISSDIR}"
     CACHE FILEPATH "Path to Kiss FFT directory"
     )
   list(APPEND SOURCES
