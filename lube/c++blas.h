@@ -29,8 +29,12 @@ namespace blas
     template<class T> long iamax(long iSize, T* iX);
     template<class T> T asum(long iSize, T* iX);
     template<class T> void tbmv(long iSize, long iK, T* iA, T* ioX);
-    template<class T> void sbmv(long iSize, long iK,
-                                T iAlpha, T* iA, T* iX, T iBeta, T* ioY);
+    template<class T> void sbmv(
+        long iSize, long iK, T iAlpha, T* iA, T* iX, T iBeta, T* ioY
+    );
+    template<class T> void gemm(
+        long iM, long iN, long iK, T iAlpha, T* iA, T* iB, T iBeta, T* iC
+    );
 
     template<>
     void copy<float>(long iSize, float* iX, float* iY) {
@@ -150,6 +154,29 @@ namespace blas
         cblas_dsbmv(CblasRowMajor, CblasUpper,
                     iSize, iK,
                     iAlpha, iA, 1, iX, 1, iBeta, ioY, 1);
+    }
+
+    template<>
+    void gemm<float>(
+        long iM, long iN, long iK,
+        float iAlpha, float* iA, float* iB,
+        float iBeta, float* iC
+    ) {
+        cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                    iM, iN, iK,
+                    iAlpha, iA, iK, iB, iN,
+                    iBeta, iC, iN);
+    }
+    template<>
+    void gemm<double>(
+        long iM, long iN, long iK,
+        double iAlpha, double* iA, double* iB,
+        double iBeta, double* iC
+    ) {
+        cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+                    iM, iN, iK,
+                    iAlpha, iA, iK, iB, iN,
+                    iBeta, iC, iN);
     }
 }
 

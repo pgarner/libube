@@ -108,11 +108,15 @@ int main(int argc, char** argv)
     cout << "oTranspose:\n" << lube::transpose(r6) << endl << r6 << endl;
     cout << "iTranspose:\n" << r6.transpose() << endl << r6 << endl;
 
-    // Dot
+    // Dot.  Here, r6 is a 2x3 matrix
     var rd;
     rd = 2.0, 2.0, 2.0;
     var rd6 = lube::dot(r6, rd);
     cout << "Dot: " << rd6 << endl;
+
+    // Matrix multiply
+    var mm = var({1.0, 2.0, 3.0, 4.0}).view({2,2});
+    cout << "MM: " << lube::dot(mm, r6) << endl;
 
     // DFT
     var td = lube::view({2, 10});

@@ -417,6 +417,9 @@ void ArithmeticFunctor::scalar(
  * This default implementation encodes the offsets into views and calls the
  * vector() form without offsets.  This allocates memory, but means that the
  * implementation can be more var-like.
+ *
+ * This uses mDim.  Should it?  As long as this isn't called, we don't need
+ * mDim.  This means that dot and gemm both go through dot.
  */
 void ArithmeticFunctor::vector(
     var iVar1, ind iOffset1,
@@ -478,12 +481,15 @@ void ArithmeticFunctor::broadcast(var iVar1, var iVar2, var& oVar) const
         throw error("var::broadcast: input dimension too large");
     if (iVar1.atype() != iVar2.atype())
         throw error("var::broadcast: types must match (for now)");
+#if 0
+    // Does not work for matrix multiplication
     for (int i=1; i<dim2; i++)
     {
         // The dimensions should match
         if (iVar1.shape(dim1-i) != iVar2.shape(dim2-i))
             throw error("var::broadcast: dimension mismatch");
     }
+#endif
 
     // If it didn't throw, then the arrays are broadcastable
     // In this case, loop over iVar1 with different offsets
@@ -984,7 +990,22 @@ void Mul::vector(
 
 var Dot::alloc(var iVar1, var iVar2) const
 {
-    var r = scalarAlloc(iVar1);
+    var r;
+    if (iVar2.dim() == 1)
+        // It's a dot product, possibly broadcast
+        r = scalarAlloc(iVar1);
+    else if (iVar2.dim() == 2)
+    {
+        // It's a matrix multiplication
+        // Allocate an output array
+        if (iVar1.dim() < 2)
+            throw error("Dot::alloc: var1 dimension < 2");
+        var s = iVar1.shape();
+        s[s.size()-1] = iVar2.shape(1);
+        r = view(s, iVar1.at(0));
+    }
+    else
+        throw error("Dot::alloc: var2 dimension > 2");
     return r;
 }
 
@@ -996,47 +1017,89 @@ void Dot::vector(
 ) const
 {
     assert(type(iVar1) == TYPE_ARRAY);
-    int size = iVar2.size();
     if (iVar1.is(oVar))
         throw error("Dot::vector: Cannot operate in place");
 
-    switch(iVar1.atype())
+    if (iVar2.dim() == 1)
     {
-    case TYPE_FLOAT:
-        *oVar.ptr<float>(iOffsetO) =
-            blas::dot(
-                size,
-                iVar1.ptr<float>(iOffset1),
-                iVar2.ptr<float>(iOffset2)
-            );
-        break;
-    case TYPE_DOUBLE:
-        *oVar.ptr<double>(iOffsetO) =
-            blas::dot(
-                size,
-                iVar1.ptr<double>(iOffset1),
-                iVar2.ptr<double>(iOffset2)
-            );
-        break;
-    case TYPE_CFLOAT:
-        *oVar.ptr<cfloat>(iOffsetO) =
-            blas::dot(
-                size,
-                iVar1.ptr<cfloat>(iOffset1),
-                iVar2.ptr<cfloat>(iOffset2)
-            );
-        break;
-    case TYPE_CDOUBLE:
-        *oVar.ptr<cdouble>(iOffsetO) =
-            blas::dot(
-                size,
-                iVar1.ptr<cdouble>(iOffset1),
-                iVar2.ptr<cdouble>(iOffset2)
-            );
-        break;
-    default:
-        throw error("Dot::vector: Unknown type");
+        // It's a one dimensional thing, so do it as a dot product with
+        // blas::dot()
+        int size = iVar2.size();
+        switch(iVar1.atype())
+        {
+        case TYPE_FLOAT:
+            *oVar.ptr<float>(iOffsetO) =
+                blas::dot(
+                    size,
+                    iVar1.ptr<float>(iOffset1),
+                    iVar2.ptr<float>(iOffset2)
+                );
+            break;
+        case TYPE_DOUBLE:
+            *oVar.ptr<double>(iOffsetO) =
+                blas::dot(
+                    size,
+                    iVar1.ptr<double>(iOffset1),
+                    iVar2.ptr<double>(iOffset2)
+                );
+            break;
+        case TYPE_CFLOAT:
+            *oVar.ptr<cfloat>(iOffsetO) =
+                blas::dot(
+                    size,
+                    iVar1.ptr<cfloat>(iOffset1),
+                    iVar2.ptr<cfloat>(iOffset2)
+                );
+            break;
+        case TYPE_CDOUBLE:
+            *oVar.ptr<cdouble>(iOffsetO) =
+                blas::dot(
+                    size,
+                    iVar1.ptr<cdouble>(iOffset1),
+                    iVar2.ptr<cdouble>(iOffset2)
+                );
+            break;
+        default:
+            throw error("Dot::vector: Unknown type");
+        }
     }
+    else if (iVar2.dim() == 2)
+    {
+        // It's a two dimensional thing, so do it as a matrix multiplication
+        // with blas::gemm()
+        if (iVar1.shape(1) != iVar2.shape(0))
+        {
+            std::cout << iVar1.shape() << iVar2.shape() << std::endl;
+            throw error("Dot::vector: Shapes not compatible");
+        }
+        switch(iVar1.atype())
+        {
+        case TYPE_FLOAT:
+            blas::gemm(
+                iVar1.shape(0), iVar2.shape(1), iVar1.shape(1),
+                1.0f,
+                iVar1.ptr<float>(iOffset1),
+                iVar2.ptr<float>(iOffset2),
+                0.0f,
+                oVar.ptr<float>(iOffsetO)
+            );
+            break;
+        case TYPE_DOUBLE:
+            blas::gemm(
+                iVar1.shape(0), iVar2.shape(1), iVar1.shape(1),
+                1.0,
+                iVar1.ptr<double>(iOffset1),
+                iVar2.ptr<double>(iOffset2),
+                0.0,
+                oVar.ptr<double>(iOffsetO)
+            );
+            break;
+        default:
+            throw error("Dot::vector: Unknown type");
+        }
+    }
+    else
+        throw error("Dot::vector: Dimension > 2");
 }
 
 
