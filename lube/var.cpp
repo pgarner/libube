@@ -46,25 +46,76 @@ namespace libube
     Cast<double> castDouble;
     Cast<cfloat> castCFloat;
     Cast<cdouble> castCDouble;
+
+    /*
+     * Allow data access to be templated
+     */
+    template<> char& var::data<char>() { return mData.c; };
+    template<> int& var::data<int>() { return mData.i; };
+    template<> long& var::data<long>() { return mData.l; };
+    template<> float& var::data<float>() { return mData.f; };
+    template<> double& var::data<double>() { return mData.d; };
+    template<> cfloat& var::data<cfloat>() { return mData.cf; };
+    template<> cdouble& var::data<cdouble>() {
+        // It's too big for a var; always an array
+        return *mData.hp->ptr<cdouble>(0);
+    };
+
+
+    template<> bool var::atype<char>() const {
+        return atype() == TYPE_CHAR;
+    }
+    template<> bool var::atype<int>() const {
+        return atype() == TYPE_INT;
+    }
+    template<> bool var::atype<long>() const {
+        return atype() == TYPE_LONG;
+    }
+    template<> bool var::atype<float>() const {
+        return atype() == TYPE_FLOAT;
+    }
+    template<> bool var::atype<double>() const {
+        return atype() == TYPE_DOUBLE;
+    }
+    template<> bool var::atype<cfloat>() const {
+        return atype() == TYPE_CFLOAT;
+    }
+    template<> bool var::atype<cdouble>() const {
+        return atype() == TYPE_CDOUBLE;
+    }
+    template<> bool var::atype<var>() const {
+        return atype() == TYPE_VAR;
+    }
+    template<> bool var::atype<pair>() const {
+        return atype() == TYPE_PAIR;
+    }
+
+
+    template<> char var::cast<char>() const {
+        return castChar(*this).get<char>();
+    }
+    template<> int var::cast<int>() const {
+        return castInt(*this).get<int>();
+    }
+    template<> long var::cast<long>() const {
+        return castLong(*this).get<long>();
+    }
+    template<> float var::cast<float>() const {
+        return castFloat(*this).get<float>();
+    }
+    template<> double var::cast<double>() const {
+        return castDouble(*this).get<double>();
+    }
+    template<> cfloat var::cast<cfloat>() const {
+        return castCFloat(*this).get<cfloat>();
+    }
+    template<> cdouble var::cast<cdouble>() const {
+        return castCDouble(*this).get<cdouble>();
+    }
 }
 
 
 using namespace libube;
-
-
-/*
- * Allow data access to be templated
- */
-template<> char& var::data<char>() { return mData.c; };
-template<> int& var::data<int>() { return mData.i; };
-template<> long& var::data<long>() { return mData.l; };
-template<> float& var::data<float>() { return mData.f; };
-template<> double& var::data<double>() { return mData.d; };
-template<> cfloat& var::data<cfloat>() { return mData.cf; };
-template<> cdouble& var::data<cdouble>() {
-    // It's too big for a var; always an array
-    return *mData.hp->ptr<cdouble>(0);
-};
 
 
 /**
@@ -90,6 +141,7 @@ template<class T> T* var::ptr(ind iIndex)
     return heap() ? heap()->ptr<T>(iIndex) : &data<T>();
 }
 
+
 // Dummies to cause the above template to get instantiated.  There is probably
 // a better way than this.
 char* ptr_c(var v) { return v.ptr<char>(); };
@@ -113,57 +165,6 @@ const char* var::str()
     return ptr<char>();
 }
 
-
-template<> bool var::atype<char>() const {
-    return atype() == TYPE_CHAR;
-}
-template<> bool var::atype<int>() const {
-    return atype() == TYPE_INT;
-}
-template<> bool var::atype<long>() const {
-    return atype() == TYPE_LONG;
-}
-template<> bool var::atype<float>() const {
-    return atype() == TYPE_FLOAT;
-}
-template<> bool var::atype<double>() const {
-    return atype() == TYPE_DOUBLE;
-}
-template<> bool var::atype<cfloat>() const {
-    return atype() == TYPE_CFLOAT;
-}
-template<> bool var::atype<cdouble>() const {
-    return atype() == TYPE_CDOUBLE;
-}
-template<> bool var::atype<var>() const {
-    return atype() == TYPE_VAR;
-}
-template<> bool var::atype<pair>() const {
-    return atype() == TYPE_PAIR;
-}
-
-
-template<> char var::cast<char>() const {
-    return castChar(*this).get<char>();
-}
-template<> int var::cast<int>() const {
-    return castInt(*this).get<int>();
-}
-template<> long var::cast<long>() const {
-    return castLong(*this).get<long>();
-}
-template<> float var::cast<float>() const {
-    return castFloat(*this).get<float>();
-}
-template<> double var::cast<double>() const {
-    return castDouble(*this).get<double>();
-}
-template<> cfloat var::cast<cfloat>() const {
-    return castCFloat(*this).get<cfloat>();
-}
-template<> cdouble var::cast<cdouble>() const {
-    return castCDouble(*this).get<cdouble>();
-}
 
 /*
  * Notes

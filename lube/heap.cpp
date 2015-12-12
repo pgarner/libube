@@ -21,23 +21,23 @@
 # define VDEBUG(a)
 #endif
 
+namespace libube
+{
+    /*
+     * Allow data access to be templated
+     */
+    template<> char* Heap::data<char>() const { return mData.cp; };
+    template<> int* Heap::data<int>() const { return mData.ip; };
+    template<> long* Heap::data<long>() const { return mData.lp; };
+    template<> float* Heap::data<float>() const { return mData.fp; };
+    template<> double* Heap::data<double>() const { return mData.dp; };
+    template<> cfloat* Heap::data<cfloat>() const { return mData.cfp; };
+    template<> cdouble* Heap::data<cdouble>() const { return mData.cdp; };
+    template<> var* Heap::data<var>() const { return mData.vp; };
+    template<> pair* Heap::data<pair>() const { return mData.pp; };
+}
 
 using namespace libube;
-
-
-/*
- * Allow data access to be templated
- */
-template<> char* Heap::data<char>() const { return mData.cp; };
-template<> int* Heap::data<int>() const { return mData.ip; };
-template<> long* Heap::data<long>() const { return mData.lp; };
-template<> float* Heap::data<float>() const { return mData.fp; };
-template<> double* Heap::data<double>() const { return mData.dp; };
-template<> cfloat* Heap::data<cfloat>() const { return mData.cfp; };
-template<> cdouble* Heap::data<cdouble>() const { return mData.cdp; };
-template<> var* Heap::data<var>() const { return mData.vp; };
-template<> pair* Heap::data<pair>() const { return mData.pp; };
-
 
 int sizeOf(ind iType)
 {

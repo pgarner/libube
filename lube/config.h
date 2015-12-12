@@ -24,7 +24,7 @@ namespace libube
         Option(int iArgc, char** iArgv, var iOptString=nil);
         operator bool();
         int get() const { return mOpt; }; /** Put this call in the switch() */
-        ind ind() const;
+        ind index() const;
         var arg() const;
         operator var();
     private:

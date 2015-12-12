@@ -34,7 +34,8 @@ Option::operator bool()
     return mOpt != -1;
 }
 
-ind Option::ind() const
+// Could we just evaluate the class in an ind context?
+ind Option::index() const
 {
     return optind;
 }
