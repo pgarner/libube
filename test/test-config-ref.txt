@@ -1,0 +1,9 @@
+Option A 2
+Option C 4
+Remaining opts: {
+  "file1",
+  "file2"
+}
+{
+  ["float"] = "2.3";
+}

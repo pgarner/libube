@@ -1,0 +1,242 @@
+Arg: {
+  "./test-var",
+  "one",
+  "two",
+  "three"
+}
+Arg[0]: "./test-var"
+Arg[0][0]: '.'
+It's a dot
+There's no -f
+false
+true
+true
+false
+Var size is 16
+'w'
+2
+3.14
+-0.999999
+"Hello!"
+'H'
+'H'
+{4, 2}
+5.28
+-5.28
+a is: "Hello!"
+equal
+Calling getString()
+In getString()
+b is: "An example string with spaces."
+Using: An example string with spaces.
+b is: "An example string with spaces."
+sp is: {
+  "A",
+  " example stri",
+  "g with spaces."
+}
+"N:First;Last;;;" splits to {
+  "N:First",
+  "Last",
+  "",
+  "",
+  ""
+}
+"  Hello " strips to "Hello"
+a is: "Ndddew string"
+a is: "Ndddew stringaaa"
+arg is: {
+  "./test-var",
+  "insert",
+  "one",
+  "two",
+  "three"
+}
+arg is: {
+  "insert",
+  "one",
+  "two",
+  "three"
+}
+arg is: {
+  "one",
+  "two",
+  "three"
+} shifted: "insert"
+Joining: {
+  "one",
+  "two",
+  "three"
+}
+Joined: "one-two-three"
+{
+  "one",
+  "three",
+  "two"
+}
+0
+1
+{
+  "one",
+  "two",
+  "three",
+  "extra"
+}
+{
+  "one",
+  "two",
+  "three",
+  "extra"
+}
+{
+  "one",
+  "two",
+  "three"
+}
+{
+  "one",
+  "two",
+  "three",
+  "extra"
+}
+xa is {1, 2, 3, 4, 5}
+xa is {1, 1, 4, 7, 12}
+{
+  "Hi!"
+}
+{
+  nil,
+  "Hi!"
+}
+vmap[0] is 1
+vmap[1] is 3
+vmap["three"] is 3
+vmap is {
+  ["one"] = 1;
+  ["three"] = 3;
+  ["two"] = 2;
+}
+vmap.copy() is {
+  ["one"] = 1;
+  ["three"] = 3;
+  ["two"] = 2;
+}
+modded vmap is {
+  ["one"] = 1;
+  ["three"] = 3;
+  ["two"] = 12;
+}
+iarr is {
+  nil,
+  {
+    nil,
+    nil,
+    3,
+    nil,
+    5
+  }
+}
+wmap is {
+  ["one"] = {
+    ["four"] = "five";
+    ["two"] = "three";
+  };
+}
+wmap entry is "three"
+wmap entry is three
+{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+{
+  0, 1, 2, 3,
+  4, 5, 6, 7,
+  8, 9, 10, 11,
+  12, 13, 14, 15
+}
+2x2x4 tensor:
+{
+  0, 1, 2, 3,
+  4, 5, 6, 7
+}
+{
+  8, 9, 10, 11,
+  12, 13, 14, 15
+}
+t1(1,2): 6
+t2(1,1,2): 14
+{
+  0, 1, 2, 3,
+  4, 5, 2.3, 7,
+  8, 9, 10, 11,
+  12, 13, 14, 15
+}
+Shape: {4, 4}
+New view: {
+  0, 1, 2, 3,
+  4, 5, 2.3, 7,
+  8, 9, 10, 11,
+  12, 13, 14, 15
+}
+"H"
+"Hello: 2.3"
+"1 2 3.4 end"
+" 2 3.4 end"
+1
+" 3.4 end"
+2
+" end"
+3.4
+Caught: {0, 1, 2, 3, 4, 5, 2.3, 7, 8, 9, 10, 11, 12, 13, 14, 15}
+Call stack (size 5):
+  libube::error::backTrace(std::ostream&)
+  libube::error::error(libube::var)
+  main
+  __libc_start_main
+  _start
+Comma is: {1.2, 2, 4, 5}
+Searching ello: "Hello"
+Matches
+Matching \S+ell\S: "Hello"
+Matches
+Replaced to: "Hells bells"
+Zeros: {0, 0, 0, 0, 0}
+Ones:  {1, 1, 1, 1, 1}
+cv:
+{
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+}
+fc: (0.5,0.7)
+pow(fc,2): (-0.24,0.7)
+tan(fc): (0.312675,0.707603)
+dc: (0.2,0.8)
+pow(dc,2): (-0.6,0.32)
+tan(dc): (0.111309,0.67902)
+dc: (1.2,2)
+Upper: "THIS WAS MIXED CäSÉ"
+Lower: "this was mixed cäsÉ"
+Lower: {
+  "one two three o'clock four o'clock rock",
+  "five six seven o'clock eight o'clock rock"
+}
+Upper: {
+  "ONE TWO THREE O'CLOCK FOUR O'CLOCK ROCK",
+  "FIVE SIX SEVEN O'CLOCK EIGHT O'CLOCK ROCK"
+}
+Nil pair: {}
+Nil pair: {
+  ["Hi"] = 3;
+}
+Nil pair: {
+  ["Hi"] = 3;
+}
+{
+  ["fr"] = "C'est Français";
+  ["jp"] = "日本語です";
+}
+"one two"
+init: {
+  {
+    "one two three o'clock four o'clock rock",
+    "five six seven o'clock eight o'clock rock"
+  },
+  "This was mixed cäsÉ"
+}

@@ -9,7 +9,7 @@
 
 # Set up the test to compare reference and output files
 set(CMD ./test-math)
-set(REF test-math-ref.txt)
+set(REF ${TEST_DIR}/test-math-ref.txt)
 set(OUT test-math-out.txt)
 
 # Run the test

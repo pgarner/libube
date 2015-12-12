@@ -9,7 +9,7 @@
 
 # Set up the test to compare reference and output files
 set(CMD ./test-config)
-set(REF test-config-ref.txt)
+set(REF ${TEST_DIR}/test-config-ref.txt)
 set(OUT test-config-out.txt)
 
 # Run the test

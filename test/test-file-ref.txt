@@ -1,0 +1,95 @@
+"Line one."
+"Line two."
+{
+  "Line one.",
+  "Line two."
+}
+Loaded: {
+  "Line one.",
+  "Line two."
+}
+Loaded: {
+  ["section1"] = {
+    ["another key"] = "another val";
+    ["key"] = "val";
+  };
+  ["section2"] = {
+    ["key"] = "val";
+  };
+}
+ai is: {5, 4, 3, 2, 1}
+Loaded: {
+  ["Family"] = {
+    {
+      ["CHIL"] = {2, 3};
+      ["HUSB"] = 0;
+      ["WIFE"] = 1;
+    }
+  };
+  ["Individual"] = {
+    {
+      ["NAME"] = "Homer /Simpson/";
+      ["SEX"] = "M";
+      ["TITL"] = nil;
+    },
+    {
+      ["NAME"] = "Marge /Simpson/";
+      ["SEX"] = "F";
+      ["TITL"] = nil;
+    },
+    {
+      ["NAME"] = "Bart /Simpson/";
+      ["SEX"] = "M";
+      ["TITL"] = nil;
+    },
+    {
+      ["NAME"] = "Lisa /Simpson/";
+      ["SEX"] = "F";
+      ["TITL"] = nil;
+    }
+  };
+}
+Loaded: {
+  ["attr"] = {
+    ["id"] = "ident";
+  };
+  ["data"] = {
+    "  ",
+    {
+      ["attr"] = {
+        ["size"] = "small";
+        ["style"] = "fat";
+      };
+      ["data"] = {
+        "This is element 1"
+      };
+      ["name"] = "element1";
+    },
+    "  ",
+    {
+      ["attr"] = {
+        ["size"] = "large";
+        ["style"] = "red";
+      };
+      ["data"] = {
+        "    ",
+        "&",
+        " This is",
+        "    element 2",
+        "  "
+      };
+      ["name"] = "element2";
+    },
+    "  ",
+    {
+      ["attr"] = nil;
+      ["data"] = nil;
+      ["name"] = "element3";
+    }
+  };
+  ["name"] = "test";
+}
+Loaded wav file:
+ rate:     16000
+ channels: 1
+ frames:   51761

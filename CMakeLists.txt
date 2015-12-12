@@ -17,7 +17,7 @@ set(VERSION 0.1)
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR})
 
 enable_testing()
 

@@ -1,0 +1,7 @@
+Initial ind = 0 which is True
+but now ind = -1 which is False
+Inverts to True
+y is 6; y+3 is 9
+y is 6; y-7 is -1
+[-4 3][-3 2][-2 1][-1 0][0 -1][1 -2][2 -3][3 -4][4 -5]
+z is 6

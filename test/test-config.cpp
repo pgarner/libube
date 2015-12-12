@@ -34,13 +34,13 @@ int main(int argc, char** argv)
         switch (opt.get())
         {
         case 'a':
-            cout << "Option A " << opt.ind() << endl;
+            cout << "Option A " << opt.index() << endl;
             break;
         case 'b':
-            cout << "Option B " << opt.ind() << endl;
+            cout << "Option B " << opt.index() << endl;
             break;
         case 'c':
-            cout << "Option C " << opt.ind() << endl;
+            cout << "Option C " << opt.index() << endl;
             break;
         default:
             cout << "Unrecognised option" << endl;
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
     // Load a config file
     lube::Config cnf;
-    cnf.read("test-config.cnf");
+    cnf.read(TEST_DIR "/test-config.cnf");
 
     // A new configurable thing
     Configurable conf(cnf);

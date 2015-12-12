@@ -8,7 +8,7 @@ int main(int argc, char** argv)
     // Read a small file
     var f;
     var t;
-    ifstream is("test.txt", ifstream::in);
+    ifstream is(TEST_DIR "/test.txt", ifstream::in);
     if (is.fail())
         cout << "Open failed" << endl;
     while (f.getline(is))
@@ -18,14 +18,14 @@ int main(int argc, char** argv)
     }
     cout << t << endl;
 
-    // Read a text file via a dynamic library
+    // Read the same text file via a dynamic library
     file txtf("txt");
-    var txt = txtf.read("test.txt");
+    var txt = txtf.read(TEST_DIR "/test.txt");
     cout << "Loaded: " << txt << endl;
 
     // Read a .ini file via a dynamic library
     file inif("ini");
-    var ini = inif.read("test.ini");
+    var ini = inif.read(TEST_DIR "/test.ini");
     cout << "Loaded: " << ini << endl;
 
     // Init from comma separated list
@@ -42,12 +42,12 @@ int main(int argc, char** argv)
 
     // gedcom
     file gedf("ged");
-    var ged = gedf.read("test.ged");
+    var ged = gedf.read(TEST_DIR "/test.ged");
     cout << "Loaded: " << ged << endl;
 
     // XML
     file xmlf("xml");
-    var xml = xmlf.read("test.xml");
+    var xml = xmlf.read(TEST_DIR "/test.xml");
     cout << "Loaded: " << xml << endl;
     xmlf.write("test-out.xml", xml);
 
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     var sndAttr;
     sndAttr[lube::nil];
     file wavf("snd", sndAttr);
-    var wav = wavf.read("test.wav");
+    var wav = wavf.read(TEST_DIR "/test.wav");
     int dim = wav.dim();
     cout << "Loaded wav file:" << endl;
     cout << " rate:     " << sndAttr["rate"] << endl;

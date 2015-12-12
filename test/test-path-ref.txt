@@ -1,0 +1,15 @@
+Dir:
+{
+  ["../../cmake/FindLibUBE.cmake"] = nil;
+  ["../../cmake/FindSndFile.cmake"] = nil;
+}
+Recursive Dir:
+{
+  ["../../cmake/FindLibUBE.cmake"] = nil;
+  ["../../cmake/FindSndFile.cmake"] = nil;
+}
+Tree:
+{
+  ["FindLibUBE.cmake"] = nil;
+  ["FindSndFile.cmake"] = nil;
+}

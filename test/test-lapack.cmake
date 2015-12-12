@@ -9,7 +9,7 @@
 
 # Set up the test to compare reference and output files
 set(CMD ./test-lapack)
-set(REF test-lapack-ref.txt)
+set(REF ${TEST_DIR}/test-lapack-ref.txt)
 set(OUT test-lapack-out.txt)
 
 # Run the test

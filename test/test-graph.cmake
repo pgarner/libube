@@ -9,7 +9,7 @@
 
 # Set up the test to compare reference and output files
 set(CMD ./test-graph)
-set(REF test-graph-ref.txt)
+set(REF ${TEST_DIR}/test-graph-ref.txt)
 set(OUT test-graph-out.txt)
 
 # Run the test
