@@ -41,6 +41,10 @@ void Nary::vector(var iVar, var& oVar) const
 
 int main(int argc, char** argv)
 {
+    // Set the FP precision to be less than the difference between different
+    // numerical libraries
+    std::cout.precision(4);
+
     // BLAS
     var bt;
     bt = 1.0f, 1.2f, 0.8f, -2.0f;

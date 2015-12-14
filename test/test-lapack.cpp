@@ -14,6 +14,10 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
+    // Set the FP precision to be less than the difference between different
+    // numerical libraries
+    std::cout.precision(4);
+
     // This matrix is singular
     var x = lube::range(1.0f, 9.0f).view({3,3});
     cout << "x is: " << x << endl;
