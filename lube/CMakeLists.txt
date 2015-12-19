@@ -13,6 +13,7 @@ find_package(Boost COMPONENTS
   filesystem REQUIRED
   system REQUIRED
   )
+include_directories(${Boost_INCLUDE_DIR})
 
 set(HEADERS
   var.h
@@ -29,6 +30,7 @@ set(SOURCES
   math.cpp
   string.cpp
   config.cpp
+  clapack.cpp
   )
 
 # If we have MKL then we should use the DFT and matrix transpose in MKL (in
@@ -178,4 +180,3 @@ install(
   TARGETS ${MODULE_TARGETS}
   LIBRARY DESTINATION lib/lube
   )
-

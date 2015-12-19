@@ -33,11 +33,8 @@ then
     cp CBLAS/include/cblas.h .
 fi
 
-# And the reference LAPACKE headers
-for f in lapacke lapacke_config lapacke_mangling
-do
-    if [ ! -e $f.h ]
-    then
-        wget http://www.netlib.org/lapack/$f.h
-    fi
-done
+# And the reference clapack header
+if [ ! -e clapack.h ]
+then
+    wget http://www.netlib.org/clapack/clapack.h
+fi
