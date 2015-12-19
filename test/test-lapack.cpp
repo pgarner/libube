@@ -32,8 +32,11 @@ int main(int argc, char** argv)
         wr.ptr<float>(), wi.ptr<float>(),
         z, vr.ptr<float>()
     );
+
+    // Because x is singular, the last eigenvalue is sensitive to numerical
+    // precision.  So don't print wr as it varies across implementation.
     cout << "ret: " << ret << endl;
-    cout << "wr: " << wr << endl;
+    cout << "wr[0]: " << wr[0] << endl;
     cout << "wi: " << wi << endl;
     cout << "vl: " << vl << endl;
     cout << "vr: " << vr << endl;
@@ -43,7 +46,7 @@ int main(int argc, char** argv)
         3, x.ptr<float>(),
         wr.ptr<float>(), wi.ptr<float>()
     );
-    cout << "wr: " << wr << endl;
+    cout << "wr[0]: " << wr[0] << endl;
     cout << "wi: " << wi << endl;
 
     return 0;
