@@ -24,16 +24,8 @@ then
     tar zxf $KISSDIR.tar.gz
 fi
 
-# Download the reference cblas header.  This saves headaches with it being
+# Download the reference clapack header.  This saves headaches with it being
 # hidden in other optimised libraries (mkl.h ...)
-if [ ! -e cblas.h ]
-then
-    wget http://www.netlib.org/blas/blast-forum/cblas.tgz
-    tar zxf cblas.tgz
-    cp CBLAS/include/cblas.h .
-fi
-
-# And the reference clapack header
 if [ ! -e clapack.h ]
 then
     wget http://www.netlib.org/clapack/clapack.h

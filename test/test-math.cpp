@@ -112,7 +112,10 @@ int main(int argc, char** argv)
     cout << "oTranspose:\n" << lube::transpose(r6) << endl << r6 << endl;
     cout << "iTranspose:\n" << r6.transpose() << endl << r6 << endl;
 
-    // Dot.  Here, r6 is a 2x3 matrix
+    // Dot.  Start with single precision
+    cout << "sdot: " << lube::dot(bt, bt) << endl;
+
+    //Here, r6 is a 2x3 matrix
     var rd;
     rd = 2.0, 2.0, 2.0;
     var rd6 = lube::dot(r6, rd);

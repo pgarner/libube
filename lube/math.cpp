@@ -1634,7 +1634,7 @@ void Concatenate::vector(var iVar, var& oVar) const
             assert(!iVar[i].is(oVar));
             int s = iVar[i].shape(-1);
             blas::copy(
-                s, iVar[i].ptr<CFLOAT>(), oVar.ptr<CFLOAT>(sum)
+                s, iVar[i].ptr<cfloat>(), oVar.ptr<cfloat>(sum)
             );
             sum += s;
         }
@@ -1645,7 +1645,7 @@ void Concatenate::vector(var iVar, var& oVar) const
             assert(!iVar[i].is(oVar));
             int s = iVar[i].shape(-1);
             blas::copy(
-                s, iVar[i].ptr<CDOUBLE>(), oVar.ptr<CDOUBLE>(sum)
+                s, iVar[i].ptr<cdouble>(), oVar.ptr<cdouble>(sum)
             );
             sum += s;
         }
