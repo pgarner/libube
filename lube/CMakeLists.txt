@@ -108,31 +108,35 @@ endif (USE_STATIC)
 # directory.
 
 add_library(path-lib MODULE path.cpp)
-target_link_libraries(path-lib ${Boost_LIBRARIES})
+target_link_libraries(path-lib shared-lib)
 set_target_properties(path-lib
   PROPERTIES OUTPUT_NAME "path"
   )
 list(APPEND MODULE_TARGETS path-lib)
 
 add_library(txt-lib MODULE txtfile.cpp)
+target_link_libraries(txt-lib shared-lib)
 set_target_properties(txt-lib
   PROPERTIES OUTPUT_NAME "txt"
   )
 list(APPEND MODULE_TARGETS txt-lib)
 
 add_library(ini-lib MODULE inifile.cpp)
+target_link_libraries(ini-lib shared-lib)
 set_target_properties(ini-lib
   PROPERTIES OUTPUT_NAME "ini"
   )
 list(APPEND MODULE_TARGETS ini-lib)
 
 add_library(gnuplot-lib MODULE gnuplot.cpp)
+target_link_libraries(gnuplot-lib shared-lib)
 set_target_properties(gnuplot-lib
   PROPERTIES OUTPUT_NAME "gnuplot"
   )
 list(APPEND MODULE_TARGETS gnuplot-lib)
 
 add_library(ged-lib MODULE gedfile.cpp)
+target_link_libraries(ged-lib shared-lib)
 set_target_properties(ged-lib
   PROPERTIES OUTPUT_NAME "ged"
   )
@@ -142,7 +146,7 @@ find_package(SndFile)
 if (SNDFILE_FOUND)
   include_directories(${SNDFILE_INCLUDE_DIR})
   add_library(snd-lib MODULE sndfile.cpp)
-  target_link_libraries(snd-lib ${SNDFILE_LIBRARIES})
+  target_link_libraries(snd-lib shared-lib ${SNDFILE_LIBRARIES})
   set_target_properties(snd-lib
     PROPERTIES OUTPUT_NAME "snd"
     )
@@ -153,7 +157,7 @@ find_package(EXPAT)
 if (EXPAT_FOUND)
   include_directories(${EXPAT_INCLUDE_DIR})
   add_library(xml-lib MODULE xmlfile.cpp)
-  target_link_libraries(xml-lib ${EXPAT_LIBRARIES})
+  target_link_libraries(xml-lib shared-lib ${EXPAT_LIBRARIES})
   set_target_properties(xml-lib
     PROPERTIES OUTPUT_NAME "xml"
     )
@@ -161,6 +165,7 @@ if (EXPAT_FOUND)
 endif (EXPAT_FOUND)
 
 add_library(graph-lib MODULE graph.cpp)
+target_link_libraries(graph-lib shared-lib)
 set_target_properties(graph-lib
   PROPERTIES OUTPUT_NAME "graph"
   )

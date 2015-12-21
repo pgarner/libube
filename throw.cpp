@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void function()
+void myfunction()
 {
     cout << "Throwing an exception" << endl;
     throw lube::error("This is the exception");
@@ -20,6 +20,6 @@ void function()
 int main()
 {
     cout << "Calling a function" << endl;
-    function();
+    myfunction();
     return 0;
 }
