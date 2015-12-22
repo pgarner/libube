@@ -8,12 +8,17 @@
 #
 
 find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
 find_package(Boost COMPONENTS
   regex REQUIRED
   filesystem REQUIRED
   system REQUIRED
   )
-include_directories(${Boost_INCLUDE_DIR})
+include_directories(
+  ${BLAS_INCLUDE_DIR}
+  ${LAPACK_INCLUDE_DIR}
+  ${Boost_INCLUDE_DIR}
+  )
 
 set(HEADERS
   var.h
@@ -64,6 +69,7 @@ endif (USE_MKL)
 set(TARGET_LIBS
   -ldl
   ${BLAS_LIBRARIES}
+  ${LAPACK_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${Boost_LIBRARIES}
   )
