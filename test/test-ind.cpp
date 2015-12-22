@@ -19,7 +19,7 @@ using namespace libube;
 int main(int argc, char** argv)
 {
     ind x;
-    assert(ind::size());
+    assert(sizeof(ind) == sizeof(size_t));
 
     // Positive is true and negative is false
     cout << "Initial ind = " << x;
