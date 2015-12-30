@@ -127,6 +127,10 @@ void DFT::scalar(const var& iVar, var& oVar) const
 
     // DFT always broadcasts to vector()
     broadcast(iVar, oVar);
+
+    // Kiss does not include the divide by N on the inverse
+    if (mImpl->inverse)
+        oVar /= mImpl->oSize;
 }
 
 void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
