@@ -26,6 +26,8 @@ set(HEADERS
   path.h
   config.h
   graph.h
+  c++blas.h
+  c++lapack.h
   )
 
 set(SOURCES
