@@ -244,14 +244,6 @@ int main(int argc, char** argv)
     cout << var(iostr) << endl;
     cout << iof << endl;
 
-    // Exception
-    try {
-        throw lube::error(ts);
-    }
-    catch (lube::error e) {
-        cout << "Caught: " << e.what() << endl;
-    };
-
     // Init by overloading operator,()
     var comma;
     comma = 1.2, 2.0, 4, 5;

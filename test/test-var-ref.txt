@@ -184,13 +184,6 @@ New view: {
 2
 " end"
 3.4
-Caught: {0, 1, 2, 3, 4, 5, 2.3, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-Call stack (size 5):
-  libube::error::backTrace(std::ostream&)
-  libube::error::error(libube::var)
-  main
-  __libc_start_main
-  _start
 Comma is: {1.2, 2, 4, 5}
 Searching ello: "Hello"
 Matches

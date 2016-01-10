@@ -17,8 +17,22 @@ void myfunction()
     throw lube::error("This is the exception");
 }
 
+/**
+ * Exceptions either crash (right not on mac) or produce different stack traces
+ * (Debian vs. Arch), so they're not very good for test cases.
+ */
 int main()
 {
+    // Exception
+    var ts = "Exception string";
+    try {
+        throw lube::error(ts);
+    }
+    catch (lube::error e) {
+        cout << "Caught: " << e.what() << endl;
+    };
+
+    // Throw in a function
     cout << "Calling a function" << endl;
     myfunction();
     return 0;
