@@ -20,9 +20,6 @@ rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 # Try for MKL; otherwise it'll find OpenBLAS or the like
 # export BLA_VENDOR=Intel10_64lp
 
-# Point to Kiss
-export KISSDIR=kiss_fft130
-
 # Build the static library?
 export USE_STATIC=0
 

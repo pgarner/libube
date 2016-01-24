@@ -15,9 +15,10 @@ set(VERSION 0.1)
 
 # add_definitions(-DVARBOSE)
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+set(KISSFFT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/kissfft")
 set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 enable_testing()
 
@@ -26,7 +27,7 @@ add_subdirectory(test)
 
 # A test file specifically for exceptions
 add_executable(throw throw.cpp)
-target_link_libraries(throw shared-lib)
+target_link_libraries(throw lube-shared)
 
 # The header "lube.h" is in the system include directory
 install(

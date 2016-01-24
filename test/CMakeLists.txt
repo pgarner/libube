@@ -27,49 +27,49 @@ add_test(
   )
 
 add_executable(test-var test-var.cpp)
-target_link_libraries(test-var shared-lib)
+target_link_libraries(test-var lube-shared)
 add_test(
   NAME var
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-var.cmake
   )
 
 add_executable(test-file test-file.cpp)
-target_link_libraries(test-file shared-lib)
+target_link_libraries(test-file lube-shared)
 add_test(
   NAME file
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-file.cmake
   )
 
 add_executable(test-math test-math.cpp)
-target_link_libraries(test-math shared-lib)
+target_link_libraries(test-math lube-shared)
 add_test(
   NAME math
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-math.cmake
   )
 
 add_executable(test-path test-path.cpp)
-target_link_libraries(test-path shared-lib)
+target_link_libraries(test-path lube-shared)
 add_test(
   NAME path
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-path.cmake
   )
 
 add_executable(test-lapack test-lapack.cpp)
-target_link_libraries(test-lapack shared-lib)
+target_link_libraries(test-lapack lube-shared)
 add_test(
   NAME lapack
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-lapack.cmake
   )
 
 add_executable(test-config test-config.cpp)
-target_link_libraries(test-config shared-lib)
+target_link_libraries(test-config lube-shared)
 add_test(
   NAME config
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-config.cmake
   )
 
 add_executable(test-graph test-graph.cpp)
-target_link_libraries(test-graph shared-lib)
+target_link_libraries(test-graph lube-shared)
 add_test(
   NAME graph
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-graph.cmake

@@ -12,21 +12,23 @@
 if [ ! -e arctic_a0001.wav ]
 then
     arctic=http://www.speech.cs.cmu.edu/cmu_arctic
-    wget $arctic/cmu_us_bdl_arctic/wav/arctic_a0001.wav
+    curl -LO $arctic/cmu_us_bdl_arctic/wav/arctic_a0001.wav
     ln -s ../arctic_a0001.wav test/test.wav
 fi
 
 # Download Kiss FFT (whether or not it's needed)
+export KISSDIR=kiss_fft130
 if [ ! -e $KISSDIR ]
 then
     kisssrc=http://sourceforge.net/projects/kissfft/files/kissfft/v1_3_0
-    wget $kisssrc/$KISSDIR.tar.gz
+    curl -LO $kisssrc/$KISSDIR.tar.gz
     tar zxf $KISSDIR.tar.gz
+    ln -sf $KISSDIR kissfft
 fi
 
 # Download the reference clapack header.  This saves headaches with it being
 # hidden in other optimised libraries (mkl.h ...)
 if [ ! -e clapack.h ]
 then
-    wget http://www.netlib.org/clapack/clapack.h
+    curl -LO http://www.netlib.org/clapack/clapack.h
 fi
