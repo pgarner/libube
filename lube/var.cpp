@@ -810,9 +810,10 @@ void var::format(std::ostream& iStream, int iIndent) const
         if (heap())
             heap()->format(iStream, iIndent);
         else
-            iStream << "nil";
+            iStream << "null";
         break;
     case TYPE_CHAR:
+        // This is probably not JSON
         iStream << "\'";
         iStream << get<char>();
         iStream << "\'";

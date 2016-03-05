@@ -435,9 +435,10 @@ void Heap::format(std::ostream& iStream, int iIndent)
             iStream << "\n";
             for (int j=0; j<iIndent+2; j++)
                 iStream << " ";
-            iStream << "[" << at(i, true) << "] = ";
+            iStream << at(i, true) << ": ";
             at(i).format(iStream, iIndent+2);
-            iStream << ";";
+            if (i < mSize-1)
+                iStream << ",";
         }
         if (mSize)
         {
@@ -448,7 +449,7 @@ void Heap::format(std::ostream& iStream, int iIndent)
         iStream << "}";
         break;
     case TYPE_VAR:
-        iStream << "{\n";
+        iStream << "[\n";
         for (int i=0; i<mSize; i++)
         {
             for (int j=0; j<iIndent+2; j++)
@@ -460,7 +461,7 @@ void Heap::format(std::ostream& iStream, int iIndent)
         }
         for (int j=0; j<iIndent; j++)
             iStream << " ";
-        iStream << "}";
+        iStream << "]";
         break;
     case TYPE_CDOUBLE:
         // Don't call at(); it will just create more arrays & loop
@@ -468,7 +469,7 @@ void Heap::format(std::ostream& iStream, int iIndent)
             iStream << *ptr<cdouble>(0);
         else
         {
-            iStream << "{\n";
+            iStream << "[\n";
             for (int i=0; i<mSize; i++)
             {
                 for (int j=0; j<iIndent+2; j++)
@@ -480,18 +481,18 @@ void Heap::format(std::ostream& iStream, int iIndent)
             }
             for (int j=0; j<iIndent; j++)
                 iStream << " ";
-            iStream << "}";
+            iStream << "]";
         }
         break;
     default:
-        iStream << "{";
+        iStream << "[";
         for (int i=0; i<mSize; i++)
         {
             if (i != 0)
                 iStream << ", ";
             iStream << at(i);
         }
-        iStream << "}";
+        iStream << "]";
     }
 }
 
@@ -517,14 +518,14 @@ void Heap::formatView(std::ostream& iStream, int iIndent)
     // If it's less than 2D, just print it as with format
     if (nDim < 2)
     {
-        iStream << "{";
+        iStream << "[";
         for (int i=0; i<size(); i++)
         {
             iStream << mView->at(i + offset());
             if (i != size()-1 )
                 iStream << ", ";
         }
-        iStream << "}";
+        iStream << "]";
         return;
     }
 
@@ -538,7 +539,7 @@ void Heap::formatView(std::ostream& iStream, int iIndent)
     int nCols = shape(nDim-1);
     for (int k=0; k<nMats; k++)
     {
-        iStream << "{\n";
+        iStream << "[\n";
         for (int j=0; j<nRows; j++)
         {
             for (int k=0; k<iIndent+2; k++)
@@ -555,7 +556,7 @@ void Heap::formatView(std::ostream& iStream, int iIndent)
         }
         for (int j=0; j<iIndent; j++)
             iStream << " ";
-        iStream << "}";
+        iStream << "]";
         if (k != nMats-1)
             iStream << std::endl;
     }

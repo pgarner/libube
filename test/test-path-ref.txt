@@ -1,15 +1,18 @@
 Dir:
 {
-  ["../../cmake/FindLibUBE.cmake"] = nil;
-  ["../../cmake/FindSndFile.cmake"] = nil;
+  "../../cmake/FindLibUBE.cmake": null,
+  "../../cmake/FindSndFile.cmake": null,
+  "../../cmake/cfind.sh": null
 }
 Recursive Dir:
 {
-  ["../../cmake/FindLibUBE.cmake"] = nil;
-  ["../../cmake/FindSndFile.cmake"] = nil;
+  "../../cmake/FindLibUBE.cmake": null,
+  "../../cmake/FindSndFile.cmake": null,
+  "../../cmake/cfind.sh": null
 }
 Tree:
 {
-  ["FindLibUBE.cmake"] = nil;
-  ["FindSndFile.cmake"] = nil;
+  "FindLibUBE.cmake": null,
+  "FindSndFile.cmake": null,
+  "cfind.sh": null
 }
