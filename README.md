@@ -115,6 +115,17 @@ and audio files via `sndfile`.
 The module concept extends beyond file loading; there is a graph class that
 wraps `boost::graph`.
 
+## Other bells, whistles and dagashi
+
+Lube uses the C++ ABI to generate stack traces when exceptions are thrown.
+
+It wraps the `boost::file` class to give platform independent path operations.
+
+The headers `c++blas.h` and `c++lapack.h` provide templated calls such that
+functions using BLAS or LAPACK can themselves be templates.  LAPACK
+eigen-solvers are used to implement a polynomial solver.
+
+
 --
 [Phil Garner](http://www.idiap.ch/~pgarner)
 September 2013
