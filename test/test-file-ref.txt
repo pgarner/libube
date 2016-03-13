@@ -49,46 +49,50 @@ Loaded: {
     }
   ]
 }
-Loaded: {
-  "attr": {
+Loaded: [
+  "test",
+  {
     "id": "ident"
   },
-  "data": [
+  "text",
+  [
     "  ",
-    {
-      "attr": {
+    [
+      "element1",
+      {
         "size": "small",
         "style": "fat"
       },
-      "data": [
+      "text",
+      [
         "This is element 1"
-      ],
-      "name": "element1"
-    },
+      ]
+    ],
     "  ",
-    {
-      "attr": {
+    [
+      "element2",
+      {
         "size": "large",
         "style": "red"
       },
-      "data": [
+      "text",
+      [
         "    ",
         "&",
         " This is",
         "    element 2",
         "  "
-      ],
-      "name": "element2"
-    },
+      ]
+    ],
     "  ",
-    {
-      "attr": null,
-      "data": null,
-      "name": "element3"
-    }
-  ],
-  "name": "test"
-}
+    [
+      "element3",
+      null,
+      "text",
+      null
+    ]
+  ]
+]
 Loaded wav file:
  rate:     16000
  channels: 1
