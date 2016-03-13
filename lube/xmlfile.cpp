@@ -10,8 +10,9 @@
 #include <fstream>
 #include <stdexcept>
 #include <lube/var.h>
+#include <lube/data.h>
 
-#include "expat.h"
+#include <expat.h>
 
 
 namespace libube
@@ -195,10 +196,11 @@ var Expat::element()
     static var elem;
     if (!elem)
     {
-        var nil;
-        elem["name"] = nil;
-        elem["attr"] = nil;
-        elem["data"] = nil;
+        // DATA first means it gets allocated in one block
+        elem[DATA] = nil;
+        elem[NAME] = nil;
+        elem[ATTR] = nil;
+        elem[TYPE] = "text";
     }
     return elem.copy();
 }
@@ -208,14 +210,14 @@ void Expat::startElementHandler(const XML_Char *iName, const XML_Char **iAtts)
 {
     var elem = element();
     if (mStack)
-        mStack.top()["data"].push(elem);
+        mStack.top()[DATA].push(elem);
     else
         mVar = elem;
     mStack.push(elem);
-    elem["name"] = iName;
+    elem[NAME] = iName;
     while (*iAtts)
     {
-        elem["attr"][iAtts[0]] = iAtts[1];
+        elem[ATTR][iAtts[0]] = iAtts[1];
         iAtts += 2;
     }
 }
@@ -223,7 +225,7 @@ void Expat::startElementHandler(const XML_Char *iName, const XML_Char **iAtts)
 
 void Expat::endElementHandler(const XML_Char *iName)
 {
-    if (mStack.top()["name"] != iName)
+    if (mStack.top()[NAME] != iName)
         throw error("Expat::endElementHandler: malformed xml");
     mStack.pop();
 }
@@ -232,7 +234,7 @@ void Expat::endElementHandler(const XML_Char *iName)
 void Expat::characterDataHandler(const XML_Char *iStr, int iLen)
 {
     var str(iLen, iStr);
-    mStack.top()["data"].push(str);
+    mStack.top()[DATA].push(str);
 }
 
 
@@ -255,13 +257,13 @@ void XMLWriter::write(const char* iFile, var iVar)
 bool XMLWriter::writeElem(std::ofstream& iOS, var iVar)
 {
     // Exit if it's not an element
-    if (!iVar.index("name"))
+    if ((iVar.size() != 4) || (iVar[TYPE] != "text"))
         return false;
 
     // It's an element
-    var name = iVar["name"];
-    var attr = iVar["attr"];
-    var data = iVar["data"];
+    var name = iVar[NAME];
+    var attr = iVar[ATTR];
+    var data = iVar[DATA];
     iOS << "<" << name.str();
     if (attr)
         for (int i=0; i<attr.size(); i++)
