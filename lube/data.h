@@ -13,12 +13,12 @@
 namespace libube
 {
     /**
-     * Generic data descriptor
+     * Generic element descriptor
      *
      * The descriptor has four entries corresponding to the four fields of a
      * vCard or jCard.  They also work for XML, where TYPE is not needed.
      */
-    enum {
+    enum ELEM {
         NAME,
         ATTR,
         TYPE,

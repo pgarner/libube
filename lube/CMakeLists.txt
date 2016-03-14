@@ -28,6 +28,7 @@ set(HEADERS
   graph.h
   c++blas.h
   c++lapack.h
+  data.h
   )
 
 set(SOURCES
