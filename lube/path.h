@@ -18,8 +18,8 @@ namespace libube
     class path : public Module
     {
     public:
-        virtual var dir() = 0;
-        virtual var rdir() = 0;
+        virtual var dir(bool iVal=false) = 0;
+        virtual var rdir(bool iVal=false) = 0;
         virtual var tree() = 0;
     };
 

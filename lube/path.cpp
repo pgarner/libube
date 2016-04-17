@@ -25,8 +25,8 @@ namespace libube
     {
     public:
         Path(var iArg);
-        var dir();
-        var rdir();
+        var dir(bool iVal);
+        var rdir(bool iVal);
         var tree();
     private:
         fs::path mPath;
@@ -47,7 +47,7 @@ Path::Path(var iArg)
     mPath = iArg ? iArg.str() : fs::initial_path();
 }
 
-var Path::dir()
+var Path::dir(bool iVal)
 {
     if (!exists(mPath))
         throw error("dir: path doesn't exist");
@@ -55,20 +55,20 @@ var Path::dir()
     var dir;
     fs::directory_iterator end;
     for (fs::directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = nil;
+        dir[it->path().c_str()] = iVal ? it->path().stem().c_str() : nil;
     
     return dir;
 }
 
-var Path::rdir()
+var Path::rdir(bool iVal)
 {
     if (!exists(mPath))
-        throw error("dir: path doesn't exist");
+        throw error("rdir: path doesn't exist");
 
     var dir;
     fs::recursive_directory_iterator end;
     for (fs::recursive_directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = nil;
+        dir[it->path().c_str()] = iVal ? it->path().stem().c_str() : nil;
     
     return dir;
 }

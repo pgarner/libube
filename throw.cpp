@@ -18,7 +18,7 @@ void myfunction()
 }
 
 /**
- * Exceptions either crash (right not on mac) or produce different stack traces
+ * Exceptions either crash (right now on mac) or produce different stack traces
  * (Debian vs. Arch), so they're not very good for test cases.
  */
 int main()
