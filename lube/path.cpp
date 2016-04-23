@@ -55,8 +55,16 @@ var Path::dir(bool iVal)
     var dir;
     fs::directory_iterator end;
     for (fs::directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = iVal ? it->path().stem().c_str() : nil;
-    
+    {
+        var val; // = nil
+        if (iVal)
+        {
+            val[2] = it->path().extension().c_str();
+            val[1] = it->path().stem().c_str();
+            val[0] = it->path().parent_path().c_str();
+        }
+        dir[it->path().c_str()] = val;
+    }
     return dir;
 }
 
@@ -68,8 +76,16 @@ var Path::rdir(bool iVal)
     var dir;
     fs::recursive_directory_iterator end;
     for (fs::recursive_directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = iVal ? it->path().stem().c_str() : nil;
-    
+    {
+        var val; // = nil
+        if (iVal)
+        {
+            val[2] = it->path().extension().c_str();
+            val[1] = it->path().stem().c_str();
+            val[0] = it->path().parent_path().c_str();
+        }
+        dir[it->path().c_str()] = val;
+    }
     return dir;
 }
 
