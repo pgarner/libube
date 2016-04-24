@@ -9,7 +9,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <cstring>
 #include <stdexcept>
 #include <algorithm>
 
@@ -88,14 +87,6 @@ ind type(var iVar)
  * the same type and shape.  Only the allocation is done; data is not copied.
  */
 var UnaryFunctor::alloc(var iVar) const
-{
-    var r;
-    r = iVar.copy(true);
-    return r;
-}
-
-
-var StringFunctor::alloc(var iVar) const
 {
     var r;
     r = iVar.copy(true);

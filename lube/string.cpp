@@ -34,6 +34,14 @@ namespace libube
 using namespace libube;
 
 
+var StringFunctor::alloc(var iVar) const
+{
+    var r;
+    r = iVar.copy(true);
+    return r;
+}
+
+
 var StringFunctor::operator ()(const var& iVar) const
 {
     var v = alloc(iVar);
@@ -203,36 +211,38 @@ void Strip::string(const var& iVar, var& oVar) const
 void Search::string(const var& iVar, var& oVar) const
 {
     boost::regex re = *reinterpret_cast<boost::regex*>(mRE);
-    bool r = boost::regex_search(const_cast<var&>(iVar).str(), re);
-    if (!r)
-        oVar = nil;
-    else
-        if (!iVar.is(oVar))
-            oVar = iVar;
+    boost::cmatch matches;
+    bool r = boost::regex_search(const_cast<var&>(iVar).str(), matches, re);
+    oVar = nil;
+    if (r)
+        for (int i=0; i<(int)matches.size(); i++)
+            oVar[i] = matches.str(i).c_str();
 }
 
 var var::search(var iRE)
 {
+    // Match results are not the same type as the input
     Search s(iRE);
-    return s(*this, *this);
+    return s(*this);
 }
 
 
 void Match::string(const var& iVar, var& oVar) const
 {
     boost::regex re = *reinterpret_cast<boost::regex*>(mRE);
-    bool r = boost::regex_match(const_cast<var&>(iVar).str(), re);
-    if (!r)
-        oVar = nil;
-    else
-        if (!iVar.is(oVar))
-            oVar = iVar;
+    boost::cmatch matches;
+    bool r = boost::regex_match(const_cast<var&>(iVar).str(), matches, re);
+    oVar = nil;
+    if (r)
+        for (int i=0; i<(int)matches.size(); i++)
+            oVar[i] = matches.str(i).c_str();
 }
 
 var var::match(var iRE)
 {
+    // Match results are not the same type as the input
     Match m = Match(iRE);
-    return m(*this, *this);
+    return m(*this);
 }
 
 

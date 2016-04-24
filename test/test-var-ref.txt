@@ -185,10 +185,18 @@ New view: [
 " end"
 3.4
 Comma is: [1.2, 2, 4, 5]
-Searching ello: "Hello"
-Matches
-Matching \S+ell\S: "Hello"
-Matches
+Searching el(lo) in "Hello"
+Matches: [
+  "ello",
+  "lo"
+]
+Matching (\S+)ell\S against "Hello"
+Matches: [
+  "Hello",
+  "H"
+]
+Matching (\s+)ell\S against "Hello"
+Matches not
 Replaced to: "Hells bells"
 Zeros: [0, 0, 0, 0, 0]
 Ones:  [1, 1, 1, 1, 1]
