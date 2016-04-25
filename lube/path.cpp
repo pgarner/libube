@@ -47,6 +47,15 @@ Path::Path(var iArg)
     mPath = iArg ? iArg.str() : fs::initial_path();
 }
 
+var bits(fs::path iPath)
+{
+    var val;
+    val[2] = iPath.extension().c_str();
+    val[1] = iPath.stem().c_str();
+    val[0] = iPath.parent_path().c_str();
+    return val;
+}
+
 var Path::dir(bool iVal)
 {
     if (!exists(mPath))
@@ -55,16 +64,7 @@ var Path::dir(bool iVal)
     var dir;
     fs::directory_iterator end;
     for (fs::directory_iterator it(mPath); it != end; it++)
-    {
-        var val; // = nil
-        if (iVal)
-        {
-            val[2] = it->path().extension().c_str();
-            val[1] = it->path().stem().c_str();
-            val[0] = it->path().parent_path().c_str();
-        }
-        dir[it->path().c_str()] = val;
-    }
+        dir[it->path().c_str()] = iVal ? bits(it->path()) : nil;
     return dir;
 }
 
@@ -74,18 +74,15 @@ var Path::rdir(bool iVal)
         throw error("rdir: path doesn't exist");
 
     var dir;
+    if (!fs::is_directory(mPath))
+    {
+        dir[mPath.c_str()] = iVal ? bits(mPath) : nil;
+        return dir;
+    }
+
     fs::recursive_directory_iterator end;
     for (fs::recursive_directory_iterator it(mPath); it != end; it++)
-    {
-        var val; // = nil
-        if (iVal)
-        {
-            val[2] = it->path().extension().c_str();
-            val[1] = it->path().stem().c_str();
-            val[0] = it->path().parent_path().c_str();
-        }
-        dir[it->path().c_str()] = val;
-    }
+        dir[it->path().c_str()] = iVal ? bits(it->path()) : nil;
     return dir;
 }
 
