@@ -1,0 +1,58 @@
+Writing: "This is just a string"
+Read: "This is just a string"
+Writing: [
+  "Zero",
+  "One"
+]
+Read: [
+  "Zero",
+  "One"
+]
+Writing: {
+  "one": "One",
+  "zero": "Zero"
+}
+Read: {
+  "one": "One",
+  "zero": "Zero"
+}
+Writing: [
+  [
+    "Zero",
+    "One"
+  ],
+  {
+    "one": "One",
+    "zero": "Zero"
+  }
+]
+Read: [
+  [
+    "Zero",
+    "One"
+  ],
+  {
+    "one": "One",
+    "zero": "Zero"
+  }
+]
+Writing: {
+  "first": [
+    "Zero",
+    "One"
+  ],
+  "second": {
+    "one": "One",
+    "zero": "Zero"
+  }
+}
+Read: {
+  "first": [
+    "Zero",
+    "One"
+  ],
+  "second": {
+    "one": "One",
+    "zero": "Zero"
+  }
+}

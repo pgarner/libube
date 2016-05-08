@@ -74,3 +74,10 @@ add_test(
   NAME graph
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-graph.cmake
   )
+
+add_executable(test-json test-json.cpp)
+target_link_libraries(test-json lube-shared)
+add_test(
+  NAME json
+  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-json.cmake
+  )

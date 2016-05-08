@@ -669,6 +669,7 @@ namespace libube
      * Functions
      */
     std::ostream& operator <<(std::ostream& iStream, var iVar);
+    std::istream& operator >>(std::istream& iStream, var& ioVar);
     var view(const std::initializer_list<int> iShape, var iType=nil);
     var view(var iShape, var iType=nil);
     const char* typeStr(ind iType);
