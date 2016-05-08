@@ -81,8 +81,7 @@ Heap::Heap()
 Heap::~Heap()
 {
     VDEBUG(std::cout << " Dtor" << std::endl);
-    if (mRefCount)
-        throw error("~Heap: reference count not zero");
+    assert(!mRefCount);
     if (mView)
         mView->detach();
 }
