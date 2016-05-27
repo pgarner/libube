@@ -320,7 +320,12 @@ int main(int argc, char** argv)
     var utf;
     utf["jp"] = "日本語です";
     utf["fr"] = "C'est Français";
+    utf["en"] = "This is English";
     cout << utf << endl;
+    for (int i=0; i<utf.size(); i++)
+        cout << utf.key(i) << " "
+             << utf[i].size() << " "
+             << utf[i].len() << endl;
 
     // Concat string
     var concat;

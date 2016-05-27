@@ -230,9 +230,13 @@ Nil pair: {
   "Hi": 3
 }
 {
+  "en": "This is English",
   "fr": "C'est Français",
   "jp": "日本語です"
 }
+"en" 15 15
+"fr" 15 14
+"jp" 15 5
 "one two"
 init: [
   [

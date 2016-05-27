@@ -611,6 +611,7 @@ namespace libube
         var transpose() { return libube::transpose(*this, *this); };
 
         // String functors
+        ind len();
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
         var join(const char* iStr) const;

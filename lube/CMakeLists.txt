@@ -40,6 +40,7 @@ set(SOURCES
   config.cpp
   clapack.cpp
   json.cpp
+  utf8.cpp
   )
 
 # If we have MKL then we should use the DFT and matrix transpose in MKL (in
