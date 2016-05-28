@@ -14,10 +14,11 @@ find_package(Boost COMPONENTS
   filesystem REQUIRED
   system REQUIRED
   )
+
 include_directories(
-  ${BLAS_INCLUDE_DIR}
-  ${LAPACK_INCLUDE_DIR}
-  ${Boost_INCLUDE_DIR}
+  ${BLAS_INCLUDE_DIRS}
+  ${LAPACK_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
   )
 
 set(HEADERS
@@ -152,7 +153,7 @@ list(APPEND MODULE_TARGETS ged-lib)
 
 find_package(SndFile)
 if (SNDFILE_FOUND)
-  include_directories(${SNDFILE_INCLUDE_DIR})
+  include_directories(${SNDFILE_INCLUDE_DIRS})
   add_library(snd-lib MODULE sndfile.cpp)
   target_link_libraries(snd-lib lube-shared ${SNDFILE_LIBRARIES})
   set_target_properties(snd-lib
@@ -163,7 +164,7 @@ endif (SNDFILE_FOUND)
 
 find_package(EXPAT)
 if (EXPAT_FOUND)
-  include_directories(${EXPAT_INCLUDE_DIR})
+  include_directories(${EXPAT_INCLUDE_DIRS})
   add_library(xml-lib MODULE xmlfile.cpp)
   target_link_libraries(xml-lib lube-shared ${EXPAT_LIBRARIES})
   set_target_properties(xml-lib
@@ -178,6 +179,17 @@ set_target_properties(graph-lib
   PROPERTIES OUTPUT_NAME "graph"
   )
 list(APPEND MODULE_TARGETS graph-lib)
+
+find_package(CURL)
+if (CURL_FOUND)
+  include_directories(${CURL_INCLUDE_DIRS})
+  add_library(curl-lib MODULE curl.cpp)
+  target_link_libraries(curl-lib lube-shared ${CURL_LIBRARIES})
+  set_target_properties(curl-lib
+    PROPERTIES OUTPUT_NAME "curl"
+    )
+  list(APPEND MODULE_TARGETS curl-lib)
+endif (CURL_FOUND)
 
 # Normal install path for the library
 install(

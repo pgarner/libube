@@ -81,3 +81,10 @@ add_test(
   NAME json
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-json.cmake
   )
+
+add_executable(test-curl test-curl.cpp)
+target_link_libraries(test-curl lube-shared)
+add_test(
+  NAME curl
+  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-curl.cmake
+  )

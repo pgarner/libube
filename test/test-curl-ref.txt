@@ -1,0 +1,63 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+<HEAD> <TITLE>cURL - copyright</TITLE>
+<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+<link rel="stylesheet" type="text/css" href="https://curl.haxx.se/curl.css">
+<link rel="shortcut icon" href="https://curl.haxx.se/favicon.ico">
+</HEAD>
+<body bgcolor="#ffffff" text="#000000">
+<div class="main">
+<div class="menu">
+<a href="/docs/" class="menuitem" title="Documentation main page">Docs Overview</a>
+<a href="/docs/companies.html" class="menuitem" title="Commercial users of curl">Companies</a>
+<a href="/docs/copyright.html" class="itemselect">Copyright</a>
+<a href="/legal/licmix.html" class="menuitem" title="About mixing licenses ">License Mixing</a>
+<a href="/sponsors.html" class="menuitem" title="Project Sponsors">Sponsors</a>
+<a href="/docs/thanks.html" class="menuitem" title="Named and listed contributors">Thanks</a>
+<a href="/legal/thename.html" class="menuitem" title="Who owns the name">The Name</a>
+</div>
+<div class="contents">
+<div class="where"><a href="https://curl.haxx.se/">cURL</a> / <a href="/docs/">Docs</a> / <a href="/docs/whodocs.html">Who and Why</a> / <b>Copyright</b></div>
+<h1> Copyright - License </h1>
+<div class="relatedbox">
+<b>Related:</b>
+<br><a href="/legal/thename.html">The curl name</a>
+<br><a href="/legal/licmix.html">license mix</a>
+<br><a href="/docs/faq.html">FAQ</a>
+</div>
+<p>
+ Curl and libcurl are true Open Source/Free Software and meet all definitions
+ as such. It means that you are free to modify and redistribute all contents
+ of the curl distributed archives. You may also freely use curl and libcurl in
+ your commercial projects.
+<p>
+ Curl and libcurl are licensed under a MIT/X derivate license, see below.
+<p>
+ There are other computer-related projects using the name curl as well.  For
+ details, check out <a href="../legal/thename.html">our position on the curl
+ name issue</a>.
+<h2> The curl license </h2>
+<div class="quote">
+<p>COPYRIGHT AND PERMISSION NOTICE</p>
+<p>Copyright (c) 1996 - 2016, Daniel Stenberg, <a href="&#x6D;a&#105;&#108;&#x74;o:&#100;&#97;&#x6E;&#105;&#101;&#x6C;&#64;&#x68;&#x61;&#120;&#120;&#46;&#x73;&#101;">&#100;&#97;&#x6E;&#105;&#101;&#x6C;&#64;&#x68;&#x61;&#120;&#120;&#46;&#x73;&#101;</a>, and many
+contributors, see the THANKS file.</p>
+<p>All rights reserved.</p>
+<p>Permission to use, copy, modify, and distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright
+notice and this permission notice appear in all copies.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. IN
+NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE
+OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<p>Except as contained in this notice, the name of a copyright holder shall not
+be used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization of the copyright holder.</p>
+</div>
+</div>
+</div>
+</BODY>
+</HTML>
+
