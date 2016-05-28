@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 by Idiap Research Institute, http://www.idiap.ch
+ * Copyright 2015 by Philip N. Garner
  *
  * See the file COPYING for the licence associated with this software.
  *
