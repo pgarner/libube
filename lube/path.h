@@ -23,9 +23,14 @@ namespace libube
         virtual var tree() = 0;
     };
 
-    /** Helper function to create path modules */
-    path* create(module& iMod, var iArg=nil) {
-        return dynamic_cast<path*>(iMod.create(iArg));
+    /** Module specialised to generate paths */
+    class pathmodule : public module
+    {
+    public:
+        pathmodule() : module("path") {}
+        path* create(var iArg=nil) {
+            return dynamic_cast<path*>(module::create(iArg));
+        }
     };
 };
 

@@ -23,9 +23,14 @@ namespace libube
         virtual void writeGraphViz(var iFileName) = 0;
      };
 
-    /** Helper function to create graph modules */
-    graph* create(module& iMod, var iArg=nil) {
-        return dynamic_cast<graph*>(iMod.create(iArg));
+    /** Module specialised to generate graphs */
+    class graphmodule : public module
+    {
+    public:
+        graphmodule() : module("graph") {}
+        graph* create(var iArg=nil) {
+            return dynamic_cast<graph*>(module::create(iArg));
+        }
     };
 };
 

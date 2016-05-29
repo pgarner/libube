@@ -10,10 +10,12 @@
 #include "lube.h"
 #include "lube/graph.h"
 
+using namespace lube;
+
 int main()
 {
-    lube::module gm("graph");
-    lube::graph* g = lube::create(gm);
+    graphmodule gm;
+    graph* g = gm.create();
 
     ind v1 = g->addVertex();
     ind v2 = g->addVertex();

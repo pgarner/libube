@@ -2,6 +2,7 @@
 #include <lube.h>
 
 using namespace std;
+using namespace lube;
 
 int main(int argc, char** argv)
 {
@@ -19,13 +20,15 @@ int main(int argc, char** argv)
     cout << t << endl;
 
     // Read the same text file via a dynamic library
-    file txtf("txt");
-    var txt = txtf.read(TEST_DIR "/test.txt");
+    filemodule txtmod("txt");
+    file* txtf = txtmod.create();
+    var txt = txtf->read(TEST_DIR "/test.txt");
     cout << "Loaded: " << txt << endl;
 
     // Read a .ini file via a dynamic library
-    file inif("ini");
-    var ini = inif.read(TEST_DIR "/test.ini");
+    filemodule inimod("ini");
+    file* inif = inimod.create();
+    var ini = inif->read(TEST_DIR "/test.ini");
     cout << "Loaded: " << ini << endl;
 
     // Init from comma separated list
@@ -37,25 +40,29 @@ int main(int argc, char** argv)
     var gnu;
     gnu.push("plot sin(x), \"-\"");
     gnu.push(ai);
-    file gnuf("gnuplot");
-    gnuf.write("test.eps", gnu);
+    filemodule gnumod("gnuplot");
+    file* gnuf = gnumod.create();
+    gnuf->write("test.eps", gnu);
 
     // gedcom
-    file gedf("ged");
-    var ged = gedf.read(TEST_DIR "/test.ged");
+    filemodule gedmod("ged");
+    file* gedf = gedmod.create();
+    var ged = gedf->read(TEST_DIR "/test.ged");
     cout << "Loaded: " << ged << endl;
 
     // XML
-    file xmlf("xml");
-    var xml = xmlf.read(TEST_DIR "/test.xml");
+    filemodule xmlmod("xml");
+    file* xmlf = xmlmod.create();
+    var xml = xmlf->read(TEST_DIR "/test.xml");
     cout << "Loaded: " << xml << endl;
-    xmlf.write("test-out.xml", xml);
+    xmlf->write("test-out.xml", xml);
 
     // wav
     var sndAttr;
     sndAttr[lube::nil];
-    file wavf("snd", sndAttr);
-    var wav = wavf.read(TEST_DIR "/test.wav");
+    filemodule wavmod("snd");
+    file* wavf = wavmod.create(sndAttr);
+    var wav = wavf->read(TEST_DIR "/test.wav");
     int dim = wav.dim();
     cout << "Loaded wav file:" << endl;
     cout << " rate:     " << sndAttr["rate"] << endl;

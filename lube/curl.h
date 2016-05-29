@@ -21,9 +21,14 @@ namespace libube
         virtual var transfer(var iURL) = 0;
     };
 
-    /** Helper function to create curl modules */
-    curl* create(module& iMod, var iArg=nil) {
-        return dynamic_cast<curl*>(iMod.create(iArg));
+    /** Module specialised to generate curls */
+    class curlmodule : public module
+    {
+    public:
+        curlmodule() : module("curl") {}
+        curl* create(var iArg=nil) {
+            return dynamic_cast<curl*>(module::create(iArg));
+        }
     };
 };
 

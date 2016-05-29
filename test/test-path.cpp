@@ -10,10 +10,12 @@
 #include "lube.h"
 #include "lube/path.h"
 
+using namespace lube;
+
 int main()
 {
-    lube::module m("path");
-    lube::path* p = lube::create(m, CMAKE_DIR);
+    pathmodule m;
+    path* p = m.create(CMAKE_DIR);
 
     std::cout << "Dir:" << std::endl;
     var dir = p->dir();

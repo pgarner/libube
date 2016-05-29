@@ -16,7 +16,7 @@ namespace libube
     /**
      * Ad-hoc parser for GEDCOM files.
      */
-    class GEDCOM : public File
+    class GEDCOM : public file
     {
     public:
         GEDCOM();

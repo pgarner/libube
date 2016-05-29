@@ -13,7 +13,7 @@
 
 namespace libube
 {
-    class inifile : public File
+    class inifile : public file
     {
     public:
         virtual var read(var iFile);

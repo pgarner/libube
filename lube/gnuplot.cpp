@@ -14,7 +14,7 @@
 
 namespace libube
 {
-    class gnuplot : public File
+    class gnuplot : public file
     {
     public:
         gnuplot();

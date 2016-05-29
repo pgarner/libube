@@ -757,7 +757,7 @@ namespace libube
     public:
         module(var iType);
         virtual ~module();
-        Module* create(var iArg=nil);
+        virtual Module* create(var iArg=nil);
     protected:
         Module* mInstance; ///< Pointer to instance of module
     private:
@@ -770,10 +770,10 @@ namespace libube
      * Abstract class for dynamically loaded file handlers.  Defines the
      * interface that file handlers must implement.
      */
-    class File : public Module
+    class file : public Module
     {
     public:
-        virtual ~File() {};
+        virtual ~file() {};
         virtual var read(var iFile) = 0;
         virtual void write(var iFile, var iVar) = 0;
     };
@@ -782,16 +782,13 @@ namespace libube
     /**
      * Class to dynamically load a file handler
      */
-    class file : public module
+    class filemodule : public module
     {
     public:
-        file(var iType = "txt", var iArg = nil);
-        var read(var iFile) {
-            return dynamic_cast<File*>(mInstance)->read(iFile);
-        };
-        void write(var iFile, var iVar) {
-            return dynamic_cast<File*>(mInstance)->write(iFile, iVar);
-        };
+        filemodule(var iType="txt") : module(iType) {}
+        file* create(var iArg=nil) {
+            return dynamic_cast<file*>(module::create(iArg));
+        }
     };
 
 

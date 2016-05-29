@@ -15,7 +15,7 @@ namespace libube
 {
     /**
      * The name of the library is actually cURL; it's a sort of reverse
-     * camelCase.  Not even the curl library itself used this form.  Here, we
+     * camelCase.  Not even the curl library itself uses this form.  Here, we
      * need to avoid the name CURL as it's used in the library.  It's purely
      * local to this file, so, fuck it: Curly.
      */

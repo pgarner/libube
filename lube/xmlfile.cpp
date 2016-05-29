@@ -20,7 +20,7 @@ namespace libube
     /**
      * The main file handler class
      */
-    class XMLFile : public File
+    class XMLFile : public file
     {
     public:
         virtual var read(var iFile);

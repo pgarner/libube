@@ -13,7 +13,6 @@
 namespace lube = libube;
 typedef lube::ind ind;
 typedef lube::var var;
-typedef lube::file file;
 typedef lube::varstream varstream;
 
 #endif // LUBE_H

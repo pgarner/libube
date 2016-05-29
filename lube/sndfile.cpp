@@ -12,7 +12,7 @@
 
 namespace libube
 {
-    class sndfile : public File
+    class sndfile : public file
     {
     public:
         sndfile(var iAttr) { mAttr = iAttr; };

@@ -62,10 +62,3 @@ Module* module::create(var iArg)
         throw error("module::create(): factory() failed");
     return mInstance;
 }
-
-
-file::file(var iType, var iArg)
-    : module(iType)
-{
-    create(iArg);
-}

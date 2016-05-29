@@ -10,10 +10,12 @@
 #include <lube.h>
 #include <lube/curl.h>
 
+using namespace lube;
+
 int main(int argc, char** argv)
 {
-    lube::module cm("curl");
-    lube::curl* c = lube::create(cm);
+    curlmodule cm;
+    curl* c = cm.create();
     var d = c->transfer("https://curl.haxx.se/docs/copyright.html");
     std::cout << d.str() << std::endl;
 }

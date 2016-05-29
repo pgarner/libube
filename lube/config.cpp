@@ -64,8 +64,9 @@ Config::Config(var iStr)
 void Config::read(var iConfigFile)
 {
     // Config files are .ini format
-    file ini("ini");
-    mCnf = ini.read(iConfigFile);
+    filemodule im("ini");
+    file* ini = im.create();
+    mCnf = ini->read(iConfigFile);
 }
 
 var Config::config()

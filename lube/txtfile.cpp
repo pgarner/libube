@@ -13,7 +13,7 @@
 
 namespace libube
 {
-    class txtfile : public File
+    class txtfile : public file
     {
     public:
         virtual var read(var iFile);
