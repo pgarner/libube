@@ -30,12 +30,13 @@ set(HEADERS
   c++blas.h
   c++lapack.h
   data.h
+  module.h
   )
 
 set(SOURCES
   var.cpp
   heap.cpp
-  file.cpp
+  module.cpp
   math.cpp
   string.cpp
   config.cpp

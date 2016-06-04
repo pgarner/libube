@@ -10,7 +10,7 @@
 #ifndef PATH_H
 #define PATH_H
 
-#include <lube/var.h>
+#include <lube/module.h>
 
 namespace libube
 {
@@ -28,8 +28,8 @@ namespace libube
     {
     public:
         pathmodule() : module("path") {}
-        path* create(var iArg=nil) {
-            return dynamic_cast<path*>(module::create(iArg));
+        path& create(var iArg=nil) {
+            return dynamic_cast<path&>(module::create(iArg));
         }
     };
 };

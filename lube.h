@@ -10,6 +10,8 @@
 #define LUBE_H
 
 #include <lube/var.h>
+#include <lube/module.h>
+
 namespace lube = libube;
 typedef lube::ind ind;
 typedef lube::var var;

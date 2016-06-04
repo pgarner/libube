@@ -15,7 +15,7 @@ using namespace lube;
 int main(int argc, char** argv)
 {
     curlmodule cm;
-    curl* c = cm.create();
-    var d = c->transfer("https://curl.haxx.se/docs/copyright.html");
+    curl& c = cm.create();
+    var d = c.transfer("https://curl.haxx.se/docs/copyright.html");
     std::cout << d.str() << std::endl;
 }

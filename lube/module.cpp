@@ -11,7 +11,7 @@
 #include <stdexcept>
 #include <dlfcn.h>
 
-#include "lube/var.h"
+#include "lube/module.h"
 
 
 using namespace libube;
@@ -21,7 +21,6 @@ module::module(var iType)
 {
     // Initialise
     mHandle = 0;
-    mInstance = 0;
     char *dle = dlerror();
 
     // Open the library
@@ -42,23 +41,25 @@ module::module(var iType)
 
 module::~module()
 {
-    // Destroy the instance that the factory loaded
-    if (mInstance)
-        delete mInstance;
-
-    // Close the dynamic library
+    // Delete the instances before closing the dynamic library
+    for (int i=0; i<mInstance.size(); i++)
+        delete mInstance[i];
     dlclose(mHandle);
 }
 
 
-Module* module::create(var iArg)
+Module& module::create(var iArg)
 {
-    if (mInstance)
-        throw error("module::create(): just one instance for now");
+    // I originally used a boost::ptr_vector for mInstance.  It seems too much
+    // for this purpose though with it's "takes ownership" concept.  Here it's
+    // the module that own the instance, and that can be handled fine using a
+    // std::vector<Module*>.
 
     // Run the dynamically loaded factory function
-    (*mFactory)(&mInstance, iArg);
-    if (!mInstance)
-        throw error("module::create(): factory() failed");
-    return mInstance;
+    Module* inst = 0;
+    (*mFactory)(&inst, iArg);
+    if (!inst)
+        throw error("Module factory failed");
+    mInstance.push_back(inst);
+    return *(mInstance.back());
 }

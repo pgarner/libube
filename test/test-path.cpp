@@ -15,18 +15,18 @@ using namespace lube;
 int main()
 {
     pathmodule m;
-    path* p = m.create(CMAKE_DIR);
+    path& p = m.create(CMAKE_DIR);
 
     std::cout << "Dir:" << std::endl;
-    var dir = p->dir();
+    var dir = p.dir();
     std::cout << dir << std::endl;
 
     std::cout << "Recursive Dir:" << std::endl;
-    var rdir = p->rdir();
+    var rdir = p.rdir();
     std::cout << rdir << std::endl;
 
     std::cout << "Tree:" << std::endl;
-    var tree = p->tree();
+    var tree = p.tree();
     std::cout << tree << std::endl;
 
     return 0;

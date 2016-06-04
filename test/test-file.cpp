@@ -21,14 +21,14 @@ int main(int argc, char** argv)
 
     // Read the same text file via a dynamic library
     filemodule txtmod("txt");
-    file* txtf = txtmod.create();
-    var txt = txtf->read(TEST_DIR "/test.txt");
+    file& txtf = txtmod.create();
+    var txt = txtf.read(TEST_DIR "/test.txt");
     cout << "Loaded: " << txt << endl;
 
     // Read a .ini file via a dynamic library
     filemodule inimod("ini");
-    file* inif = inimod.create();
-    var ini = inif->read(TEST_DIR "/test.ini");
+    file& inif = inimod.create();
+    var ini = inif.read(TEST_DIR "/test.ini");
     cout << "Loaded: " << ini << endl;
 
     // Init from comma separated list
@@ -41,28 +41,28 @@ int main(int argc, char** argv)
     gnu.push("plot sin(x), \"-\"");
     gnu.push(ai);
     filemodule gnumod("gnuplot");
-    file* gnuf = gnumod.create();
-    gnuf->write("test.eps", gnu);
+    file& gnuf = gnumod.create();
+    gnuf.write("test.eps", gnu);
 
     // gedcom
     filemodule gedmod("ged");
-    file* gedf = gedmod.create();
-    var ged = gedf->read(TEST_DIR "/test.ged");
+    file& gedf = gedmod.create();
+    var ged = gedf.read(TEST_DIR "/test.ged");
     cout << "Loaded: " << ged << endl;
 
     // XML
     filemodule xmlmod("xml");
-    file* xmlf = xmlmod.create();
-    var xml = xmlf->read(TEST_DIR "/test.xml");
+    file& xmlf = xmlmod.create();
+    var xml = xmlf.read(TEST_DIR "/test.xml");
     cout << "Loaded: " << xml << endl;
-    xmlf->write("test-out.xml", xml);
+    xmlf.write("test-out.xml", xml);
 
     // wav
     var sndAttr;
     sndAttr[lube::nil];
     filemodule wavmod("snd");
-    file* wavf = wavmod.create(sndAttr);
-    var wav = wavf->read(TEST_DIR "/test.wav");
+    file& wavf = wavmod.create(sndAttr);
+    var wav = wavf.read(TEST_DIR "/test.wav");
     int dim = wav.dim();
     cout << "Loaded wav file:" << endl;
     cout << " rate:     " << sndAttr["rate"] << endl;

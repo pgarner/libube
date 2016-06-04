@@ -9,6 +9,7 @@
 
 #include <unistd.h>
 
+#include "lube/module.h"
 #include "lube/config.h"
 
 using namespace libube;
@@ -65,8 +66,8 @@ void Config::read(var iConfigFile)
 {
     // Config files are .ini format
     filemodule im("ini");
-    file* ini = im.create();
-    mCnf = ini->read(iConfigFile);
+    file& ini = im.create();
+    mCnf = ini.read(iConfigFile);
 }
 
 var Config::config()

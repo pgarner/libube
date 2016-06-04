@@ -10,7 +10,7 @@
 #ifndef CURL_H
 #define CURL_H
 
-#include <lube/var.h>
+#include <lube/module.h>
 
 namespace libube
 {
@@ -26,8 +26,8 @@ namespace libube
     {
     public:
         curlmodule() : module("curl") {}
-        curl* create(var iArg=nil) {
-            return dynamic_cast<curl*>(module::create(iArg));
+        curl& create(var iArg=nil) {
+            return dynamic_cast<curl&>(module::create(iArg));
         }
     };
 };

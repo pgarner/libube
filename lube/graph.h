@@ -10,7 +10,7 @@
 #ifndef GRAPH_H
 #define GRAPH_H
 
-#include <lube/var.h>
+#include <lube/module.h>
 
 namespace libube
 {
@@ -28,8 +28,8 @@ namespace libube
     {
     public:
         graphmodule() : module("graph") {}
-        graph* create(var iArg=nil) {
-            return dynamic_cast<graph*>(module::create(iArg));
+        graph& create(var iArg=nil) {
+            return dynamic_cast<graph&>(module::create(iArg));
         }
     };
 };
