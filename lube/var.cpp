@@ -1543,7 +1543,9 @@ void var::bounds(int iDim, int iIndex) const
 /**
  * Basic constructor
  *
- * Initialises a bufferless connection to a var of type char
+ * Initialises a bufferless connection to a var of type char.  Bufferless means
+ * that you can't put things back into the input stream; putback() and unget()
+ * will not work, and will fail silently unless 'badbit' is checked explicitly.
  */
 varbuf::varbuf(class var iVar)
 {

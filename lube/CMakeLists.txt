@@ -31,6 +31,7 @@ set(HEADERS
   c++lapack.h
   data.h
   module.h
+  curl.h
   )
 
 set(SOURCES

@@ -22,7 +22,7 @@ namespace libube
     public:
         var operator ()(std::istream& iStream);
     private:
-        char get(std::istream& iStream);
+        char peek(std::istream& iStream);
         var doValue(std::istream& iStream);
         var doObject(std::istream& iStream);
         var doArray(std::istream& iStream);
@@ -36,19 +36,21 @@ using namespace libube;
 using namespace std;
 
 /** Find the next character after whitespace */
-char JSON::get(std::istream& iStream)
+char JSON::peek(std::istream& iStream)
 {
-    char got;
-    do {
-        iStream.get(got);
-    } while (isspace(got));
-    return got;
+    char c = iStream.peek();
+    while (isspace(c))
+    {
+        iStream.get();
+        c = iStream.peek();
+    }
+    return c;
 }
 
 var JSON::doValue(std::istream& iStream)
 {
     var val;
-    switch (get(iStream))
+    switch (peek(iStream))
     {
     case '{':
         val = doObject(iStream);
@@ -60,7 +62,6 @@ var JSON::doValue(std::istream& iStream)
         val = doString(iStream);
         break;
     default:
-        iStream.unget();
         val = doRaw(iStream);
     }
     return val;
@@ -71,20 +72,26 @@ var JSON::doObject(std::istream& iStream)
     var obj;
     obj[nil];
     var key;
+    char got = iStream.get();
+    if (got != '{')
+        throw error("JSON object doesn't start with {");
     while (iStream)
     {
-        switch (get(iStream))
+        switch (peek(iStream))
         {
         case '}':
+            iStream.get();
             return obj;
             break;
         case '"':
             key = doString(iStream);
             break;
         case ':':
+            iStream.get();
             obj[key] = doValue(iStream);
             break;
         case ',':
+            iStream.get();
             key = nil;
             break;
         default:
@@ -97,17 +104,21 @@ var JSON::doObject(std::istream& iStream)
 var JSON::doArray(std::istream& iStream)
 {
     var arr;
+    char got = iStream.get();
+    if (got != '[')
+        throw error("JSON array doesn't start with [");
     while (iStream)
     {
-        switch (get(iStream))
+        switch (peek(iStream))
         {
         case ']':
+            iStream.get();
             return arr;
             break;
         case ',':
+            iStream.get();
             break;
         default:
-            iStream.unget();
             arr.push(doValue(iStream));
         }
     }
@@ -117,7 +128,9 @@ var JSON::doArray(std::istream& iStream)
 var JSON::doString(std::istream& iStream)
 {
     var str;
-    char got;
+    char got = iStream.get();
+    if (got != '\"')
+        throw error("JSON string doesn't start with \"");
     // Not robust to escapes yet
     while (iStream.get(got))
         if (got == '"')
