@@ -127,23 +127,38 @@ var JSON::doArray(std::istream& iStream)
 
 var JSON::doString(std::istream& iStream)
 {
-    var str;
+    var str = "";
     char got = iStream.get();
     if (got != '\"')
         throw error("JSON string doesn't start with \"");
-    // Not robust to escapes yet
     while (iStream.get(got))
-        if (got == '"')
+        switch (got)
+        {
+        case '\"':
+            return str;
+        case '\\':
+            // Escape character
+            got = iStream.get();
+            switch (got)
+            {
+            case '\"':
+                str.push(got);
+                break;
+            default:
+                throw error("Unrecognised JSON string escape");
+            }
             break;
-        else
+        default:
             str.push(got);
-    return str;
+        }
+    throw error("Unterminated JSON string");
+    return nil;
 }
 
 var JSON::doRaw(std::istream& iStream)
 {
     // Read up to a space or JSON delimiter
-    var val;
+    var val = "";
     char c;
     while (iStream.get(c))
     {
