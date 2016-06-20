@@ -155,6 +155,26 @@ var JSON::doString(std::istream& iStream)
     return nil;
 }
 
+var toNumber(var iStr)
+{
+    // Try for integer
+    varstream ls(iStr.copy());
+    long l;
+    ls >> l;
+    if (!ls.fail())
+        return l;
+
+    // Try for double
+    varstream ds(iStr.copy());
+    double d;
+    ds >> d;
+    if (!ds.fail())
+        return d;
+
+    // Failed
+    return nil;
+}
+
 var JSON::doRaw(std::istream& iStream)
 {
     // Read up to a space or JSON delimiter
@@ -177,8 +197,15 @@ var JSON::doRaw(std::istream& iStream)
     else if (val == "null")
         return nil;
     
-    // It's probably a number, but return a string for the moment
-    return val;
+    // It should be a number
+    var num = toNumber(val);
+    if (num)
+        return num;
+
+    // Broke
+    var e = "Unrecognised JSON raw value: ";
+    e.append(val);
+    throw error(e);
 }
 
 /**
