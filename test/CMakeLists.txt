@@ -40,6 +40,13 @@ add_test(
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-file.cmake
   )
 
+add_executable(test-stream test-stream.cpp)
+target_link_libraries(test-stream lube-shared)
+add_test(
+  NAME stream
+  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-stream.cmake
+  )
+
 add_executable(test-math test-math.cpp)
 target_link_libraries(test-math lube-shared)
 add_test(

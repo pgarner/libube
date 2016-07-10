@@ -42,7 +42,7 @@ module::module(var iType)
 module::~module()
 {
     // Delete the instances before closing the dynamic library
-    for (int i=0; i<mInstance.size(); i++)
+    for (size_t i=0; i<mInstance.size(); i++)
         delete mInstance[i];
     dlclose(mHandle);
 }

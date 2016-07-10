@@ -698,7 +698,7 @@ namespace libube
 
 
     /**
-     * An ostream that uses a var as the buffer
+     * An iostream that uses a var as the buffer
      */
     class varstream : public std::iostream
     {
