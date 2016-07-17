@@ -35,6 +35,14 @@ int main(int argc, char** argv)
     cout << var(iostr) << endl;
     cout << iof << endl;
 
+    // String contains " end".  Check that unget() works
+    iostr.get();
+    char a = iostr.get();
+    cout << "get(): " << a << endl;
+    iostr.unget();
+    char b = iostr.get();
+    cout << "unget(): " << b << endl;
+
     // Done
     return 0;
 }

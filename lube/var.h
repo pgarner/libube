@@ -681,7 +681,7 @@ namespace libube
 
 
     /**
-     * A stream buffer that uses a var as the buffer
+     * A stream buffer to connect a stream to a var
      */
     class varbuf : public std::streambuf
     {
@@ -689,16 +689,21 @@ namespace libube
         varbuf(var iVar);
         explicit operator var () const { return mVar; };
     protected:
-        virtual int_type overflow(int_type iInt = traits_type::eof());
-        virtual int_type uflow();
-        virtual int_type underflow();
+        virtual int overflow(int iInt = traits_type::eof());
+        virtual int uflow();
+        virtual int underflow();
+        virtual int pbackfail(int iInt);
+        virtual std::streampos seekpos(
+            std::streampos iPos, std::ios_base::openmode iMode
+        );
     private:
         var mVar; ///< The var being accessed
+        int mInd; ///< The get index
     };
 
 
     /**
-     * An iostream that uses a var as the buffer
+     * An iostream to / from a var
      */
     class varstream : public std::iostream
     {

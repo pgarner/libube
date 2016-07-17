@@ -14,9 +14,7 @@ using namespace libube;
 /**
  * Basic constructor
  *
- * Initialises a bufferless connection to a var of type char.  Bufferless means
- * that you can't put things back into the input stream; putback() and unget()
- * will not work, and will fail silently unless 'badbit' is checked explicitly.
+ * Initialises a bufferless connection to a var of type char.
  */
 varbuf::varbuf(class var iVar)
 {
@@ -34,33 +32,59 @@ varbuf::varbuf(class var iVar)
     // uflow() on every read
     setp(0, 0);
     setg(0, 0, 0);
+    mInd = 0;
 }
 
 
-varbuf::int_type varbuf::overflow(int_type iInt)
+int varbuf::overflow(int iInt)
 {
     // Called for every write
+    //
+    // This appends to the end of the current string whereas stringstream
+    // starts at the beginning.  This one feels more intuitive to me.
     if (iInt != traits_type::eof())
         mVar.push(iInt);
     return iInt;
 }
 
-varbuf::int_type varbuf::uflow()
+int varbuf::uflow()
 {
-    // If there were an intermediate buffer, there would be no need to
-    // implement uflow() as the default implementation calls underflow().  It
-    // works here as it maps to a specific var method.
-    if (mVar.size() > 0)
-        return mVar.shift().get<char>();
+    // Sometimes, e.g., if there is an intermediate buffer, there is no need to
+    // implement uflow() as there is a default implementation that calls
+    // underflow().  It's used here as the default doesn't know it has to
+    // increment mInd.
+    //
+    // Following stringstream, this doesn't destroy the string
+    if (mInd < mVar.size())
+        return mVar[mInd++].get<char>();
     return traits_type::eof();
 }
 
-varbuf::int_type varbuf::underflow()
+int varbuf::underflow()
 {
-    // Called for reads, if not uflow().
-    if (mVar.size() > 0)
-        return mVar[0].get<char>();
+    // Called for reads that do not consume data if not uflow().
+    if (mInd < mVar.size())
+        return mVar[mInd].get<char>();
     return traits_type::eof();
+}
+
+int varbuf::pbackfail(int iInt)
+{
+    // istreams are supposed to allow putting back one character.  Putting back
+    // will always fail since it's bufferless, in which case this is called.
+    if (mInd > 0)
+        return mVar[--mInd].get<char>();
+    return traits_type::eof();
+}
+
+std::streampos varbuf::seekpos(
+    std::streampos iPos, std::ios_base::openmode iMode
+)
+{
+    // Ignore mode for the moment
+    if (iPos < mVar.size())
+        mInd = iPos;
+    return iPos;
 }
 
 varstream::varstream(class var iVar)
