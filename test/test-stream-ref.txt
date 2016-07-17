@@ -9,3 +9,6 @@
 3.4
 get(): e
 unget(): e
+Pos 2: 2
+Pos 0: 1
+Pos 4: 3.4

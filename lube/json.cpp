@@ -158,17 +158,18 @@ var JSON::doString(std::istream& iStream)
 var toNumber(var iStr)
 {
     // Try for integer
-    varstream ls(iStr.copy());
+    varstream vs(iStr);
     long l;
-    ls >> l;
-    if (!ls.fail())
+    vs >> l;
+    if (!vs.fail())
         return l;
 
     // Try for double
-    varstream ds(iStr.copy());
+    vs.clear();
+    vs.seekg(0);
     double d;
-    ds >> d;
-    if (!ds.fail())
+    vs >> d;
+    if (!vs.fail())
         return d;
 
     // Failed

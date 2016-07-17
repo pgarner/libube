@@ -35,13 +35,28 @@ int main(int argc, char** argv)
     cout << var(iostr) << endl;
     cout << iof << endl;
 
-    // String contains " end".  Check that unget() works
-    iostr.get();
-    char a = iostr.get();
+    // Stream should point to " end".  Check that unget() works
+    iostr.get();          // ' ' 
+    char a = iostr.get(); // 'e'
     cout << "get(): " << a << endl;
     iostr.unget();
     char b = iostr.get();
     cout << "unget(): " << b << endl;
+
+    // Clear the flags (there aren't any)
+    iostr.clear();
+
+    // Check stream positioning
+    double d;
+    iostr.seekg(2);
+    iostr >> d;
+    cout << "Pos 2: " << d << endl;
+    iostr.seekg(0);
+    iostr >> d;
+    cout << "Pos 0: " << d << endl;
+    iostr.seekg(4);
+    iostr >> d;
+    cout << "Pos 4: " << d << endl;
 
     // Done
     return 0;
