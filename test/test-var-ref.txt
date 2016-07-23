@@ -175,6 +175,10 @@ New view: [
   8, 9, 10, 11,
   12, 13, 14, 15
 ]
+View ctor: [
+  'd', 'd',
+  'd', 'd'
+]
 Comma is: [1.2, 2, 4, 5]
 Searching el(lo) in "Hello"
 Matches: [

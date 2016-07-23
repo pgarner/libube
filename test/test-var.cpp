@@ -218,6 +218,9 @@ int main(int argc, char** argv)
     cout << "Shape: " << t1.shape() << endl;
     cout << "New view: " << t3 << endl;
 
+    var t4({2,2}, 'd');
+    cout << "View ctor: " << t4 << endl;
+
     // Init by overloading operator,()
     var comma;
     comma = 1.2, 2.0, 4, 5;

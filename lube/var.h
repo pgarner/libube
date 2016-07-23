@@ -532,6 +532,7 @@ namespace libube
         var(int iSize, const int* iData);
         var(int iSize, var iVar);
         var(const std::initializer_list<var> iList);
+        var(const std::initializer_list<int> iShape, var iType);
 
         // Data accessor
         template<class T> T get() const { var v(*this); return v.data<T>(); }

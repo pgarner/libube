@@ -433,6 +433,14 @@ var::var(const std::initializer_list<var> iList) : var()
 }
 
 
+var::var(const std::initializer_list<int> iShape, var iType)
+{
+    *this = libube::view(iShape, iType);
+    for (int i=0; i<size(); i++)
+        at(i) = iType;
+}
+
+
 /**
  * var dereference
  *
