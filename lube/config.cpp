@@ -14,12 +14,25 @@
 
 using namespace libube;
 
-Option::Option(int iArgc, char** iArgv, var iOptString)
+Option::Option()
+{
+    optind = 1; // Resets getopt.  This class should be a singleton.
+    mArgc = 0;
+    mArgv = 0;
+    mOptString = "";
+    mOpt = -1;
+}
+
+Option::Option(int iArgc, char** iArgv, var iOptString) : Option()
 {
     mArgc = iArgc;
     mArgv = iArgv;
     mOptString = iOptString ? iOptString : "";
-    mOpt = -1;
+}
+
+Option::Option(var iName) : Option()
+{
+    mName = iName;
 }
 
 /**
@@ -56,6 +69,47 @@ Option::operator var()
 {
     return var(mArgc-optind, mArgv+optind);
 };
+
+void Option::operator ()(char iChar, var iDescription, var iDefault)
+{
+    mOpts[var(iChar)] = iDefault;
+    mOptString.push(iChar);
+    if (iDefault)
+        mOptString.push(':');
+    varstream desc;
+    desc << " -" << iChar << " " << iDescription.str();
+    if (iDefault)
+        desc << " [" << iDefault << "]";
+    mUsage.push(var(desc));
+}
+
+var Option::parse(int iArgc, char** iArgv)
+{
+    mArgc = iArgc;
+    mArgv = iArgv;
+    while (*this)
+    {
+        var o = (char)get();
+        if (o == '?')
+        {
+            usage();
+            exit(0);
+        }
+        var a = mOpts[o] ? arg() : 1;
+        mOpts[o] = a;
+    }
+    return mOpts;
+}
+
+void Option::usage()
+{
+    std::cout
+        << mName.str() << "\n"
+        << "Usage: " << mArgv[0]
+        << " -[" << mOptString.str() << "] (see 'man 3 getopt')\n";
+    for (int i=0; i<mUsage.size(); i++)
+        std::cout << mUsage[i].str() << "\n";
+}
 
 Config::Config(var iStr)
 {

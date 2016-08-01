@@ -15,23 +15,32 @@
 namespace libube
 {
     /**
-     * Option class.  A thin wrapper for getopt() from the standard unix
-     * library.
+     * Option class.  A thin (but partial to pies) wrapper for getopt() from
+     * the standard unix library.  getopt_long() is a GNU extension, so I don't
+     * use it.
      */
     class Option
     {
     public:
+        Option();
+        Option(var iName);
         Option(int iArgc, char** iArgv, var iOptString=nil);
         operator bool();
         int get() const { return mOpt; }; /** Put this call in the switch() */
         ind index() const;
         var arg() const;
         operator var();
+        void operator ()(char iChar, var iDescription, var iDefault=nil);
+        var parse(int iArgc, char** iArgv);
+        void usage();
     private:
+        var mName;
         int mArgc;
         char** mArgv;
         var mOptString;
-        int mOpt;
+        int mOpt;   // The option returned by getopt()
+        var mOpts;  // Associative array of options
+        var mUsage; // Array of text descriptions with defaults
     };
 
     /**

@@ -14,7 +14,7 @@ set(OUT test-config-out.txt)
 
 # Run the test
 execute_process(
-  COMMAND ${CMD} -a -c argument file1 file2
+  COMMAND ${CMD} before options -a -c argument file1 file2
   OUTPUT_FILE ${OUT}
   RESULT_VARIABLE RETURN_TESTS
   )

@@ -34,13 +34,14 @@ int main(int argc, char** argv)
         switch (opt.get())
         {
         case 'a':
-            cout << "Option A " << opt.index() << endl;
+            cout << "Option A at index " << opt.index() << endl;
             break;
         case 'b':
-            cout << "Option B " << opt.index() << endl;
+            cout << "Option B at index " << opt.index() << endl;
             break;
         case 'c':
-            cout << "Option C " << opt.index() << endl;
+            cout << "Option C at index " << opt.index()
+                 << " is " << opt.arg() << endl;
             break;
         default:
             cout << "Unrecognised option" << endl;
@@ -48,6 +49,17 @@ int main(int argc, char** argv)
 
     // The remaining opts are in context var
     var arg = opt;
+    cout << "Remaining opts: " << arg << endl;
+
+    // The other Option interface
+    lube::Option o("Option testing program");
+    o('a', "Indicates that an a is pertinent");
+    o('b', "Similar to a, later in alphabet");
+    o('c', "An option with an argument", 3.14f);
+    o('f', "Skip a few; check it doesn't infer -d or -e");
+    var opts = o.parse(argc, argv);
+    cout << "Options " << opts << endl;
+    var args = o;
     cout << "Remaining opts: " << arg << endl;
 
     // Load a config file
