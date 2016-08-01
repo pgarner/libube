@@ -10,7 +10,7 @@
 #include <cassert>
 #include <mkl_dfti.h>
 
-#include "lube/var.h"
+#include "lube/dft.h"
 
 
 /**

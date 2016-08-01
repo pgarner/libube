@@ -732,28 +732,6 @@ namespace libube
     };
 
 
-    struct DFTImpl;
-    /**
-     * DFT functor
-     *
-     * Uses the "pimpl" pattern: pointer to implementation.  This means the
-     * implementation can be dependent upon whichever library is available at
-     * compile time.
-     */
-    class DFT : public UnaryFunctor
-    {
-    public:
-        DFT(int iSize, bool iInverse=false, var iForwardType=0.0f);
-        ~DFT();
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
-    private:
-        DFTImpl* mImpl;
-    };
-
-
     // RegEx functors
     BASIC_REGEX_FUNCTOR_DECL(Search)
     BASIC_REGEX_FUNCTOR_DECL(Match)

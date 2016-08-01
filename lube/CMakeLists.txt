@@ -32,6 +32,7 @@ set(HEADERS
   data.h
   module.h
   curl.h
+  dft.h
   )
 
 set(SOURCES

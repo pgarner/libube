@@ -12,7 +12,7 @@
 #include "kiss_fft.h"
 #include "kiss_fftr.h"
 
-#include "lube/var.h"
+#include "lube/dft.h"
 
 
 namespace kissfft
