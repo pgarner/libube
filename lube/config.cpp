@@ -83,6 +83,11 @@ void Option::operator ()(char iChar, var iDescription, var iDefault)
     mUsage.push(var(desc));
 }
 
+void Option::operator ()(var iDescription)
+{
+    mUsage.push(iDescription.str());
+}
+
 var Option::parse(int iArgc, char** iArgv)
 {
     mArgc = iArgc;
@@ -91,10 +96,7 @@ var Option::parse(int iArgc, char** iArgv)
     {
         var o = (char)get();
         if (o == '?')
-        {
-            usage();
-            exit(0);
-        }
+            usage(0);
         var a = mOpts[o] ? arg() : 1;
         mOpts[o] = a;
     }
@@ -106,7 +108,7 @@ void Option::usage()
     std::cout
         << mName.str() << "\n"
         << "Usage: " << mArgv[0]
-        << " -[" << mOptString.str() << "] (see 'man 3 getopt')\n";
+        << " -[" << mOptString.str() << "] [args] (see 'man 3 getopt')\n";
     for (int i=0; i<mUsage.size(); i++)
         std::cout << mUsage[i].str() << "\n";
 }

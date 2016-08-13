@@ -27,12 +27,15 @@ namespace libube
         Option(int iArgc, char** iArgv, var iOptString=nil);
         operator bool();
         int get() const { return mOpt; }; /** Put this call in the switch() */
+        var operator [](char iChar) { return mOpts[var(iChar)]; };
         ind index() const;
         var arg() const;
         operator var();
         void operator ()(char iChar, var iDescription, var iDefault=nil);
+        void operator ()(var iDescription);
         var parse(int iArgc, char** iArgv);
         void usage();
+        void usage(int iError) { usage(); exit(iError); };
     private:
         var mName;
         int mArgc;
