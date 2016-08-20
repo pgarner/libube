@@ -30,7 +30,7 @@ namespace libube
         var operator [](char iChar) { return mOpts[var(iChar)]; };
         ind index() const;
         var arg() const;
-        operator var();
+        var args();
         void operator ()(char iChar, var iDescription, var iDefault=nil);
         void operator ()(var iDescription);
         var parse(int iArgc, char** iArgv);

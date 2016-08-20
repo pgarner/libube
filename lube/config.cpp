@@ -65,7 +65,7 @@ var Option::arg() const
     return optarg;
 };
 
-Option::operator var()
+var Option::args()
 {
     return var(mArgc-optind, mArgv+optind);
 };
@@ -106,9 +106,10 @@ var Option::parse(int iArgc, char** iArgv)
 void Option::usage()
 {
     std::cout
-        << mName.str() << "\n"
-        << "Usage: " << mArgv[0]
-        << " -[" << mOptString.str() << "] [args] (see 'man 3 getopt')\n";
+        << mName.str() << "\n" << "Usage: " << mArgv[0];
+    if (mOptString != "")
+        std::cout << " -[" << mOptString.str() << "]";
+    std::cout << " [args] (see 'man 3 getopt')\n";
     for (int i=0; i<mUsage.size(); i++)
         std::cout << mUsage[i].str() << "\n";
 }

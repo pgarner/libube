@@ -48,7 +48,7 @@ int main(int argc, char** argv)
         }
 
     // The remaining opts are in context var
-    var arg = opt;
+    var arg = opt.args();
     cout << "Remaining opts: " << arg << endl;
 
     // The other Option interface
@@ -59,8 +59,8 @@ int main(int argc, char** argv)
     o('f', "Skip a few; check it doesn't infer -d or -e");
     var opts = o.parse(argc, argv);
     cout << "Options " << opts << endl;
-    var args = o;
-    cout << "Remaining opts: " << arg << endl;
+    var args = o.args();
+    cout << "Remaining opts: " << args << endl;
 
     // Load a config file
     lube::Config cnf;
