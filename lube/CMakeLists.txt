@@ -24,6 +24,10 @@ include_directories(
 set(HEADERS
   var.h
   ind.h
+  func.h
+  math.h
+  string.h
+  regex.h
   path.h
   config.h
   graph.h

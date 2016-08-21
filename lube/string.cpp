@@ -16,6 +16,8 @@
 // Waiting for std::regex_xxx(), but currently boost appears more reliable.
 #include <boost/regex.hpp>
 
+#include "lube/string.h"
+#include "lube/regex.h"
 #include "lube/var.h"
 
 
@@ -23,7 +25,7 @@ namespace libube
 {
     /*
      * The instantiations of the string functors defined in this module.  They
-     * are declared extern in var.h
+     * are declared extern in string.h
      */
     ToUpper toupper;
     ToLower tolower;

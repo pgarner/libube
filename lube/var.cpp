@@ -16,6 +16,7 @@
 
 #include "lube/var.h"
 #include "lube/heap.h"
+#include "lube/string.h"
 
 #ifdef VARBOSE
 # include <cstdlib>

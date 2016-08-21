@@ -10,6 +10,7 @@
 #define LUBE_H
 
 #include <lube/var.h>
+#include <lube/regex.h>
 #include <lube/module.h>
 
 namespace lube = libube;

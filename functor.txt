@@ -34,15 +34,17 @@ For binary functors, there are four possible semantics:
 1. If var2 is a scalar, it just gets broadcast over the whole of var1. E.g., a
 matrix plus a scalar.  This is a special case of case 2.
 
-2. Var2 is a vector, it is broadcast over all var2 sized bits of var1.  In this
-case, all of var2 gets broadcast.  E.g., var1 is matrix, var2 is vector; each
-row of the matrix has the vector applied to it.  This is the case for basic
-arithmetic, where the dimensions must match.
+2. Arithmetic Functor.  Var2 is a tensor, it is broadcast over all var2 sized
+bits of var1.  In this case, all of var2 gets broadcast each time.  E.g., var1
+is matrix, var2 is vector; each row of the matrix has the vector applied to it.
+This is the case for basic arithmetic where, additionally, the shapes of the
+broadcast dimensions must match.
 
-3. Var2 is a vector, it has the same dimension as some part of var1; those
+3. Var2 is a tensor, it has the same dimension as some part of var1; those
 dimensions are broadcast together.  So, the loop goes over var1 and var2
-together.  E.g., var1 is matrix, var2 is matrix, they have the same number of
-rows.  Row 1 of var2 is applied to row 1 of var1.
+together.  E.g., row concatenation: var1 is matrix, var2 is matrix, they have
+the same number of rows.  Row 1 of var2 is applied to row 1 of var1.
+This case generalises to N-ary functors with N arguments.
 
 4. Matrix multiplication.  var2 is a fixed matrix; it is broadcast over each
 row of var1.

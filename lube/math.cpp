@@ -14,15 +14,14 @@
 
 #include "lube/c++blas.h"
 #include "lube/c++lapack.h"
-
 #include "lube/var.h"
-
+#include "lube/math.h"
 
 namespace libube
 {
     /*
      * The instantiations of the math and standard functors defined in this
-     * module.  They are declared extern in var.h
+     * module.  They are declared extern in math.h
      */
 
     // std math

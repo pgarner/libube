@@ -13,20 +13,17 @@
 #include <iostream>
 #include <stdexcept>
 #include <initializer_list>
-#include <complex>
 #include <chrono>
 
 #include <lube/ind.h>
+#include <lube/func.h>
+#include <lube/math.h>
+#include <lube/string.h>
 
 namespace libube
 {
-    typedef std::complex<float> cfloat;
-    typedef std::complex<double> cdouble;
-
+    // Forward declare the heap
     class Heap;
-    class var;
-    struct pair;
-
 
     /**
      * The possible var types
@@ -44,411 +41,12 @@ namespace libube
         TYPE_PAIR
     };
 
-
-    /**
-     * Base functor
-     */
-    class Functor
-    {
-    public:
-        virtual ~Functor() {};
-    };
-
-
-    /**
-     * String functor
-     *
-     * A unary functor for handling strings
-     */
-    class StringFunctor : public Functor
-    {
-    public:
-        var operator ()(const var& iVar) const;
-        var operator ()(const var& iVar, var& oVar) const;
-    protected:
-        virtual var alloc(var iVar) const;
-        virtual void broadcast(var iVar, var& oVar) const;
-        virtual void string(const var& iVar, var& oVar) const;
-    };
-
-
-    /**
-     * String regex functor
-     *
-     * A unary functor for handling regular expressions
-     */
-    class RegExFunctor : public StringFunctor
-    {
-    public:
-        RegExFunctor(var iRE);
-        virtual ~RegExFunctor();
-    protected:
-        void* mRE;
-    };
-
-
-    /**
-     * N-ary functor
-     *
-     * An N-ary functor has N arguments.  It broadcasts over the common
-     * dimension of each.
-     */
-    class NaryFunctor : public Functor
-    {
-    public:
-        NaryFunctor() { mDim = 0; };
-        var operator ()() const;
-        var operator ()(const var& iVar) const;
-        var operator ()(const var& iVar, var& oVar) const;
-    protected:
-        int mDim;
-        virtual var alloc(var iVar) const;
-        virtual void broadcast(var iVar, var& oVar) const;
-        virtual void scalar(const var& iVar, var& oVar) const;
-        virtual void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Unary functor
-     *
-     * A unary functor just acts on itself.
-     */
-    class UnaryFunctor : public Functor
-    {
-    public:
-        UnaryFunctor() { mDim = 0; };
-        var operator ()(const var& iVar) const;
-        var operator ()(const var& iVar, var& oVar) const;
-    protected:
-        int mDim;
-        virtual var alloc(var iVar) const;
-        virtual void broadcast(var iVar, var& oVar) const;
-        virtual void scalar(const var& iVar, var& oVar) const;
-        virtual void vector(
-            var iVar, ind iOffsetI, var& oVar, ind iOffsetO
-        ) const;
-        virtual void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Functor for things like imag() and abs() where the argument is complex
-     * but the return type is always real.
-     */
-    class RealUnaryFunctor : public UnaryFunctor
-    {
-    protected:
-        virtual var alloc(var iVar) const;
-    };
-
-
-    /**
-     * Arithmetic functor
-     *
-     * An arithmetic functor is a binary functor, a functor of two variables,
-     * that broadcasts in an arithmetic sense.
-     */
-    class ArithmeticFunctor : public Functor
-    {
-    public:
-        ArithmeticFunctor() { mDim = 0; };
-        var operator ()(
-            const var& iVar1, const var& iVar2
-        ) const;
-        var operator ()(
-            const var& iVar1, const var& iVar2, var& oVar
-        ) const;
-    protected:
-        int mDim;
-        virtual var alloc(var iVar1, var iVar2) const;
-        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
-        virtual void scalar(
-            const var& iVar1, const var& iVar2, var& oVar
-        ) const;
-        virtual void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-        virtual void vector(var iVar1, var iVar2, var& oVar) const;
-    };
-
-    /**
-     * Binary functor
-     *
-     * More general binary functor that does not broadcast like an arithmetic
-     * functor.  The inheritance might be the wrong way around.
-     */
-    class BinaryFunctor : public ArithmeticFunctor
-    {
-    protected:
-        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
-    };
-
-#   define BASIC_UNARY_FUNCTOR_DECL(f)                      \
-    class f : public UnaryFunctor                           \
-    {                                                       \
-    protected:                                              \
-        void scalar(const var& iVar, var& oVar) const;      \
-    };
-
-#   define REAL_UNARY_FUNCTOR_DECL(f)                       \
-    class f : public RealUnaryFunctor                       \
-    {                                                       \
-    protected:                                              \
-        void scalar(const var& iVar, var& oVar) const;      \
-    };
-
-#   define BASIC_ARITH_FUNCTOR_DECL(f)                      \
-    class f : public ArithmeticFunctor                      \
-    {                                                       \
-    protected:                                              \
-        void scalar(                                        \
-            const var& iVar1, const var& iVar2, var& oVar   \
-        ) const;                                            \
-    };
-
-#   define BASIC_STRING_FUNCTOR_DECL(f)                     \
-    class f : public StringFunctor                          \
-    {                                                       \
-    public:                                                 \
-        void string(const var& iVar, var& oVar) const;      \
-    };
-
-#   define BASIC_REGEX_FUNCTOR_DECL(f)                      \
-    class f : public RegExFunctor                           \
-    {                                                       \
-    public:                                                 \
-        f(var iRE) : RegExFunctor(iRE) {};                  \
-        void string(const var& iVar, var& oVar) const;      \
-    };
-
-    // Math functors
-    BASIC_UNARY_FUNCTOR_DECL(Sin)
-    BASIC_UNARY_FUNCTOR_DECL(Cos)
-    BASIC_UNARY_FUNCTOR_DECL(Tan)
-    BASIC_UNARY_FUNCTOR_DECL(ATan)
-    BASIC_UNARY_FUNCTOR_DECL(Floor)
-    BASIC_UNARY_FUNCTOR_DECL(Sqrt)
-    BASIC_UNARY_FUNCTOR_DECL(Log)
-    BASIC_UNARY_FUNCTOR_DECL(Exp)
-    BASIC_ARITH_FUNCTOR_DECL(Pow)
-    REAL_UNARY_FUNCTOR_DECL(Real)
-    REAL_UNARY_FUNCTOR_DECL(Imag)
-    REAL_UNARY_FUNCTOR_DECL(Abs)
-    REAL_UNARY_FUNCTOR_DECL(Arg)
-    REAL_UNARY_FUNCTOR_DECL(Norm)
-
-    // String functors
-    BASIC_STRING_FUNCTOR_DECL(ToUpper)
-    BASIC_STRING_FUNCTOR_DECL(ToLower)
-    BASIC_STRING_FUNCTOR_DECL(Strip)
-
-    template <class T>
-    BASIC_UNARY_FUNCTOR_DECL(Cast)
-
-
-    /**
-     * Set/Copy functor
-     */
-    class Set : public ArithmeticFunctor
-    {
-    protected:
-        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
-        void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-    };
-
-
-    /**
-     * Addition functor
-     */
-    class Add : public ArithmeticFunctor
-    {
-    protected:
-        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
-        void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-    };
-
-
-    /**
-     * Subtraction functor
-     */
-    class Sub : public ArithmeticFunctor
-    {
-    protected:
-        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
-        void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-    };
-
-
-    /**
-     * Multiplication functor
-     */
-    class Mul : public ArithmeticFunctor
-    {
-    protected:
-        void broadcast(var iVar1, var iVar2, var& oVar) const;
-        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
-        void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-        void scale(var iVar1, var iVar2, var& oVar, int iOffset) const;
-    };
-
-
-    /**
-     * Dot product functor
-     */
-    class Dot : public ArithmeticFunctor
-    {
-    protected:
-        var alloc(var iVar1, var iVar2) const;
-        void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-    };
-
-
-    /**
-     * Division functor
-     * There's no array operation.
-     */
-    class Div : public ArithmeticFunctor
-    {
-    protected:
-        void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
-    };
-
-
-    /**
-     * Absolute sum functor
-     */
-    class ASum : public UnaryFunctor
-    {
-    public:
-        ASum() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
-    };
-
-
-    /**
-     * Basic sum functor
-     */
-    class Sum : public UnaryFunctor
-    {
-    public:
-        Sum() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
-    };
-
-
-    /**
-     * Transpose functor
-     */
-    class Transpose : public UnaryFunctor
-    {
-    public:
-        Transpose() { mDim = 2; };
-    protected:
-        var alloc(var iVar) const;
-        void scalar(const var& iVar, var& oVar) const;
-        void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
-    };
-
-
-    /**
-     * Index of absolute maximum value functor
-     */
-    class IAMax : public UnaryFunctor
-    {
-    public:
-        IAMax() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        void vector(
-            var iVar, ind iOffsetI, var& oVar, ind iOffsetO
-        ) const;
-    };
-
-
-    /**
-     * Polynomial roots functor
-     */
-    class Roots : public UnaryFunctor
-    {
-    public:
-        Roots() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Polynomial functor
-     */
-    class Poly : public UnaryFunctor
-    {
-    public:
-        Poly() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Sorting functor
-     */
-    class Sort : public UnaryFunctor
-    {
-    public:
-        Sort() { mDim = 1; };
-    protected:
-        void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
-     * Concatenating functor
-     */
-    class Concatenate : public NaryFunctor
-    {
-    public:
-        Concatenate() { mDim = 1; };
-    protected:
-        var alloc(var iVar) const;
-        virtual void vector(var iVar, var& oVar) const;
-    };
-
-
     // Statics
     extern const var nil;
 
     // Casting functors
+    template <class T>
+    BASIC_UNARY_FUNCTOR_DECL(Cast)
     extern Cast<char> castChar;
     extern Cast<int> castInt;
     extern Cast<long> castLong;
@@ -457,48 +55,6 @@ namespace libube
     extern Cast<cfloat> castCFloat;
     extern Cast<cdouble> castCDouble;
 
-    // stdlib Functors
-    extern Sin sin;
-    extern Cos cos;
-    extern Tan tan;
-    extern ATan atan;
-    extern Floor floor;
-    extern Sqrt sqrt;
-    extern Log log;
-    extern Exp exp;
-    extern Pow pow;
-    extern Real real;
-    extern Imag imag;
-    extern Abs abs;
-    extern Arg arg;
-    extern Norm norm;
-
-    // BLAS functors
-    extern Set set;
-    extern Add add;
-    extern Sub sub;
-    extern Mul mul;
-    extern Dot dot;
-    extern Div div;
-    extern ASum asum;
-    extern Sum sum;
-    extern IAMax iamax;
-
-    // BLAS-like
-    extern Transpose transpose;
-    extern Concatenate concatenate;
-
-    // Lapack based functors
-    extern Roots roots;
-    extern Poly poly;
-
-    // stdlib
-    extern Sort sort;
-
-    // String functors
-    extern ToUpper toupper;
-    extern ToLower tolower;
-    extern Strip strip;
 
     /**
      * Class with runtime type determination.
@@ -616,12 +172,14 @@ namespace libube
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
         var join(const char* iStr) const;
-        var search(var iRE);
-        var match(var iRE);
-        var replace(var iRE, var iStr);
         var toupper() { return libube::toupper(*this, *this); };
         var tolower() { return libube::tolower(*this, *this); };
         var strip() { return libube::strip(*this, *this); };
+
+        // Regex functors
+        var search(var iRE);
+        var match(var iRE);
+        var replace(var iRE, var iStr);
 
         // Tensors
         bool view() const;
@@ -729,19 +287,6 @@ namespace libube
         void backTrace(std::ostream& iStream);
         var mVar;
         const char* mStr;
-    };
-
-
-    // RegEx functors
-    BASIC_REGEX_FUNCTOR_DECL(Search)
-    BASIC_REGEX_FUNCTOR_DECL(Match)
-    class Replace : public RegExFunctor
-    {
-    public:
-        Replace(var iRE, var iStr);
-        void string(const var& iVar, var& oVar) const;
-    private:
-        var mStr;
     };
 
 
