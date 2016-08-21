@@ -44,6 +44,7 @@ set(SOURCES
   heap.cpp
   module.cpp
   math.cpp
+  func.cpp
   string.cpp
   config.cpp
   clapack.cpp

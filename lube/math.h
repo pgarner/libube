@@ -24,28 +24,6 @@ namespace libube
     typedef std::complex<double> cdouble;
 
     /**
-     * N-ary functor
-     *
-     * An N-ary functor has N arguments.  It broadcasts over the common
-     * dimension of each.
-     */
-    class NaryFunctor : public Functor
-    {
-    public:
-        NaryFunctor() { mDim = 0; };
-        var operator ()() const;
-        var operator ()(const var& iVar) const;
-        var operator ()(const var& iVar, var& oVar) const;
-    protected:
-        int mDim;
-        virtual var alloc(var iVar) const;
-        virtual void broadcast(var iVar, var& oVar) const;
-        virtual void scalar(const var& iVar, var& oVar) const;
-        virtual void vector(var iVar, var& oVar) const;
-    };
-
-
-    /**
      * Functor for things like imag() and abs() where the argument is complex
      * but the return type is always real.
      */
@@ -55,49 +33,11 @@ namespace libube
         virtual var alloc(var iVar) const;
     };
 
-
-    /**
-     * Arithmetic functor
-     *
-     * An arithmetic functor is a binary functor, a functor of two variables,
-     * that broadcasts in an arithmetic sense, i.e., var2 is repeated as a
-     * whole across var2 sized bits of var1.
-     */
-    class ArithmeticFunctor : public Functor
-    {
-    public:
-        ArithmeticFunctor() { mDim = 0; };
-        var operator ()(
-            const var& iVar1, const var& iVar2
-        ) const;
-        var operator ()(
-            const var& iVar1, const var& iVar2, var& oVar
-        ) const;
-    protected:
-        int mDim;
-        virtual var alloc(var iVar1, var iVar2) const;
-        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
-        virtual void scalar(
-            const var& iVar1, const var& iVar2, var& oVar
-        ) const;
-        virtual void vector(
-            var iVar1, ind iOffset1,
-            var iVar2, ind iOffset2,
-            var& oVar, ind iOffsetO
-        ) const;
-        virtual void vector(var iVar1, var iVar2, var& oVar) const;
-    };
-
-    /**
-     * Binary functor
-     *
-     * More general binary functor that does not broadcast like an arithmetic
-     * functor.  The inheritance might be the wrong way around.
-     */
-    class BinaryFunctor : public ArithmeticFunctor
-    {
-    protected:
-        virtual void broadcast(var iVar1, var iVar2, var& oVar) const;
+#   define BASIC_UNARY_FUNCTOR_DECL(f)                      \
+    class f : public UnaryFunctor                           \
+    {                                                       \
+    protected:                                              \
+        void scalar(const var& iVar, var& oVar) const;      \
     };
 
 #   define REAL_UNARY_FUNCTOR_DECL(f)                       \
