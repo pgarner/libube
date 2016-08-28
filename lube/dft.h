@@ -15,24 +15,53 @@
 namespace libube
 {
     struct DFTImpl;
+
     /**
-     * DFT functor
+     * DFT functor implementation
      *
      * Uses the "pimpl" pattern: pointer to implementation.  This means the
      * implementation can be dependent upon whichever library is available at
      * compile time.
+     *
+     * Deals with both forward and inverse cases, which are normally just a
+     * flag in the implementation library.  In general you should instantiate
+     * either DFT or IDFT rather than this one.
      */
-    class DFT : public UnaryFunctor
+    class DFTBase : public UnaryFunctor
     {
     public:
-        DFT(int iSize, bool iInverse=false, var iForwardType=0.0f);
-        ~DFT();
+        DFTBase(int iSize, bool iInverse, var iForwardType);
+        ~DFTBase();
     protected:
         var alloc(var iVar) const;
         void scalar(const var& iVar, var& oVar) const;
         void vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const;
     private:
         DFTImpl* mImpl;
+    };
+
+    /**
+     * DFT functor
+     *
+     * Instantiation of the DFT base class for the forward transform.
+     */
+    class DFT : public DFTBase
+    {
+    public:
+        DFT(int iSize, var iForwardType=0.0f)
+            : DFTBase(iSize, false, iForwardType) {};
+    };
+
+    /**
+     * Inverse DFT functor
+     *
+     * Instantiation of the DFT base class for the backward transform.
+     */
+    class IDFT : public DFTBase
+    {
+    public:
+        IDFT(int iSize, var iForwardType=0.0f)
+            : DFTBase(iSize, true, iForwardType) {};
     };
 }
 

@@ -38,13 +38,13 @@ using namespace libube;
 
 
 /**
- * DFT constructor
+ * DFTBase constructor
  *
  * The default forward type is 0.0f, meaning that it defaults to a single
  * precision real transform.  The output type is always complex; in the case of
  * a real transform the size of the complex output is iSize/2+1.
  */
-DFT::DFT(int iSize, bool iInverse, var iForwardType)
+DFTBase::DFTBase(int iSize, bool iInverse, var iForwardType)
 {
     mImpl = new DFTImpl;
 
@@ -66,7 +66,7 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
             mImpl->config = kiss_fftr_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_DOUBLE:
-        throw error("DFT::DFT: Kiss FFT float only");
+        throw error("DFTBase::DFTBase: Kiss FFT float only");
         break;
     case TYPE_CFLOAT:
         mImpl->inverseType = cfloat(0.0f, 0.0f);
@@ -77,17 +77,17 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
             mImpl->config = kiss_fft_alloc(iSize, 0, 0, 0);
         break;
     case TYPE_CDOUBLE:
-        throw error("DFT::DFT: Kiss FFT float only");
+        throw error("DFTBase::DFTBase: Kiss FFT float only");
         break;
     default:
-        throw error("DFT::DFT: Unknown type");
+        throw error("DFTBase::DFTBase: Unknown type");
     }
     
     // Update the instance count
     kissfft::sInstanceCount++;
 }
 
-DFT::~DFT()
+DFTBase::~DFTBase()
 {
     free(mImpl->config);
     delete mImpl;
@@ -97,7 +97,7 @@ DFT::~DFT()
         kiss_fft_cleanup();
 }
 
-var DFT::alloc(var iVar) const
+var DFTBase::alloc(var iVar) const
 {
     // Allocate an output array
     var r;
@@ -107,25 +107,25 @@ var DFT::alloc(var iVar) const
     return r;
 }
 
-void DFT::scalar(const var& iVar, var& oVar) const
+void DFTBase::scalar(const var& iVar, var& oVar) const
 {
     // Check the arrays are OK
     if (iVar.type() != TYPE_ARRAY)
-        throw error("DFT::scalar: DFT input must be vector");
+        throw error("DFTBase::scalar: DFTBase input must be vector");
     if (oVar.type() != TYPE_ARRAY)
-        throw error("DFT::scalar: DFT output must be vector");
+        throw error("DFTBase::scalar: DFTBase output must be vector");
     if (iVar.atype() != (mImpl->inverse
                          ? mImpl->inverseType.type()
                          : mImpl->forwardType.type()
         ))
-        throw error("DFT::scalar: wrong input type");
+        throw error("DFTBase::scalar: wrong input type");
     if (oVar.atype() != (mImpl->inverse
                           ? mImpl->forwardType.type()
                           : mImpl->inverseType.type()
         ))
-        throw error("DFT::scalar: wrong output type");
+        throw error("DFTBase::scalar: wrong output type");
 
-    // DFT always broadcasts to vector()
+    // DFTBase always broadcasts to vector()
     broadcast(iVar, oVar);
 
     // Kiss does not include the divide by N on the inverse
@@ -133,12 +133,12 @@ void DFT::scalar(const var& iVar, var& oVar) const
         oVar /= mImpl->oSize;
 }
 
-void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
+void DFTBase::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(oVar);
     if (iVar.is(oVar))
     {
-        throw error("DFT::vector(): not implemented");
+        throw error("DFTBase::vector(): not implemented");
     }
     else
         if (mImpl->inverse)
@@ -152,7 +152,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_DOUBLE:
-                throw error("DFT::vector(): Kiss FFT float only");
+                throw error("DFTBase::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
                 kiss_fft(
@@ -162,10 +162,10 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_CDOUBLE:
-                throw error("DFT::vector(): Kiss FFT float only");
+                throw error("DFTBase::vector(): Kiss FFT float only");
                 break;
             default:
-                throw error("DFT::vector(): unknown type");
+                throw error("DFTBase::vector(): unknown type");
             }
         else
             switch (mImpl->forwardType.type())
@@ -178,7 +178,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_DOUBLE:
-                throw error("DFT::vector(): Kiss FFT float only");
+                throw error("DFTBase::vector(): Kiss FFT float only");
                 break;
             case TYPE_CFLOAT:
                 kiss_fft(
@@ -188,9 +188,9 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             case TYPE_CDOUBLE:
-                throw error("DFT::vector(): Kiss FFT float only");
+                throw error("DFTBase::vector(): Kiss FFT float only");
                 break;
             default:
-                throw error("DFT::vector(): unknown type");
+                throw error("DFTBase::vector(): unknown type");
             }
 }

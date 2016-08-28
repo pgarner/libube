@@ -38,13 +38,13 @@ void dftiCheck(MKL_LONG iReturn)
 
 
 /**
- * DFT constructor
+ * DFTBase constructor
  *
  * The default forward type is 0.0f, meaning that it defaults to a single
  * precision real transform.  The output type is always complex; in the case of
  * a real transform the size of the complex output is iSize/2+1.
  */
-DFT::DFT(int iSize, bool iInverse, var iForwardType)
+DFTBase::DFTBase(int iSize, bool iInverse, var iForwardType)
 {
     mImpl = new DFTImpl;
 
@@ -87,7 +87,7 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
         );
         break;
     default:
-        throw error("DFT::DFT: Unknown type");
+        throw error("DFTBase::DFTBase: Unknown type");
     }
     dftiCheck(r);
 
@@ -99,7 +99,7 @@ DFT::DFT(int iSize, bool iInverse, var iForwardType)
     dftiCheck(r);
 }
 
-DFT::~DFT()
+DFTBase::~DFTBase()
 {
     MKL_LONG r = DftiFreeDescriptor(&mImpl->handle);
     dftiCheck(r);
@@ -107,7 +107,7 @@ DFT::~DFT()
     mImpl = 0;
 }
 
-var DFT::alloc(var iVar) const
+var DFTBase::alloc(var iVar) const
 {
     // Allocate an output array
     var r;
@@ -117,25 +117,25 @@ var DFT::alloc(var iVar) const
     return r;
 }
 
-void DFT::scalar(const var& iVar, var& oVar) const
+void DFTBase::scalar(const var& iVar, var& oVar) const
 {
     // Check the arrays are OK
     if (iVar.type() != TYPE_ARRAY)
-        throw error("DFT::scalar: DFT input must be vector");
+        throw error("DFTBase::scalar: DFTBase input must be vector");
     if (oVar.type() != TYPE_ARRAY)
-        throw error("DFT::scalar: DFT output must be vector");
+        throw error("DFTBase::scalar: DFTBase output must be vector");
     if (iVar.atype() != (mImpl->inverse
                          ? mImpl->inverseType.type()
                          : mImpl->forwardType.type()
         ))
-        throw error("DFT::scalar: wrong input type");
+        throw error("DFTBase::scalar: wrong input type");
     if (oVar.atype() != (mImpl->inverse
                           ? mImpl->forwardType.type()
                           : mImpl->inverseType.type()
         ))
-        throw error("DFT::scalar: wrong output type");
+        throw error("DFTBase::scalar: wrong output type");
 
-    // DFT always broadcasts to vector()
+    // DFTBase always broadcasts to vector()
     broadcast(iVar, oVar);
 
     // MKL does not include the divide by N on the inverse
@@ -143,13 +143,13 @@ void DFT::scalar(const var& iVar, var& oVar) const
         oVar /= mImpl->oSize;
 }
 
-void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
+void DFTBase::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
 {
     assert(oVar);
     MKL_LONG r;
     if (iVar.is(oVar))
     {
-        throw error("DFT::vector(): not implemented");
+        throw error("DFTBase::vector(): not implemented");
         if (mImpl->inverse)
             r = DftiComputeBackward(mImpl->handle, oVar.ptr<float>(iOffsetO));
         else
@@ -188,7 +188,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             default:
-                throw error("DFT::vector(): unknown type");
+                throw error("DFTBase::vector(): unknown type");
             }
         else
             switch (mImpl->forwardType.type())
@@ -222,7 +222,7 @@ void DFT::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
                 );
                 break;
             default:
-                throw error("DFT::vector(): unknown type");
+                throw error("DFTBase::vector(): unknown type");
             }
     dftiCheck(r);
 }

@@ -138,7 +138,7 @@ int main(int argc, char** argv)
     lube::DFT dft(10);
     fd = dft(td);
     cout << "Freq: " << fd << endl;
-    lube::DFT idft(10, true);
+    lube::IDFT idft(10);
     var ifd = idft(fd);
     cout << "IFreq: " << ifd << endl;
 
