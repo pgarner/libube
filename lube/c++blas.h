@@ -16,6 +16,7 @@
  */
 namespace blas
 {
+    template<class T> void swap(long iN, T* iX, T* iY);
     template<class T> void copy(long iN, T* iX, T* iY);
     template<class T> void axpy(long iN, T iAlpha, T* iX, T* ioY);
     template<class T> void scal(long iN, T iAlpha, T* ioX);

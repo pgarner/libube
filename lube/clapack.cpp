@@ -22,6 +22,7 @@ typedef logical (*L_fp)(...);
 
 // clapack is f2c'd lapack.  It's still fortran calling convention.
 #include <clapack.h>
+#include "c++blas.h"
 #include "c++lapack.h"
 
 static char sV = 'V';
@@ -42,19 +43,29 @@ union fd {
 
 namespace blas
 {
-    template<class T> void copy(long iN, T* iX, T* iY);
-    template<class T> void axpy(long iN, T iAlpha, T* iX, T* ioY);
-    template<class T> void scal(long iN, T iAlpha, T* ioX);
-    template<class T> T dot(long iN, T* iX, T* iY);
-    template<class T> long iamax(long iN, T* iX);
-    template<class T> T asum(long iN, T* iX);
-    template<class T> void tbmv(long iN, long iK, T* iA, T* ioX);
-    template<class T> void sbmv(
-        long iN, long iK, T iAlpha, T* iA, T* iX, T iBeta, T* ioY
-    );
-    template<class T> void gemm(
-        long iM, long iN, long iK, T iAlpha, T* iA, T* iB, T iBeta, T* ioC
-    );
+    template<>
+    void swap<float>(long iN, float* iX, float* oY)
+    {
+        sswap_(&iN, iX, &sOne, oY, &sOne);
+    }
+
+    template<>
+    void swap<double>(long iN, double* iX, double* oY)
+    {
+        dswap_(&iN, iX, &sOne, oY, &sOne);
+    }
+
+    template<>
+    void swap<CFLOAT>(long iN, CFLOAT* iX, CFLOAT* oY)
+    {
+        cswap_(&iN, iX, &sOne, oY, &sOne);
+    }
+
+    template<>
+    void swap<CDOUBLE>(long iN, CDOUBLE* iX, CDOUBLE* oY)
+    {
+        zswap_(&iN, iX, &sOne, oY, &sOne);
+    }
 
     template<>
     void copy<float>(long iN, float* iX, float* oY)
