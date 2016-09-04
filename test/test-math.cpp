@@ -204,6 +204,13 @@ int main(int argc, char** argv)
     cout << "Usrt is: " << csrt << endl;
     cout << "Sort is: " << lube::sort(csrt, csrt) << endl;
 
+    // Swap
+    var s1 = {1.0, 2.0, 3.0, 4.0};
+    var s2 = {5.0, 6.0, 7.0, 8.0};
+    cout << "s1: " << s1 << " s2: " << s2 << endl;
+    lube::swap(s1, s2);
+    cout << "s1: " << s1 << " s2: " << s2 << endl;
+
     // Done
     return 0;
 }

@@ -42,6 +42,7 @@ namespace libube
 
     // BLAS
     Set set;
+    Swap swap;
     Add add;
     Sub sub;
     Mul mul;
@@ -268,7 +269,58 @@ void Set::vector(
         );
         break;
     default:
-        throw error("Set::array: Unknown type");
+        throw error("Set::vector: Unknown type");
+    }
+}
+
+
+/** Don't allocate anything */
+var Swap::alloc(var iVar1, var iVar2) const
+{
+    return iVar1;
+};
+
+
+void Swap::vector(
+    var iVar1, ind iOffset1,
+    var iVar2, ind iOffset2,
+    var& oVar, ind iOffsetO
+) const
+{
+    assert(type(iVar1) == TYPE_ARRAY);
+    int size = iVar1.size();
+    switch(iVar1.atype())
+    {
+    case TYPE_FLOAT:
+        blas::swap(
+            size,
+            iVar1.ptr<float>(iOffset1),
+            iVar2.ptr<float>(iOffset2)
+        );
+        break;
+    case TYPE_DOUBLE:
+        blas::swap(
+            size,
+            iVar1.ptr<double>(iOffset1),
+            iVar2.ptr<double>(iOffset2)
+        );
+        break;
+    case TYPE_CFLOAT:
+        blas::swap(
+            size,
+            iVar1.ptr<cfloat>(iOffset1),
+            iVar2.ptr<cfloat>(iOffset2)
+        );
+        break;
+    case TYPE_CDOUBLE:
+        blas::swap(
+            size,
+            iVar1.ptr<cdouble>(iOffset1),
+            iVar2.ptr<cdouble>(iOffset2)
+        );
+        break;
+    default:
+        throw error("Swap::vector: Unknown type");
     }
 }
 
@@ -809,7 +861,7 @@ void ASum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             blas::asum(size, iVar.ptr<double>(iOffsetI));
         break;
     default:
-        throw error("ASum::array: Unknown type");
+        throw error("ASum::vector: Unknown type");
     }
 }
 
@@ -879,7 +931,7 @@ void Sum::vector(var iVar, ind iOffsetI, var& oVar, ind iOffsetO) const
             sumArray(size, iVar.ptr<cdouble>(iOffsetI));
         break;
     default:
-        throw error("Sum::array: Unknown type");
+        throw error("Sum::vector: Unknown type");
     }
 }
 
@@ -989,7 +1041,7 @@ var Roots::alloc(var iVar) const
         break;
     case TYPE_DOUBLE:
     case TYPE_CDOUBLE:
-        r = view(s, cfloat(0.0, 0.0));
+        r = view(s, cdouble(0.0, 0.0));
         break;
     }
     return r;

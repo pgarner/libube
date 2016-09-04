@@ -10,6 +10,10 @@
 #ifndef MATH_H
 #define MATH_H
 
+/*
+ * math.h can't include var.h; this means we can't really use inline
+ * definitions that use var.
+ */
 #include <complex>
 #include <lube/func.h>
 
@@ -79,6 +83,23 @@ namespace libube
     {
     protected:
         void scalar(const var& iVar1, const var& iVar2, var& oVar) const;
+        void vector(
+            var iVar1, ind iOffset1,
+            var iVar2, ind iOffset2,
+            var& oVar, ind iOffsetO
+        ) const;
+    };
+
+
+    /**
+     * Swap functor
+     */
+    class Swap : public BinaryFunctor
+    {
+    public:
+        Swap() { mDim = 1; };
+    protected:
+        var alloc(var iVar1, var iVar2) const;
         void vector(
             var iVar1, ind iOffset1,
             var iVar2, ind iOffset2,
@@ -286,6 +307,7 @@ namespace libube
 
     // BLAS functors
     extern Set set;
+    extern Swap swap;
     extern Add add;
     extern Sub sub;
     extern Mul mul;
