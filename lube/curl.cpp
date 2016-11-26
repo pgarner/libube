@@ -8,8 +8,7 @@
  */
 
 #include <curl/curl.h>
-#include <lube/curl.h>
-#include <lube.h>
+#include "lube/curl.h"
 
 namespace libube
 {

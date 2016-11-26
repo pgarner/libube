@@ -200,6 +200,24 @@ if (CURL_FOUND)
   list(APPEND MODULE_TARGETS curl-lib)
 endif (CURL_FOUND)
 
+find_package(Qwt)
+if (QWT_FOUND)
+  find_package(Qt5Widgets REQUIRED)
+  include_directories(${Qt5Widgets_INCLUDE_DIRS} ${QWT_INCLUDE_DIRS})
+  add_definitions(${Qt5Widgets_DEFINITIONS} ${QWT_DEFINITIONS})
+  # qt5_wrap_cpp(QWT_HEADERS_MOC qwtplot.h)
+  add_library(qwt-lib MODULE qwt.cpp ${QWT_HEADERS_MOC})
+  target_link_libraries(qwt-lib
+    lube-shared
+    ${Qt5Widgets_LIBRARIES}
+    ${QWT_LIBRARIES}
+    )
+  set_target_properties(qwt-lib
+    PROPERTIES OUTPUT_NAME "qwt"
+    )
+  list(APPEND MODULE_TARGETS qwt-lib)
+endif (QWT_FOUND)
+
 # Normal install path for the library
 install(
   TARGETS ${LIBUBE_TARGETS}

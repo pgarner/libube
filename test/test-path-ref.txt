@@ -1,18 +1,21 @@
 Dir:
 {
   "../../cmake/FindLibUBE.cmake": null,
+  "../../cmake/FindQwt.cmake": null,
   "../../cmake/FindSndFile.cmake": null,
   "../../cmake/cfind.sh": null
 }
 Recursive Dir:
 {
   "../../cmake/FindLibUBE.cmake": null,
+  "../../cmake/FindQwt.cmake": null,
   "../../cmake/FindSndFile.cmake": null,
   "../../cmake/cfind.sh": null
 }
 Tree:
 {
   "FindLibUBE.cmake": null,
+  "FindQwt.cmake": null,
   "FindSndFile.cmake": null,
   "cfind.sh": null
 }

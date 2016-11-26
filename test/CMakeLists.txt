@@ -95,3 +95,7 @@ add_test(
   NAME curl
   COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/test-curl.cmake
   )
+
+add_executable(test-qwt test-qwt.cpp)
+target_link_libraries(test-qwt lube-shared)
+# No test yet as it's a window thing
