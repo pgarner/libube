@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
-<HEAD> <TITLE>cURL - copyright</TITLE>
+<HEAD> <TITLE>curl - copyright</TITLE>
 <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
 <link rel="stylesheet" type="text/css" href="https://curl.haxx.se/curl.css">
 <link rel="shortcut icon" href="https://curl.haxx.se/favicon.ico">
@@ -18,7 +18,7 @@
 <a href="/legal/thename.html" class="menuitem" title="Who owns the name">The Name</a>
 </div>
 <div class="contents">
-<div class="where"><a href="https://curl.haxx.se/">cURL</a> / <a href="/docs/">Docs</a> / <a href="/docs/whodocs.html">Who and Why</a> / <b>Copyright</b></div>
+<div class="where"><a href="https://curl.haxx.se/">curl</a> / <a href="/docs/">Docs</a> / <a href="/docs/whodocs.html">Who and Why</a> / <b>Copyright</b></div>
 <h1> Copyright - License </h1>
 <div class="relatedbox">
 <b>Related:</b>
@@ -40,7 +40,7 @@
 <h2> The curl license </h2>
 <div class="quote">
 <p>COPYRIGHT AND PERMISSION NOTICE</p>
-<p>Copyright (c) 1996 - 2016, Daniel Stenberg, <a href="&#x6D;a&#105;&#108;&#x74;o:&#100;&#97;&#x6E;&#105;&#101;&#x6C;&#64;&#x68;&#x61;&#120;&#120;&#46;&#x73;&#101;">&#100;&#97;&#x6E;&#105;&#101;&#x6C;&#64;&#x68;&#x61;&#120;&#120;&#46;&#x73;&#101;</a>, and many
+<p>Copyright (c) 1996 - 2016, Daniel Stenberg, <a href="&#109;&#x61;&#105;&#108;&#116;&#111;:&#x64;&#x61;&#110;&#105;e&#x6C;&#64;&#x68;&#97;&#120;x&#x2E;&#115;&#101;">&#x64;&#x61;&#110;&#105;e&#x6C;&#64;&#x68;&#97;&#120;x&#x2E;&#115;&#101;</a>, and many
 contributors, see the THANKS file.</p>
 <p>All rights reserved.</p>
 <p>Permission to use, copy, modify, and distribute this software for any purpose
