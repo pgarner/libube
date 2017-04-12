@@ -40,7 +40,7 @@
 <h2> The curl license </h2>
 <div class="quote">
 <p>COPYRIGHT AND PERMISSION NOTICE</p>
-<p>Copyright (c) 1996 - 2016, Daniel Stenberg, <a href="&#109;&#x61;&#105;&#108;&#116;&#111;:&#x64;&#x61;&#110;&#105;e&#x6C;&#64;&#x68;&#97;&#120;x&#x2E;&#115;&#101;">&#x64;&#x61;&#110;&#105;e&#x6C;&#64;&#x68;&#97;&#120;x&#x2E;&#115;&#101;</a>, and many
+<p>Copyright (c) 1996 - 2017, Daniel Stenberg, <a href="&#x6D;&#97;&#105;&#x6C;&#116;&#111;:&#100;&#97;&#x6E;&#x69;&#x65;&#108;&#64;&#x68;&#x61;&#120;&#120;.&#x73;&#101;">&#100;&#97;&#x6E;&#x69;&#x65;&#108;&#64;&#x68;&#x61;&#120;&#120;.&#x73;&#101;</a>, and many
 contributors, see the THANKS file.</p>
 <p>All rights reserved.</p>
 <p>Permission to use, copy, modify, and distribute this software for any purpose
