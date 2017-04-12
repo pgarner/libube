@@ -9,19 +9,7 @@
 
 #include <complex>
 
-// From: http://www.netlib.org/clapack/f2c.h
-#define VOID void
-typedef long int integer;
-typedef long int logical;
-typedef long int ftnlen;
-typedef float real;
-typedef double doublereal;
-typedef std::complex<float> complex;
-typedef std::complex<double> doublecomplex;
-typedef logical (*L_fp)(...);
-
-// clapack is f2c'd lapack.  It's still fortran calling convention.
-#include <clapack.h>
+#include "clapack.h"
 #include "c++blas.h"
 #include "c++lapack.h"
 
@@ -33,13 +21,6 @@ static integer sOne = 1L;
 
 #define CFLOAT std::complex<float>
 #define CDOUBLE std::complex<double>
-
-// A small hack to get around a bug in clapack.h where it thinks single
-// precision BLAS calls return double when they actually return float.
-union fd {
-    float f;
-    double d;
-};
 
 namespace blas
 {
@@ -131,9 +112,7 @@ namespace blas
     template<>
     float dot<float>(long iN, float* iX, float* iY)
     {
-        fd ret;
-        ret.d = sdot_(&iN, iX, &sOne, iY, &sOne);
-        return ret.f;
+        return sdot_(&iN, iX, &sOne, iY, &sOne);
     }
 
     template<>
@@ -185,9 +164,7 @@ namespace blas
     template<>
     float asum<float>(long iN, float* iX)
     {
-        fd ret;
-        ret.d = sasum_(&iN, iX, &sOne);
-        return ret.f;
+        return sasum_(&iN, iX, &sOne);
     }
 
     template<>

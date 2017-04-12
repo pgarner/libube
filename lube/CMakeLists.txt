@@ -77,6 +77,13 @@ else (USE_MKL)
   message(STATUS "MKL seems not available; using Kiss FFT & ad-hoc transpose")
 endif (USE_MKL)
 
+# MacOS Accelerate (and perhaps others) uses f2c return conventions
+set(USE_F2C_BLAS ${BLAS_Accelerate_LIBRARY})
+if (USE_F2C_BLAS)
+  add_definitions(-DHAVE_F2C_BLAS)
+  message(STATUS "The BLAS library has f2c return conventions")
+endif (USE_F2C_BLAS)
+
 # Threads are for BLAS; not sure why it's not included in BLAS_LIBRARIES
 set(TARGET_LIBS
   -ldl
