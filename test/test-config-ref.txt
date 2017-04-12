@@ -1,8 +1,6 @@
-Option A at index 4
-Option C at index 6 is "argument"
+Option A at index 2
+Option C at index 4 is "argument"
 Remaining opts: [
-  "before",
-  "options",
   "file1",
   "file2"
 ]
@@ -13,8 +11,6 @@ Options {
   'f': null
 }
 Remaining opts: [
-  "before",
-  "options",
   "file1",
   "file2"
 ]
