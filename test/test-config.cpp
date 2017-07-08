@@ -23,7 +23,8 @@ public:
         mStr = iStr;
     };
 
-    void dump() { std::cout << config() << std::endl; };
+    void dump() { std::cout << "Dump of section " << mStr << ":\n"
+                            << config() << std::endl; };
 };
 
 int main(int argc, char** argv)

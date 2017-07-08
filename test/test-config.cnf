@@ -4,4 +4,6 @@ string  = This is a string
 
 [Test]
 float = 2.3
+integer = 23
 ;double = 3.2
+string = A test string
