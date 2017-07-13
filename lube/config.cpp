@@ -114,8 +114,26 @@ void Option::usage()
         std::cout << mUsage[i].str() << "\n";
 }
 
+/**
+ * Static config.  This functions as a global config that gets used if no other
+ * is specified.
+ */
+namespace libube
+{
+    static var sConfig;
+}
+
+/**
+ * Config constructor
+ *
+ * By default, it uses the static (global) config
+ */
 Config::Config(var iStr)
 {
+    // Make sure sConfig is an associative array so we copy the reference
+    if (!sConfig)
+        sConfig[nil];
+    mCnf = sConfig;
     mStr = iStr.copy();
 }
 
@@ -124,7 +142,19 @@ void Config::read(var iConfigFile)
     // Config files are .ini format
     filemodule im("ini");
     file& ini = im.create();
-    mCnf = ini.read(iConfigFile);
+    var cnf = ini.read(iConfigFile);
+
+    // Merge the new config into the current one
+    for (int i=0; i<cnf.size(); i++)
+    {
+        var seckey = cnf.key(i);
+        var secval = cnf[i];
+        for (int j=0; j<secval.size(); j++)
+        {
+            var entry = secval.key(j);
+            mCnf[seckey][entry] = secval[entry];
+        }
+    }
 }
 
 var Config::config()
