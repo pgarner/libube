@@ -50,17 +50,19 @@ namespace libube
      * Configuration class.  Stores an associative array with attribute
      * information.  The string is used to identify the attributes in, say, an
      * ini file.
+     *
+     * This class is designed to be inherited rather than aggregated, so the
+     * methods are quite verbose.
      */
     class Config
     {
     public:
-        Config(var iStr=nil);
-        void read(var iConfigFile);
-    protected:
-        var config();
-        var mStr;
+        Config(var iSection=nil);
+        void configFile(var iConfigFile);
+        var  configSection(var iSection=nil);
+        var  config(var iEntry);
     private:
-        var mCnf;
+        var mSection;
     };
 }
 

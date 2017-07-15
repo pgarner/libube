@@ -17,14 +17,16 @@ using namespace std;
 class Configurable : public lube::Config
 {
 public:
-    Configurable(lube::Config& iConfig, var iStr="Test")
-        : Config(iConfig)
+    Configurable(var iStr="Test")
+        : Config(iStr)
     {
-        mStr = iStr;
     };
 
-    void dump() { std::cout << "Dump of section " << mStr << ":\n"
-                            << config() << std::endl; };
+    void dump()
+    {
+        std::cout << "Dump of test section: "
+                  << configSection("Test") << std::endl;
+    };
 };
 
 int main(int argc, char** argv)
@@ -63,12 +65,15 @@ int main(int argc, char** argv)
     var args = o.args();
     cout << "Remaining opts: " << args << endl;
 
-    // Load a config file
-    lube::Config cnf;
-    cnf.read(TEST_DIR "/test-config.cnf");
-
     // A new configurable thing
-    Configurable conf(cnf);
+    Configurable conf;
+    conf.configFile(TEST_DIR "/test-config.cnf");
+
+    // Specific config values
+    cout << "Integer is " << conf.config("integer") << endl;
+    cout << "Double is  " << conf.config("double") << endl;
+
+    // Dump to check we didn't introduce any more
     conf.dump();
 
     // Done

@@ -126,18 +126,19 @@ namespace libube
 /**
  * Config constructor
  *
- * By default, it uses the static (global) config
+ * For the moment it uses a static (global) config.  It would be possible to
+ * have a local one too, but it's for the future.
  */
-Config::Config(var iStr)
+Config::Config(var iSection)
 {
-    // Make sure sConfig is an associative array so we copy the reference
+    // Make sure sConfig is an associative array so we copy the reference.  OK,
+    // this is only relevant if we have local configs.
     if (!sConfig)
         sConfig[nil];
-    mCnf = sConfig;
-    mStr = iStr.copy();
+    configSection(iSection);
 }
 
-void Config::read(var iConfigFile)
+void Config::configFile(var iConfigFile)
 {
     // Config files are .ini format
     filemodule im("ini");
@@ -152,15 +153,24 @@ void Config::read(var iConfigFile)
         for (int j=0; j<secval.size(); j++)
         {
             var entry = secval.key(j);
-            mCnf[seckey][entry] = secval[entry];
+            sConfig[seckey][entry] = secval[entry];
         }
     }
 }
 
-var Config::config()
+var Config::configSection(var iSection)
 {
-    // If it doesn't exist, this will make the [mStr] entry
-    if (mStr)
-        return mCnf[mStr];
-    return mCnf["Main"];
+    if (!iSection)
+        mSection = nil;
+    else
+        mSection = iSection;
+    return sConfig[mSection];
+}
+
+var Config::config(var iEntry)
+{
+    var sec = sConfig[mSection];
+    if (sec && sec.index(iEntry))
+        return sec[iEntry];
+    return nil;
 }
