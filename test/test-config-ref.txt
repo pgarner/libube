@@ -14,8 +14,9 @@ Remaining opts: [
   "file1",
   "file2"
 ]
-Dump of section "Test":
-{
+Integer is "23"
+Double is  null
+Dump of test section: {
   "float": "2.3",
   "integer": "23",
   "string": "A test string"
