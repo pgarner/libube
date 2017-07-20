@@ -14,8 +14,10 @@ Remaining opts: [
   "file1",
   "file2"
 ]
-Integer is "23"
-Double is  null
+Integer as var is "23"
+   ...default 100 23
+Double as var is  null
+   ...default 100 100
 Dump of test section: {
   "float": "2.3",
   "integer": "23",

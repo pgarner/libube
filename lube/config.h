@@ -60,7 +60,10 @@ namespace libube
         Config(var iSection=nil);
         void configFile(var iConfigFile);
         var  configSection(var iSection=nil);
-        var  config(var iEntry);
+        var config(var iEntry);
+        template<class T> T config(var iEntry, T iDefault);
+    protected:
+        const char* configStr() { return mSection.str(); };
     private:
         var mSection;
     };

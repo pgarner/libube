@@ -70,8 +70,10 @@ int main(int argc, char** argv)
     conf.configFile(TEST_DIR "/test-config.cnf");
 
     // Specific config values
-    cout << "Integer is " << conf.config("integer") << endl;
-    cout << "Double is  " << conf.config("double") << endl;
+    cout << "Integer as var is " << conf.config("integer") << endl;
+    cout << "   ...default 100 " << conf.config("integer", 100) << endl;
+    cout << "Double as var is  " << conf.config("double") << endl;
+    cout << "   ...default 100 " << conf.config("double", 100.0) << endl;
 
     // Dump to check we didn't introduce any more
     conf.dump();

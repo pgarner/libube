@@ -174,3 +174,25 @@ var Config::config(var iEntry)
         return sec[iEntry];
     return nil;
 }
+
+template<> const char* Config::config(var iEntry, const char* iDefault)
+{
+    var sec = sConfig[mSection];
+    if (sec && sec.index(iEntry))
+        return sec[iEntry].str();
+    return iDefault;
+}
+
+#define CONFIG(T)                                                \
+    template<> T Config::config<T>(var iEntry, T iDefault)       \
+    {                                                            \
+        var sec = sConfig[mSection];                             \
+        if (sec && sec.index(iEntry))                            \
+            return sec[iEntry].cast<T>();                        \
+        return iDefault;                                         \
+    }
+
+CONFIG(int)
+CONFIG(long)
+CONFIG(float)
+CONFIG(double)
