@@ -93,7 +93,7 @@ namespace libube
         // Data accessor
         template<class T> T get() const { var v(*this); return v.data<T>(); }
         template<class T> T* ptr(ind iIndex=0);
-        const char* str();
+        const char* str() const;
 
         // Operators
         bool operator !=(var iVar) const;

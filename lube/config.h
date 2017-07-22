@@ -63,7 +63,7 @@ namespace libube
         var config(var iEntry);
         template<class T> T config(var iEntry, T iDefault);
     protected:
-        const char* configStr() { return mSection.str(); };
+        const char* configStr() const { return mSection.str(); };
     private:
         var mSection;
     };

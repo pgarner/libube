@@ -157,13 +157,17 @@ cdouble* ptr_cd(var v) { return v.ptr<cdouble>(); };
 /**
  * Get a string
  *
- * Returns a pointer to the internal string assuming it's a char array.
+ * Returns a pointer to the internal string assuming it's a char array.  The
+ * method is const, so it bypasses the ptr<>() methods.
+ *
+ * Could be inline.
  */
-const char* var::str()
+const char* var::str() const
 {
-    // Normally would be inline, but needs to be defined after the ptr
-    // templates.
-    return ptr<char>();
+    // The static is a cheap trick to avoid thinking about references for the
+    // moment
+    static char z = 0;
+    return heap() ? heap()->ptr<char>() : &z;
 }
 
 
