@@ -131,27 +131,25 @@ using namespace libube;
  * range checking.  So, if you ask for index 10 of something that is not an
  * array then the index is ignored.  Maybe this will get fixed one day.
  */
-template<class T> T* var::ptr(ind iIndex)
-{
-    if (reference())
-    {
-        var& r = varderef();
-        return (&r != this)
-            ? r.ptr<T>(iIndex) : mData.hp->ptr<T>(~mType);
+#define PTR(T)                                                  \
+    template<> T* var::ptr<T>(ind iIndex)                       \
+    {                                                           \
+        if (reference())                                        \
+        {                                                       \
+            var& r = varderef();                                \
+            return (&r != this)                                 \
+                ? r.ptr<T>(iIndex) : mData.hp->ptr<T>(~mType);  \
+        }                                                       \
+        return heap() ? heap()->ptr<T>(iIndex) : &data<T>();    \
     }
-    return heap() ? heap()->ptr<T>(iIndex) : &data<T>();
-}
 
-
-// Dummies to cause the above template to get instantiated.  There is probably
-// a better way than this.
-char* ptr_c(var v) { return v.ptr<char>(); };
-int* ptr_i(var v) { return v.ptr<int>(); };
-long* ptr_l(var v) { return v.ptr<long>(); };
-float* ptr_f(var v) { return v.ptr<float>(); };
-double* ptr_d(var v) { return v.ptr<double>(); };
-cfloat* ptr_cf(var v) { return v.ptr<cfloat>(); };
-cdouble* ptr_cd(var v) { return v.ptr<cdouble>(); };
+PTR(char)
+PTR(int)
+PTR(long)
+PTR(float)
+PTR(double)
+PTR(cfloat)
+PTR(cdouble)
 
 
 /**
