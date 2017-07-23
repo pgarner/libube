@@ -175,6 +175,13 @@ var Config::config(var iEntry)
     return nil;
 }
 
+void Config::configSet(var iEntry, var iValue)
+{
+    if (!mSection)
+        return;
+    sConfig[mSection][iEntry] = iValue;
+}
+
 template<> const char* Config::config(var iEntry, const char* iDefault)
 {
     var sec = sConfig[mSection];

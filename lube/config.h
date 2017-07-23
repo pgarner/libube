@@ -60,6 +60,7 @@ namespace libube
         Config(var iSection=nil);
         void configFile(var iConfigFile);
         var  configSection(var iSection=nil);
+        void configSet(var iEntry, var iValue);
         var config(var iEntry);
         template<class T> T config(var iEntry, T iDefault);
     protected:
