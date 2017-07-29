@@ -3,6 +3,7 @@ Dir:
   "../../cmake/FindLibUBE.cmake": null,
   "../../cmake/FindQwt.cmake": null,
   "../../cmake/FindSndFile.cmake": null,
+  "../../cmake/KissFFT.cmake": null,
   "../../cmake/cfind.sh": null
 }
 Recursive Dir:
@@ -10,6 +11,7 @@ Recursive Dir:
   "../../cmake/FindLibUBE.cmake": null,
   "../../cmake/FindQwt.cmake": null,
   "../../cmake/FindSndFile.cmake": null,
+  "../../cmake/KissFFT.cmake": null,
   "../../cmake/cfind.sh": null
 }
 Tree:
@@ -17,5 +19,6 @@ Tree:
   "FindLibUBE.cmake": null,
   "FindQwt.cmake": null,
   "FindSndFile.cmake": null,
+  "KissFFT.cmake": null,
   "cfind.sh": null
 }
