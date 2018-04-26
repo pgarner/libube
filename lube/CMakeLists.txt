@@ -99,11 +99,16 @@ set(TARGET_LIBS
 # attribute that locates the modules.  Anything linking with this
 # effectively inherits that RPATH, so it needn't do anything special
 # about modules.
+#
+# Putting both the local and installed RPATH in at the outset allows building
+# in the source tree (it worked until early 2018, why?) and allows other source
+# trees to provide modules in a directory called lube.
 add_library(lube-shared SHARED ${SOURCES})
 set_target_properties(lube-shared
   PROPERTIES OUTPUT_NAME "ube"
   PUBLIC_HEADER "${HEADERS}"
-  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib/lube"
+  INSTALL_RPATH "lube:${CMAKE_INSTALL_PREFIX}/lib/lube"
+  BUILD_WITH_INSTALL_RPATH "TRUE"
   )
 target_link_libraries(lube-shared ${TARGET_LIBS})
 list(APPEND LIBUBE_TARGETS lube-shared)
