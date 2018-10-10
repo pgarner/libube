@@ -103,12 +103,17 @@ set(TARGET_LIBS
 # Putting both the local and installed RPATH in at the outset allows building
 # in the source tree (it worked until early 2018, why?) and allows other source
 # trees to provide modules in a directory called lube.
+#
+# To examine rpath, it depends on the system.
+# Linux: objdump -x <exe or lib> | fgrep RPATH
+# MacOS: otool -l <exe or lib> | less  # look at LC_RPATH
+#
 add_library(lube-shared SHARED ${SOURCES})
 set_target_properties(lube-shared
   PROPERTIES OUTPUT_NAME "ube"
   PUBLIC_HEADER "${HEADERS}"
-  INSTALL_RPATH "lube:${CMAKE_INSTALL_PREFIX}/lib/lube"
-  BUILD_WITH_INSTALL_RPATH "TRUE"
+#  BUILD_RPATH "../lube;${CMAKE_CURRENT_BINARY_DIR}"
+  INSTALL_RPATH "lube;${CMAKE_INSTALL_PREFIX}/lib/lube"
   )
 target_link_libraries(lube-shared ${TARGET_LIBS})
 list(APPEND LIBUBE_TARGETS lube-shared)
