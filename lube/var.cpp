@@ -132,7 +132,7 @@ using namespace libube;
  * array then the index is ignored.  Maybe this will get fixed one day.
  */
 #define PTR(T)                                                  \
-    template<> T* var::ptr<T>(ind iIndex)                       \
+    template<> T* libube::var::ptr<T>(ind iIndex)               \
     {                                                           \
         if (reference())                                        \
         {                                                       \

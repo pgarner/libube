@@ -191,7 +191,7 @@ template<> const char* Config::config(var iEntry, const char* iDefault)
 }
 
 #define CONFIG(T)                                                \
-    template<> T Config::config<T>(var iEntry, T iDefault)       \
+    template<> T libube::Config::config<T>(var iEntry, T iDefault)       \
     {                                                            \
         var sec = sConfig[mSection];                             \
         if (sec && sec.index(iEntry))                            \
