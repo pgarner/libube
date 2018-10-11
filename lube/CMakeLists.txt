@@ -105,14 +105,14 @@ set(TARGET_LIBS
 # trees to provide modules in a directory called lube.
 #
 # To examine rpath, it depends on the system.
-# Linux: objdump -x <exe or lib> | fgrep RPATH
+# Linux: objdump -x <exe or lib> | fgrep RPATH (or RUNPATH)
 # MacOS: otool -l <exe or lib> | less  # look at LC_RPATH
 #
 add_library(lube-shared SHARED ${SOURCES})
 set_target_properties(lube-shared
   PROPERTIES OUTPUT_NAME "ube"
   PUBLIC_HEADER "${HEADERS}"
-#  BUILD_RPATH "../lube;${CMAKE_CURRENT_BINARY_DIR}"
+  BUILD_RPATH "../lube;${CMAKE_CURRENT_BINARY_DIR}"
   INSTALL_RPATH "lube;${CMAKE_INSTALL_PREFIX}/lib/lube"
   )
 target_link_libraries(lube-shared ${TARGET_LIBS})
