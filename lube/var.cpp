@@ -232,7 +232,8 @@ var::var(const var& iVar)
     mData = iVar.mData;
     mType = iVar.mType;
     attach();
-    dereference();
+    if (reference())
+        dereference();
 }
 
 
@@ -1226,18 +1227,6 @@ Heap* var::heap() const
 {
     var v(*this);
     return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
-}
-
-
-/**
- * True if this var is a reference
- */
-bool var::reference() const
-{
-    VDEBUG(std::cout << "var::reference(): " << mType << std::endl);
-    if (!mType)
-        return true;
-    return false;
 }
 
 

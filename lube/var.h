@@ -216,7 +216,7 @@ namespace libube
         // Methods
         template<class T> T& data();
         var& varderef();
-        bool reference() const;
+        bool reference() const { return !mType; };
         var reference(int iIndex) const;
         int attach(Heap* iHeap=0);
         int detach(Heap* iHeap=0);

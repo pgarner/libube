@@ -110,23 +110,32 @@ var& var::getline(std::istream& iStream)
     if (iStream.eof())
         return clear();
 
-    // Start off as a zero length string as an array; re-use the existing array
-    // if possible
+    // Start off as a string as an array; re-use the existing array if possible
     if (!defined() || !atype<char>())
         *this = "";
-    else
-        resize(0);
-    array();
 
-    // Read it
+    // And read it using the var directly as a buffer. You'd think that
+    // stream.getline() would work, but it doesn't return the number of chars
+    // actually read.  Could call strlen() I guess.
+    int read = 0;
+    int size = 63; // var adds the \0 automatically
+    resize(size);
+    char* str = ptr<char>();
     while (!iStream.eof())
     {
         char c = iStream.get();
         if (c == '\n') // Unix specific?  ...no, I think c++ will change it to
                        // whatever is appropriate
             break;
-        push(c);
+        str[read++] = c;
+        if (read == size)
+        {
+            size = ((size+1)*2-1);
+            resize(size);
+            str = ptr<char>();
+        }
     }
+    resize(read);
     return *this;
 }
 
