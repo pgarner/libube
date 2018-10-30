@@ -103,6 +103,12 @@ int main(int argc, char** argv)
     var vcn = "N:First;Last;;;";
     cout << vcn << " splits to " << vcn.split(";") << endl;
 
+    // Split on whitespace
+    var wspl = "  one two    three  four   ";
+    cout << wspl << " splits to " << wspl.split() << endl;
+    cout << wspl << " split(2)s to " << wspl.split(2) << endl;
+    cout << wspl << " split(4)s to " << wspl.split(4) << endl;
+
     // String strip
     var ss = "  Hello ";
     cout << ss;

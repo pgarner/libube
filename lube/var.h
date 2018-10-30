@@ -171,6 +171,7 @@ namespace libube
         ind len();
         var& getline(std::istream& iStream);
         var split(const char* iStr, int iMax=0) const;
+        var split(int iMax=0) const;
         var join(const char* iStr) const;
         var toupper() { return libube::toupper(*this, *this); };
         var tolower() { return libube::tolower(*this, *this); };

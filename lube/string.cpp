@@ -149,8 +149,7 @@ var var::split(const char* iStr, int iMax) const
 {
     var r;
     int strLen = std::strlen(iStr);
-    var s = *this;
-    const char* source = s.ptr<char>();
+    const char* source = this->str();
     const char* p;
     if (iMax != 1)
         while ( (p = std::strstr(source, iStr)) )
@@ -164,6 +163,44 @@ var var::split(const char* iStr, int iMax) const
                 break;
         }
     r.push(source);
+
+    return r;
+}
+
+/**
+ * Split on any sequence of space
+ *
+ * Follows the python3 semantic of always eating leading space, but leaving
+ * trailing space when iMax is set.  However, it's not clear that iMax in this
+ * case is useful at all.
+ */
+var var::split(int iMax) const
+{
+    var r;
+    const char* source = this->str();
+    const char* p = source;
+    while (std::isspace(*p)) { ++p; }
+    while (*p)
+    {
+        const char* beg = p;
+        while (*p && !std::isspace(*p)) { ++p; }
+        const char* end = p;
+        int len = end - beg;
+        if (len > 0)
+        {
+            var s(len, beg);
+            r.push(s);
+        }
+        while (std::isspace(*p)) { ++p; }
+        if (iMax && (r.size() >= iMax-1))
+        {
+            if (*p)
+            {
+                r.push(p);
+                break;
+            }
+        }
+    }
 
     return r;
 }

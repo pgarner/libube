@@ -42,6 +42,22 @@ sp is: [
   "",
   ""
 ]
+"  one two    three  four   " splits to [
+  "one",
+  "two",
+  "three",
+  "four"
+]
+"  one two    three  four   " split(2)s to [
+  "one",
+  "two    three  four   "
+]
+"  one two    three  four   " split(4)s to [
+  "one",
+  "two",
+  "three",
+  "four   "
+]
 "  Hello " strips to "Hello"
 a is: "Ndddew string"
 a is: "Ndddew stringaaa"
