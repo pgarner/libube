@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     // Because x is singular, the last eigenvalue is sensitive to numerical
     // precision.  So don't print wr as it varies across implementation.
-    cout << "ret: " << ret << endl;
+    // cout << "ret: " << ret << endl //  This seems undefined
     cout << "wr[0]: " << wr[0] << endl;
     cout << "wi: " << wi << endl;
     cout << "vl: " << vl << endl;
