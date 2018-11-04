@@ -101,6 +101,11 @@ namespace libube
         Heap(int iSize, const int* iData);
         Heap(int iSize, const cdouble* iData);
 
+        // Append: expand the array
+        void append(int iSize, const char* iData);
+        void append(int iSize, const int* iData);
+        void append(int iSize, const cdouble* iData);
+
         // Trivial accessors
         virtual ind type() const { return mType; };
         virtual int size() const { return mSize; };
@@ -160,6 +165,15 @@ namespace libube
         void dealloc(dataType iData);
     };
 
+
+    /**
+     * View object
+     *
+     * Essentially a Heap object, but the semantic is that it describes a view
+     * of another Heap.  The data type is always int, the first element is the
+     * offest, then the others occur in pairs, being the shape and stride
+     * respectively.
+     */
     class View : public Heap
     {
     public:

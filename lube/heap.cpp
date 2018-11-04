@@ -86,28 +86,36 @@ Heap::Heap(int iSize, ind iType) : Heap()
 
 Heap::Heap(int iSize, const char* iData) : Heap()
 {
-    assert(iSize >= 0);
     mType = TYPE_CHAR;
-    resize(iSize);
-    for (int i=0; i<iSize; i++)
-        mData.cp[i] = iData[i];
+    append(iSize, iData);
 }
 
 
-Heap::Heap(int iSize, const int* iData)
-    : Heap(iSize, TYPE_INT)
+Heap::Heap(int iSize, const int* iData) : Heap()
 {
-    for (int i=0; i<iSize; i++)
-        mData.ip[i] = iData[i];
+    mType = TYPE_INT;
+    append(iSize, iData);
 }
 
 
-Heap::Heap(int iSize, const cdouble* iData)
-    : Heap(iSize, TYPE_CDOUBLE)
+Heap::Heap(int iSize, const cdouble* iData) : Heap()
 {
-    for (int i=0; i<iSize; i++)
-        mData.cdp[i] = iData[i];
+    mType = TYPE_CDOUBLE;
+    append(iSize, iData);
 }
+
+#define APPEND(T, P)                                \
+    void Heap::append(int iSize, const T* iData)    \
+    {                                               \
+        int beg = mSize;                            \
+        resize(mSize + iSize);                      \
+        for (int i=0; i<iSize; i++)                 \
+            mData.P[beg+i] = iData[i];              \
+    }
+
+APPEND(char, cp)
+APPEND(int, ip)
+APPEND(cdouble, cdp)
 
 
 /**
