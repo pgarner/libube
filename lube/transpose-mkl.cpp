@@ -55,7 +55,7 @@ void Transpose::scalar(const var& iVar, var& oVar) const
     {
         // Swap the trailing dimensions
         int d = iVar.dim();
-        Heap* h = iVar.heap();
+        IHeap* h = iVar.heap();
         int& str1 = h->stride(d-1);
         int& shp1 = h->shape(d-1);
         int& str2 = h->stride(d-2);

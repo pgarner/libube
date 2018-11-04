@@ -42,6 +42,7 @@ set(HEADERS
 set(SOURCES
   var.cpp
   heap.cpp
+  view.cpp
   module.cpp
   math.cpp
   func.cpp

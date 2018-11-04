@@ -22,6 +22,50 @@ namespace libube
         var val;
     };
 
+    class Heap;
+
+    /**
+     * Heap interface
+     */
+    class IHeap
+    {
+    public:
+        virtual ~IHeap() {};
+
+        // Would be templates, but you can't do that in a virtual table
+        virtual char* ptrchar(int iIndex=0) const = 0;
+        virtual int* ptrint(int iIndex=0) const = 0;
+        virtual long* ptrlong(int iIndex=0) const = 0;
+        virtual float* ptrfloat(int iIndex=0) const = 0;
+        virtual double* ptrdouble(int iIndex=0) const = 0;
+        virtual cfloat* ptrcfloat(int iIndex=0) const = 0;
+        virtual cdouble* ptrcdouble(int iIndex=0) const = 0;
+        virtual var* ptrvar(int iIndex=0) const = 0;
+        virtual pair* ptrpair(int iIndex=0) const = 0;
+
+        // Trivial accessors
+        virtual ind type() const = 0;
+        virtual int size() const = 0;
+        virtual int dim() const = 0;
+        virtual int offset() const = 0;
+        virtual int offset(int iOffset) = 0;
+        virtual int& shape(int iDim) const = 0;
+        virtual int& stride(int iDim) const = 0;
+
+        // Methods
+        virtual int attach() = 0;
+        virtual int detach() = 0;
+        virtual void resize(int iSize) = 0;
+        virtual void format(std::ostream& iStream, int iIndent = 0) = 0;
+        virtual var at(int iIndex, bool iKey=false) const = 0;
+        virtual var& key(int iIndex) = 0;
+        virtual bool neq(IHeap* iHeap) = 0;
+        virtual bool lt(IHeap* iHeap) = 0;
+        virtual Heap* view() const = 0;
+        virtual bool copyable(IHeap* iHeap) = 0;
+        virtual var shift() = 0;
+        virtual void unshift(var iVar) = 0;
+    };
 
     /**
      * Heap object managed by var
@@ -29,21 +73,27 @@ namespace libube
      * It's just a reference counted array.  It would make sense to allocate
      * these from a pool, but for the moment they're done individually.
      */
-    class Heap
+    class Heap : public IHeap
     {
     public:
-
         // Special member functions
         Heap();
-        ~Heap();
-        Heap(const Heap& iHeap, bool iAllocOnly=false);
+        virtual ~Heap();
+        Heap(const IHeap& iHeap, bool iAllocOnly=false);
 
-        // Templates
-        template<class T> T* ptr(int iIndex=0) const {
-            return mView
-                ? mView->ptr<T>(iIndex + mData.ip[0])
-                : data<T>() + iIndex;
+        // Should be templates
+#define HPTRDECL(T, P) T* ptr##T(int iIndex=0) const {  \
+            return mData.P + iIndex;                    \
         }
+        HPTRDECL(char, cp)
+        HPTRDECL(int, ip)
+        HPTRDECL(long, lp)
+        HPTRDECL(float, fp)
+        HPTRDECL(double, dp)
+        HPTRDECL(cfloat, cfp)
+        HPTRDECL(cdouble, cdp)
+        HPTRDECL(var, vp)
+        HPTRDECL(pair, pp)
 
         // Overloaded constructors
         Heap(int iSize, ind iType);
@@ -52,31 +102,35 @@ namespace libube
         Heap(int iSize, const cdouble* iData);
 
         // Trivial accessors
-        ind type() const { return mView ? mView->type() : mType; };
-        int size() const;
-        int dim() const { return mView ? (mSize-1) / 2 : 1; };
-        int offset() const { return mView ? mData.ip[0] : 0; };
-        int offset(int iOffset);
-        int& shape(int iDim) const;
-        int& stride(int iDim) const;
+        virtual ind type() const { return mType; };
+        virtual int size() const { return mSize; };
+        virtual int dim() const { return 1; };
+        virtual int offset() const { return 0; };
+        virtual int offset(int iOffset) {
+            throw error("Heap::offset(): not a view");
+        };
+        virtual int& shape(int iDim) const {
+            throw error("Heap::shape(): not a view");
+        };
+        virtual int& stride(int iDim) const {
+            throw error("Heap::stride(): not a view");
+        };
 
         // Methods
-        int attach();
-        int detach();
-        void resize(int iSize);
-        void format(std::ostream& iStream, int iIndent = 0);
-        var at(int iIndex, bool iKey=false) const;
-        var& key(int iIndex);
-        bool neq(Heap* iHeap);
-        bool lt(Heap* iHeap);
-        void setView(Heap* iHeap);
-        bool view() const { return mView; };
-        bool copyable(Heap* iHeap);
-        var shift();
-        void unshift(var iVar);
+        virtual int attach();
+        virtual int detach();
+        virtual void resize(int iSize);
+        virtual void format(std::ostream& iStream, int iIndent = 0);
+        virtual var at(int iIndex, bool iKey=false) const;
+        virtual var& key(int iIndex);
+        virtual bool neq(IHeap* iHeap);
+        virtual bool lt(IHeap* iHeap);
+        virtual Heap* view() const { return 0; };
+        virtual bool copyable(IHeap* iHeap) { return false; };
+        virtual var shift();
+        virtual void unshift(var iVar);
 
-    private:
-    
+    protected:
         union dataType {
             char* cp;
             int* ip;
@@ -89,20 +143,61 @@ namespace libube
             pair* pp;
         };
 
-        // Members
         dataType mData; ///< Pointer to allocated data
         int mSize;      ///< The externally visible size
+        ind mType;      ///< The data type
+
+        void copy(const Heap* iHeap, int iSize);
+
+    private:
+        // Members
         int mCapacity ; ///< The allocation size
         int mRefCount;  ///< Reference count
-        ind mType;      ///< The data type
-        Heap* mView; ///< If this is a view, the real storage
 
         // Methods
         template<class T> T* data() const;
-        void copy(const Heap* iHeap, int iSize);
         void alloc(int iSize);
         void dealloc(dataType iData);
-        void formatView(std::ostream& iStream, int iIndent);
+    };
+
+    class View : public Heap
+    {
+    public:
+        View(IHeap* iHeap);
+        View(IHeap* iHeap, const std::initializer_list<int> iList, int iOffset);
+        View(IHeap* iHeap, var iShape, int iOffset);
+        View(const IHeap& iHeap, bool iAllocOnly=false);
+        virtual ~View();
+
+        // Should be templates
+#define VPTRDECL(T) T* ptr##T(int iIndex=0) const {             \
+            return mHeap->ptr##T(iIndex + mData.ip[0]);         \
+        }
+        VPTRDECL(char)
+        VPTRDECL(int)
+        VPTRDECL(long)
+        VPTRDECL(float)
+        VPTRDECL(double)
+        VPTRDECL(cfloat)
+        VPTRDECL(cdouble)
+        VPTRDECL(var)
+        VPTRDECL(pair)
+
+        // Trivial accessors
+        virtual int size() const { return stride(0) * shape(0); };
+        virtual ind type() const { return mHeap->type(); };
+        virtual int dim() const { return (mSize-1) / 2; };
+        virtual int offset() const { return mData.ip[0]; };
+        virtual int offset(int iOffset);
+        virtual void format(std::ostream& iStream, int iIndent=0);
+        virtual Heap* view() const { return mHeap; };
+        virtual int& shape(int iDim) const;
+        virtual int& stride(int iDim) const;
+        virtual bool copyable(IHeap* iHeap);
+
+    private:
+        void setStrides(int iDim);
+        Heap* mHeap;    ///< The real storage
     };
 }
 

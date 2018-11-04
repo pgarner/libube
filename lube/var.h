@@ -23,7 +23,7 @@
 namespace libube
 {
     // Forward declare the heap
-    class Heap;
+    class IHeap;
 
     /**
      * The possible var types
@@ -133,7 +133,7 @@ namespace libube
         ind atype() const;
         var typeStr() const;
         var atypeStr() const;
-        Heap* heap() const;
+        IHeap* heap() const;
         var pop();
         var top() { return at(size() - 1); };
         var& push(var iVar);
@@ -206,7 +206,7 @@ namespace libube
             float f;
             double d;
             cfloat cf;
-            Heap* hp;
+            IHeap* hp;
         };
 
         // Putting the data first makes sure it will be aligned on an
@@ -219,10 +219,9 @@ namespace libube
         var& varderef();
         bool reference() const { return !mType; };
         var reference(int iIndex) const;
-        int attach(Heap* iHeap=0);
-        int detach(Heap* iHeap=0);
+        int attach(IHeap* iHeap=0);
+        int detach(IHeap* iHeap=0);
         int binary(var iData) const;
-        void setStrides(var& iVar, int iSize, int iOffset);
     };
 
 

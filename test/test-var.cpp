@@ -210,9 +210,9 @@ int main(int argc, char** argv)
     ts.resize(16);
     for (int i=0; i<16; i++)
         ts[i] = (float)i;
+    cout << ts << endl;
     var t1 = ts.view({4, 4});
     var t2 = ts.view({2, 2, 4});
-    cout << ts << endl;
     cout << t1 << endl;
     cout << t2 << endl;
     cout << "t1(1,2): " << t1(1,2) << endl;

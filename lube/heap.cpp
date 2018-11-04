@@ -14,28 +14,6 @@
 #include "lube/var.h"
 #include "lube/heap.h"
 
-#ifdef VARBOSE
-# include <cstdlib>
-# define VDEBUG(a) a
-#else
-# define VDEBUG(a)
-#endif
-
-namespace libube
-{
-    /*
-     * Allow data access to be templated
-     */
-    template<> char* Heap::data<char>() const { return mData.cp; };
-    template<> int* Heap::data<int>() const { return mData.ip; };
-    template<> long* Heap::data<long>() const { return mData.lp; };
-    template<> float* Heap::data<float>() const { return mData.fp; };
-    template<> double* Heap::data<double>() const { return mData.dp; };
-    template<> cfloat* Heap::data<cfloat>() const { return mData.cfp; };
-    template<> cdouble* Heap::data<cdouble>() const { return mData.cdp; };
-    template<> var* Heap::data<var>() const { return mData.vp; };
-    template<> pair* Heap::data<pair>() const { return mData.pp; };
-}
 
 using namespace libube;
 
@@ -67,7 +45,6 @@ Heap::Heap()
     mCapacity = 0;
     mRefCount = 0;
     mType = TYPE_VAR;
-    mView = 0;
 }
 
 
@@ -80,10 +57,7 @@ Heap::Heap()
  */
 Heap::~Heap()
 {
-    VDEBUG(std::cout << " Dtor" << std::endl);
     assert(!mRefCount);
-    if (mView)
-        mView->detach();
 }
 
 
@@ -92,24 +66,19 @@ Heap::~Heap()
  *
  * Like the var version, it is non-recursive; it copies the array, but
  * deeper arrays are not copied.  Just the reference counts are
- * implicitly bumped.  However, if it's a view then the heap of which
- * it's a view is copied.
+ * implicitly bumped.
  */
-Heap::Heap(const Heap& iHeap, bool iAllocOnly) : Heap()
+Heap::Heap(const IHeap& iHeap, bool iAllocOnly) : Heap()
 {
-    mType = iHeap.mType;
-    resize(iHeap.mSize);
-    mView = iHeap.mView ? new Heap(*iHeap.mView, iAllocOnly) : 0;
-    if (mView)
-        mView->attach();
-    if (mView || !iAllocOnly)
-        copy(&iHeap, mSize);
+    mType = iHeap.type();
+    resize(iHeap.size());
+    if (!iAllocOnly)
+        copy(reinterpret_cast<const Heap*>(&iHeap), mSize);
 }
 
 
 Heap::Heap(int iSize, ind iType) : Heap()
 {
-    VDEBUG(std::cout << " Ctor(type): " << "[" << iSize << "]" << std::endl);
     assert(iSize >= 0);
     mType = (iType == TYPE_ARRAY) ? TYPE_VAR : iType;
     resize(iSize);
@@ -117,7 +86,6 @@ Heap::Heap(int iSize, ind iType) : Heap()
 
 Heap::Heap(int iSize, const char* iData) : Heap()
 {
-    VDEBUG(std::cout << " Ctor: " << iData << std::endl);
     assert(iSize >= 0);
     mType = TYPE_CHAR;
     resize(iSize);
@@ -129,7 +97,6 @@ Heap::Heap(int iSize, const char* iData) : Heap()
 Heap::Heap(int iSize, const int* iData)
     : Heap(iSize, TYPE_INT)
 {
-    VDEBUG(std::cout << " Ctor(int*): " << iData << std::endl);
     for (int i=0; i<iSize; i++)
         mData.ip[i] = iData[i];
 }
@@ -140,72 +107,6 @@ Heap::Heap(int iSize, const cdouble* iData)
 {
     for (int i=0; i<iSize; i++)
         mData.cdp[i] = iData[i];
-}
-
-
-int Heap::offset(int iOffset)
-{
-    if (!view())
-        throw error("Heap::offset(): not a view");
-    if (iOffset + size() > mView->size())
-        throw error("Heap::offset(): offset too large");
-    mData.ip[0] = iOffset;
-    return iOffset;
-}
-
-
-int& Heap::shape(int iDim) const
-{
-    if (!view())
-        throw error("Heap::shape(): not a view");
-    int index = iDim*2 + 1;
-    if ((index < 0) || (index >= mSize))
-        throw std::range_error("Heap::shape(): dimension out of bounds");
-    return mData.ip[index];
-}
-
-
-int& Heap::stride(int iDim) const
-{
-    if (!view())
-        throw error("Heap::stride(): not a view");
-    int index = iDim*2 + 2;
-    if ((index < 0) || (index >= mSize))
-        throw std::range_error("Heap::stride(): dimension out of bounds");
-    return mData.ip[index];
-}
-
-
-int Heap::size() const
-{
-    if (mView)
-        return stride(0) * shape(0);
-    return mSize;
-};
-
-
-/**
- * Normally, x = y will copy the var such that both x and y point to
- * the same Heap.  However, if x is a view, we want the data from y
- * to be copied into the thing of which x is a view.  This checks
- * whether that copy is possible, i.e., the types and sizes match.
- */
-bool Heap::copyable(Heap* iHeap)
-{
-    if (!view())
-        return false;
-    if (!iHeap)
-        return false;
-    if (type() != iHeap->type())
-        return false;
-    if (dim() != iHeap->dim())
-        return false;
-    if (dim() == 1)
-        return (size() == iHeap->size());
-    for (int i=0; i<dim(); i++)
-        if (shape(i) != iHeap->shape(i))
-            return false;
-    return true;
 }
 
 
@@ -416,9 +317,6 @@ void Heap::dealloc(dataType iData)
 
 void Heap::format(std::ostream& iStream, int iIndent)
 {
-    if (mView)
-        return formatView(iStream, iIndent);
-
     switch (type())
     {
     case TYPE_CHAR:
@@ -465,7 +363,7 @@ void Heap::format(std::ostream& iStream, int iIndent)
     case TYPE_CDOUBLE:
         // Don't call at(); it will just create more arrays & loop
         if (size() == 1)
-            iStream << *ptr<cdouble>(0);
+            iStream << *ptrcdouble(0);
         else
         {
             iStream << "[\n";
@@ -473,7 +371,7 @@ void Heap::format(std::ostream& iStream, int iIndent)
             {
                 for (int j=0; j<iIndent+2; j++)
                     iStream << " ";
-                iStream << *ptr<cdouble>(i);
+                iStream << *ptrcdouble(i);
                 if (i < mSize-1)
                     iStream << ",";
                 iStream << "\n";
@@ -492,72 +390,6 @@ void Heap::format(std::ostream& iStream, int iIndent)
             iStream << at(i);
         }
         iStream << "]";
-    }
-}
-
-
-void Heap::formatView(std::ostream& iStream, int iIndent)
-{
-    assert(mData.vp); // Any of the pointers
-    assert(mType == TYPE_INT);
-
-    // Output shape if it's more than a matrix
-    int nDim = dim();
-    if (nDim > 2)
-    {
-        for (int i=0; i<nDim; i++)
-        {
-            iStream << shape(i);
-            if (i != nDim-1)
-                iStream << "x";
-        }
-        iStream << " tensor:" << std::endl;
-    }
-
-    // If it's less than 2D, just print it as with format
-    if (nDim < 2)
-    {
-        iStream << "[";
-        for (int i=0; i<size(); i++)
-        {
-            iStream << mView->at(i + offset());
-            if (i != size()-1 )
-                iStream << ", ";
-        }
-        iStream << "]";
-        return;
-    }
-
-    // Calculate how many matrices we have
-    int nMats = 1;
-    for (int i=0; i<nDim-2; i++)
-        nMats *= shape(i);
-
-    // Format as a sequence of matrices
-    int nRows = shape(nDim-2);
-    int nCols = shape(nDim-1);
-    for (int k=0; k<nMats; k++)
-    {
-        iStream << "[\n";
-        for (int j=0; j<nRows; j++)
-        {
-            for (int k=0; k<iIndent+2; k++)
-                iStream << " ";
-            for (int i=0; i<nCols; i++)
-            {
-                iStream << mView->at(k*nRows*nCols + j*nCols + i + offset());
-                if ( (j != nRows-1) || (i != nCols-1) )
-                    iStream << ",";
-                if (i != nCols-1)
-                    iStream << " ";
-            }
-            iStream << "\n";
-        }
-        for (int j=0; j<iIndent; j++)
-            iStream << " ";
-        iStream << "]";
-        if (k != nMats-1)
-            iStream << std::endl;
     }
 }
 
@@ -616,7 +448,7 @@ var& Heap::key(int iIndex)
 }
 
 
-bool Heap::neq(Heap* iHeap)
+bool Heap::neq(IHeap* iHeap)
 {
     for (int i=0; i<mSize; i++)
         if (at(i) != iHeap->at(i))
@@ -625,23 +457,14 @@ bool Heap::neq(Heap* iHeap)
 }
 
 
-bool Heap::lt(Heap* iHeap)
+bool Heap::lt(IHeap* iHeap)
 {
-    if ( (mType == TYPE_CHAR) && (iHeap->mType == TYPE_CHAR) )
-        return (std::strcmp(ptr<char>(), iHeap->ptr<char>()) < 0);
+    if ( (mType == TYPE_CHAR) && (iHeap->type() == TYPE_CHAR) )
+        return (std::strcmp(ptrchar(), iHeap->ptrchar()) < 0);
     for (int i=0; i<std::min(size(), iHeap->size()); i++)
         if (at(i) < iHeap->at(i))
             return true;
     return false;
-}
-
-
-void Heap::setView(Heap* iHeap)
-{
-    if (mView)
-        mView->detach();
-    mView = iHeap->mView ? iHeap->mView : iHeap;
-    mView->attach();
 }
 
 

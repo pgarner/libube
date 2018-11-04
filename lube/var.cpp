@@ -59,7 +59,7 @@ namespace libube
     template<> cfloat& var::data<cfloat>() { return mData.cf; };
     template<> cdouble& var::data<cdouble>() {
         // It's too big for a var; always an array
-        return *mData.hp->ptr<cdouble>(0);
+        return *mData.hp->ptrcdouble(0);
     };
 
 
@@ -138,9 +138,9 @@ using namespace libube;
         {                                                       \
             var& r = varderef();                                \
             return (&r != this)                                 \
-                ? r.ptr<T>(iIndex) : mData.hp->ptr<T>(~mType);  \
+                ? r.ptr<T>(iIndex) : mData.hp->ptr##T(~mType);  \
         }                                                       \
-        return heap() ? heap()->ptr<T>(iIndex) : &data<T>();    \
+        return heap() ? heap()->ptr##T(iIndex) : &data<T>();    \
     }
 
 PTR(char)
@@ -165,7 +165,7 @@ const char* var::str() const
     // The static is a cheap trick to avoid thinking about references for the
     // moment
     static char z = 0;
-    return heap() ? heap()->ptr<char>() : &z;
+    return heap() ? heap()->ptrchar() : &z;
 }
 
 
@@ -257,31 +257,31 @@ var& var::operator =(var iVar)
         switch (mData.hp->type())
         {
         case TYPE_CHAR:
-            *mData.hp->ptr<char>(index) = iVar.cast<char>();
+            *mData.hp->ptrchar(index) = iVar.cast<char>();
             break;
         case TYPE_INT:
-            *mData.hp->ptr<int>(index) = iVar.cast<int>();
+            *mData.hp->ptrint(index) = iVar.cast<int>();
             break;
         case TYPE_LONG:
-            *mData.hp->ptr<long>(index) = iVar.cast<long>();
+            *mData.hp->ptrlong(index) = iVar.cast<long>();
             break;
         case TYPE_FLOAT:
-            *mData.hp->ptr<float>(index) = iVar.cast<float>();
+            *mData.hp->ptrfloat(index) = iVar.cast<float>();
             break;
         case TYPE_DOUBLE:
-            *mData.hp->ptr<double>(index) = iVar.cast<double>();
+            *mData.hp->ptrdouble(index) = iVar.cast<double>();
             break;
         case TYPE_CFLOAT:
-            *mData.hp->ptr<cfloat>(index) = iVar.cast<cfloat>();
+            *mData.hp->ptrcfloat(index) = iVar.cast<cfloat>();
             break;
         case TYPE_CDOUBLE:
-            *mData.hp->ptr<cdouble>(index) = iVar.cast<cdouble>();
+            *mData.hp->ptrcdouble(index) = iVar.cast<cdouble>();
             break;
         case TYPE_VAR:
-            *mData.hp->ptr<var>(index) = iVar;
+            *mData.hp->ptrvar(index) = iVar;
             break;
         case TYPE_PAIR:
-            mData.hp->ptr<pair>(index)->val = iVar;
+            mData.hp->ptrpair(index)->val = iVar;
             break;
         default:
             throw error("var::operator =(): Unknown type");
@@ -298,7 +298,7 @@ var& var::operator =(var iVar)
     {
         // Not a reference.  Record whether the old value was a heap
         // allocation. If so, detach it after attaching the new value.
-        Heap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
+        IHeap* tmp = ((mType == TYPE_ARRAY) && mData.hp) ? mData.hp : 0;
         mData = iVar.mData;
         mType = iVar.mType;
         attach();
@@ -458,11 +458,11 @@ var& var::varderef()
     ind type = mData.hp->type();
     if (type == TYPE_VAR)
     {
-        return *mData.hp->ptr<var>(index);
+        return *mData.hp->ptrvar(index);
     }
     if (type == TYPE_PAIR)
     {
-        return mData.hp->ptr<pair>(index)->val;
+        return mData.hp->ptrpair(index)->val;
     }
     // Return this on "failure"
     return *this;
@@ -560,7 +560,10 @@ var var::copy(bool iAllocOnly) const
 
     // It's a heap
     var r;
-    r.attach(new Heap(*heap(), iAllocOnly));
+    if (view())
+        r.attach(new View(*heap(), iAllocOnly));
+    else
+        r.attach(new Heap(*heap(), iAllocOnly));
     return r;
 }
 
@@ -749,13 +752,13 @@ bool var::is(var& iVar) const
         return true;
 
     // Are they both arrays and point to the same heap?
-    Heap* h1 = heap();
+    IHeap* h1 = heap();
     if (!h1)
         return false;
-    Heap* h2 = iVar.heap();
+    IHeap* h2 = iVar.heap();
     if (!h2)
         return false;
-    if (h1->ptr<char>() == h2->ptr<char>())
+    if (h1->ptrchar() == h2->ptrchar())
         return true;
     return false;
 }
@@ -962,7 +965,7 @@ var& var::resize(int iSize)
 /**
  * Attaches a var to a Heap.
  */
-int var::attach(Heap* iHeap)
+int var::attach(IHeap* iHeap)
 {
     if (iHeap)
     {
@@ -979,7 +982,7 @@ int var::attach(Heap* iHeap)
  * Detaches a var from a Heap.  If a Heap is passed as argument, detaches
  * from that Heap, otherwise detaches from the current one if it exists.
  */
-int var::detach(Heap* iHeap)
+int var::detach(IHeap* iHeap)
 {
     if (iHeap)
         return iHeap->detach();
@@ -1223,7 +1226,7 @@ var& var::presize(int iSize)
  * Usable both as a boolean (if this var uses a heap allocation) and as a means
  * to get the pointer.
  */
-Heap* var::heap() const
+IHeap* var::heap() const
 {
     var v(*this);
     return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
@@ -1272,31 +1275,31 @@ var& var::dereference()
         assert(mData.hp);
         int index = ~mType;
         ind type = mData.hp->type();
-        Heap* tmp = mData.hp;
+        IHeap* tmp = mData.hp;
         mType = type;
         switch (type)
         {
         case TYPE_CHAR:
-            mData.c = *mData.hp->ptr<char>(index);
+            mData.c = *mData.hp->ptrchar(index);
             break;
         case TYPE_INT:
-            mData.i = *mData.hp->ptr<int>(index);
+            mData.i = *mData.hp->ptrint(index);
             break;
         case TYPE_LONG:
-            mData.l = *mData.hp->ptr<long>(index);
+            mData.l = *mData.hp->ptrlong(index);
             break;
         case TYPE_FLOAT:
-            mData.f = *mData.hp->ptr<float>(index);
+            mData.f = *mData.hp->ptrfloat(index);
             break;
         case TYPE_DOUBLE:
-            mData.d = *mData.hp->ptr<double>(index);
+            mData.d = *mData.hp->ptrdouble(index);
             break;
         case TYPE_CFLOAT:
-            mData.cf = *mData.hp->ptr<cfloat>(index) ;
+            mData.cf = *mData.hp->ptrcfloat(index) ;
             break;
         case TYPE_CDOUBLE:
             mType = TYPE_ARRAY;
-            attach(new Heap(1, mData.hp->ptr<cdouble>(index)));
+            attach(new Heap(1, mData.hp->ptrcdouble(index)));
             break;
         default:
             throw error("var::dereference(): Unknown type");
@@ -1332,33 +1335,6 @@ int var::binary(var iData) const
 }
 
 
-/* Common parts of the view() initialiser methods */
-void var::setStrides(var& iVar, int iSize, int iOffset)
-{
-    if (iSize < 1)
-        throw error("var::setstrides(): view must have dim > 0");
-
-    // The second of each pair is the stride
-    int p = 1;
-    for (int i=iSize-1; i>=0; i--)
-    {
-        iVar[i*2+2] = p;
-        p *= iVar[i*2+1].get<int>();
-    }
-
-    // the p that drops out should be the overall size
-    if (!defined())
-        resize(p);
-    else
-        if (p+iOffset > size())
-            throw error("var::view(): Array too small for view");
-
-    // Tell the new heap object that it's a view of this
-    array();
-    iVar.heap()->setView(heap());
-}
-
-
 /**
  * Assuming that *this is an array, returns a view of the array.  A view is
  * just another array, of type int, holding the dimensions of the new view.
@@ -1366,21 +1342,7 @@ void var::setStrides(var& iVar, int iSize, int iOffset)
 var var::view(const std::initializer_list<int> iList, int iOffset)
 {
     var v;
-
-    // The first entry is the offset; remember to add on the current offset
-    // which could be non-zero if we are already a view
-    v.push(iOffset+offset());
-
-    // First entry of each subsequent pair is the dimension
-    for (const int* it=begin(iList); it!=end(iList); ++it)
-    {
-        v.push(*it);
-        v.push(0);
-    }
-
-    // The second of each pair is the stride
-    setStrides(v, iList.size(), iOffset);
-
+    v.attach(new View(heap(), iList, iOffset));
     return v;
 }
 
@@ -1392,21 +1354,7 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
 var var::view(var iShape, int iOffset)
 {
     var v;
-
-    // The first entry is the offset; remember to add on the current offset
-    // which could be non-zero if we are already a view
-    v.push(iOffset+offset());
-
-    // First entry of each subsequent pair is the dimension
-    for (int i=0; i<iShape.size(); i++)
-    {
-        v.push(iShape[i].get<int>());
-        v.push(0);
-    }
-
-    // The second of each pair is the stride
-    setStrides(v, iShape.size(), iOffset);
-
+    v.attach(new View(heap(), iShape, iOffset));
     return v;
 }
 
