@@ -1045,6 +1045,34 @@ var var::atypeStr() const
 
 
 /**
+ * Append a raw array to an array
+ *
+ * This is a fundamental array builder.  It's typed so that it doesn't go
+ * through the conversion to var process; this in turn allows it to be very
+ * fast.
+ */
+#define APPEND(T)                                               \
+    template<> var& var::append<T>(int iSize, const T* iData)   \
+    {                                                           \
+        array();                                                \
+        heap()->append(iSize, iData);                           \
+        return *this;                                           \
+    }
+
+APPEND(char)
+APPEND(int)
+APPEND(cdouble)
+
+var& var::append(const char* iStr)
+{
+    // It should be a special case to avoid the strlen
+    array();
+    heap()->append(std::strlen(iStr), iStr);
+    return *this;
+}
+
+
+/**
  * Push a value onto a stack
  *
  * Push is the fundamental way of building arrays, combined with the way

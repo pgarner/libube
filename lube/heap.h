@@ -43,6 +43,11 @@ namespace libube
         virtual var* ptrvar(int iIndex=0) const = 0;
         virtual pair* ptrpair(int iIndex=0) const = 0;
 
+        // More template things
+        virtual void append(int iSize, const char* iData) = 0;
+        virtual void append(int iSize, const int* iData) = 0;
+        virtual void append(int iSize, const cdouble* iData) = 0;
+
         // Trivial accessors
         virtual ind type() const = 0;
         virtual int size() const = 0;

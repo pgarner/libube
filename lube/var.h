@@ -141,6 +141,8 @@ namespace libube
         var remove(int iIndex);
         var& unshift(var iVar);
         var& append(var iVar) { return insert(iVar, size()); };
+        var& append(const char* iStr);
+        template<class T> var& append(int iSize, const T* iData);
         var shift();
         var sort() const;
         ind index(var iVar) const;
