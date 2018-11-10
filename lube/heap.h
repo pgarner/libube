@@ -70,6 +70,12 @@ namespace libube
         virtual bool copyable(IHeap* iHeap) = 0;
         virtual var shift() = 0;
         virtual void unshift(var iVar) = 0;
+        virtual bool defined(ind iIndex) = 0;
+        virtual var* deref(ind iIndex) = 0;
+        virtual int derefSize(ind iIndex) = 0;
+        virtual ind derefType(ind iIndex) = 0;
+        virtual ind derefAType(ind iIndex) = 0;
+        virtual IHeap* derefHeap(ind iIndex) = 0;
     };
 
     /**
@@ -139,6 +145,12 @@ namespace libube
         virtual bool copyable(IHeap* iHeap) { return false; };
         virtual var shift();
         virtual void unshift(var iVar);
+        virtual var* deref(ind iIndex);
+        virtual bool defined(ind iIndex);
+        virtual int derefSize(ind iIndex);
+        virtual ind derefType(ind iIndex);
+        virtual ind derefAType(ind iIndex);
+        virtual IHeap* derefHeap(ind iIndex);
 
     protected:
         union dataType {
@@ -213,6 +225,18 @@ namespace libube
         virtual int& shape(int iDim) const;
         virtual int& stride(int iDim) const;
         virtual bool copyable(IHeap* iHeap);
+        //virtual var* deref(ind iIndex) {
+        //    return mHeap->deref(iIndex + mData.ip[0]);
+        //};
+        virtual int derefSize(ind iIndex) {
+            return mHeap->derefSize(iIndex + mData.ip[0]);
+        };
+        virtual ind derefType(ind iIndex) {
+            return mHeap->derefType(iIndex + mData.ip[0]);
+        };
+        virtual ind derefAType(ind iIndex) {
+            return mHeap->derefAType(iIndex + mData.ip[0]);
+        };
 
     private:
         void setStrides(int iDim);

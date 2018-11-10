@@ -570,16 +570,18 @@ var var::copy(bool iAllocOnly) const
 
 bool var::defined() const
 {
-    // = not undefined
-    var v(*this);
-    return !( (v.mType == TYPE_ARRAY) && !v.mData.hp );
+    if (reference())
+        return mData.hp->defined(~mType);
+    return !( (mType == TYPE_ARRAY) && !mData.hp ); // = not undefined
 }
 
 
 int var::size() const
 {
-    if (type() == TYPE_ARRAY)
-        return heap() ? heap()->size() : 0;
+    if (reference())
+        return mData.hp->derefSize(~mType);
+    if (mType == TYPE_ARRAY)
+        return mData.hp ? mData.hp->size() : 0;
     return 1;
 }
 
@@ -590,8 +592,9 @@ int var::size() const
  */
 ind var::type() const
 {
-    var v (*this);
-    return v.mType;
+    if (reference())
+        return mData.hp->derefType(~mType);
+    return mType;
 }
 
 
@@ -603,9 +606,11 @@ ind var::atype() const
 {
     if (!defined())
         throw error("var::atype(): Undefined");
-    if (type() == TYPE_ARRAY)
-        return heap()->type();
-    return type();
+    if (reference())
+        return mData.hp->derefAType(~mType);
+    if (mType == TYPE_ARRAY)
+        return mData.hp->type();
+    return mType;
 }
 
 
@@ -1256,8 +1261,9 @@ var& var::presize(int iSize)
  */
 IHeap* var::heap() const
 {
-    var v(*this);
-    return ( (v.mType == TYPE_ARRAY) && v.mData.hp ) ? v.mData.hp : 0;
+    if (reference())
+        return mData.hp->derefHeap(~mType);
+    return ( (mType == TYPE_ARRAY) && mData.hp ) ? mData.hp : 0;
 }
 
 

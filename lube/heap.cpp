@@ -104,6 +104,62 @@ Heap::Heap(int iSize, const cdouble* iData) : Heap()
     append(iSize, iData);
 }
 
+
+var* Heap::deref(ind iIndex)
+{
+    switch (mType)
+    {
+    case TYPE_VAR:
+        return &mData.vp[iIndex];
+    case TYPE_PAIR:
+        return &mData.pp[iIndex].val;
+    }
+    return 0;
+}
+
+
+bool Heap::defined(ind iIndex)
+{
+    var* v = deref(iIndex);
+    return v ? v->defined() : true;
+}
+
+
+int Heap::derefSize(ind iIndex)
+{
+    var* v = deref(iIndex);
+    return v ? v->size() : 1;
+}
+
+
+/**
+ * var::type() dereferences but does not indirect to the heap, so it can return
+ * TYPE_ARRAY but will never return TYPE_VAR.
+ */
+ind Heap::derefType(ind iIndex)
+{
+    var* v = deref(iIndex);
+    return v ? v->type() : mType;
+}
+
+/**
+ * var::atype() dereferences and indirects to the heap if it exists, so it will
+ * never return TYPE_ARRAY, but can return TYPE_VAR.
+ */
+ind Heap::derefAType(ind iIndex)
+{
+    var* v = deref(iIndex);
+    return v ? v->atype() : mType;
+}
+
+
+IHeap* Heap::derefHeap(ind iIndex)
+{
+    var* v = deref(iIndex);
+    return v ? v->heap() : 0;
+}
+
+
 #define APPEND(T, P)                                \
     void Heap::append(int iSize, const T* iData)    \
     {                                               \
@@ -123,8 +179,11 @@ APPEND(cdouble, cdp)
  */
 int allocSize(int iSize)
 {
+    const int minSize = 8;
     assert(iSize >= 0);
-    if (iSize < 3)
+    if (iSize < minSize)
+        iSize = minSize;
+    if (iSize <= 2)
         return iSize;
     iSize -= 1;
     int size = 1;

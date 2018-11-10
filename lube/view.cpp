@@ -116,6 +116,7 @@ View::~View()
     mHeap = 0;
 }
 
+
 int View::offset(int iOffset)
 {
     if (iOffset + size() > mHeap->size())
