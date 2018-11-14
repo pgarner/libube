@@ -76,6 +76,7 @@ namespace libube
         virtual ind derefType(ind iIndex) = 0;
         virtual ind derefAType(ind iIndex) = 0;
         virtual IHeap* derefHeap(ind iIndex) = 0;
+        virtual var derefInt(ind iIndex, int iArrayIndex) = 0;
     };
 
     /**
@@ -151,6 +152,7 @@ namespace libube
         virtual ind derefType(ind iIndex);
         virtual ind derefAType(ind iIndex);
         virtual IHeap* derefHeap(ind iIndex);
+        virtual var derefInt(ind iIndex, int iArrayIndex);
 
     protected:
         union dataType {
@@ -225,9 +227,6 @@ namespace libube
         virtual int& shape(int iDim) const;
         virtual int& stride(int iDim) const;
         virtual bool copyable(IHeap* iHeap);
-        //virtual var* deref(ind iIndex) {
-        //    return mHeap->deref(iIndex + mData.ip[0]);
-        //};
         virtual int derefSize(ind iIndex) {
             return mHeap->derefSize(iIndex + mData.ip[0]);
         };

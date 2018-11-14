@@ -26,6 +26,38 @@
 #endif
 
 
+using namespace libube;
+
+
+#define GET(T, P)                                               \
+    template<> T libube::var::get<T>() const                    \
+    {                                                           \
+        if (reference())                                        \
+        {                                                       \
+            var* v = mData.hp->deref(~mType);                   \
+            return v ? v->get<T>() : *mData.hp->ptr##T(~mType); \
+        }                                                       \
+        return mData.P;                                         \
+    }
+
+GET(char, c)
+GET(int, i)
+GET(long, l)
+GET(float, f)
+GET(double, d)
+GET(cfloat, cf)
+
+template<> cdouble libube::var::get<cdouble>() const
+{
+    if (reference())
+    {
+        var* v = mData.hp->deref(~mType);
+        return v ? v->get<cdouble>() : *mData.hp->ptrcdouble(~mType);
+    }
+    return *mData.hp->ptrcdouble(0);
+}
+
+
 namespace libube
 {
     /**
@@ -114,9 +146,6 @@ namespace libube
         return castCDouble(*this).get<cdouble>();
     }
 }
-
-
-using namespace libube;
 
 
 /**
@@ -232,8 +261,6 @@ var::var(const var& iVar)
     mData = iVar.mData;
     mType = iVar.mType;
     attach();
-    if (reference())
-        dereference();
 }
 
 
@@ -681,13 +708,14 @@ void Cast<T>::scalar(const var& iVar, var& oVar) const
  */
 var var::operator [](int iIndex)
 {
-    var& v = dereference();
     if (iIndex < 0)
         throw error("operator [int]: Negative index");
-    if (iIndex >= v.size())
-        v.resize(iIndex+1);
-    v.array();
-    return v.reference(iIndex);
+    if (reference())
+        return mData.hp->derefInt(~mType, iIndex);
+    if (iIndex >= size())
+        resize(iIndex+1);
+    array();
+    return reference(iIndex);
 }
 
 
@@ -778,6 +806,7 @@ bool var::is(var& iVar) const
 var var::at(int iIndex) const
 {
     var v = *this;
+    v.dereference();
     if (!v)
         throw error("var::at(): uninitialised");
     if (v.type() == TYPE_ARRAY)
@@ -942,7 +971,7 @@ var& var::resize(int iSize)
     {
         // Not allocated
         if (((v.type() != TYPE_ARRAY) && (iSize > 1)) ||
-             (v.type() == TYPE_ARRAY))
+            (v.type() == TYPE_ARRAY) )
         {
             // Need to allocate
             if (!v)

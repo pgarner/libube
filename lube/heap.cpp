@@ -160,6 +160,15 @@ IHeap* Heap::derefHeap(ind iIndex)
 }
 
 
+var Heap::derefInt(ind iIndex, int iArrayIndex)
+{
+    var* v = deref(iIndex);
+    if (!v)
+        throw error("Heap::derefInt: Not a reference");
+    return (*v)[iArrayIndex];
+}
+
+
 #define APPEND(T, P)                                \
     void Heap::append(int iSize, const T* iData)    \
     {                                               \

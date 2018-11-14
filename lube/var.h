@@ -91,7 +91,7 @@ namespace libube
         var(const std::initializer_list<int> iShape, var iType);
 
         // Data accessor
-        template<class T> T get() const { var v(*this); return v.data<T>(); }
+        template<class T> T get() const;
         template<class T> T* ptr(ind iIndex=0);
         const char* str() const;
 

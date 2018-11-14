@@ -1241,7 +1241,7 @@ var Concatenate::alloc(var iVar) const
 
     // Allocate a new shape with the summed low dimension
     var s = iVar[0].shape();
-    s[dim-1] = sum;;
+    s[dim-1] = sum;
     var r = view(s, iVar[0].at(0));
     return r;
 }
