@@ -34,7 +34,8 @@
  of the curl distributed archives. You may also freely use curl and libcurl in
  your commercial projects.
 <p>
- Curl and libcurl are licensed under a MIT/X derivate license, see below.
+ Curl and libcurl are licensed under the license below, which is inspired by MIT/X,
+ but not identical.
 <p>
  There are other computer-related projects using the name curl as well.  For
  details, check out <a href="../legal/thename.html">our position on the curl
@@ -42,7 +43,7 @@
 <h2> The curl license </h2>
 <div class="quote">
 <p>COPYRIGHT AND PERMISSION NOTICE</p>
-<p>Copyright (c) 1996 - 2018, Daniel Stenberg, <a href="&#109;&#x61;&#105;&#x6C;to:&#100;&#x61;n&#x69;&#x65;&#108;&#64;&#104;&#x61;&#x78;&#x78;&#46;&#x73;&#x65;">&#100;&#x61;n&#x69;&#x65;&#108;&#64;&#104;&#x61;&#x78;&#x78;&#46;&#x73;&#x65;</a>, and many
+<p>Copyright (c) 1996 - 2019, Daniel Stenberg, <a href="&#109;a&#105;&#108;&#x74;&#111;:&#100;&#x61;&#x6E;&#x69;&#101;&#108;&#64;&#x68;&#97;&#120;&#x78;&#46;&#115;&#101;">&#100;&#x61;&#x6E;&#x69;&#101;&#108;&#64;&#x68;&#97;&#120;&#x78;&#46;&#115;&#101;</a>, and many
 contributors, see the THANKS file.</p>
 <p>All rights reserved.</p>
 <p>Permission to use, copy, modify, and distribute this software for any purpose
