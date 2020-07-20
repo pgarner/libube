@@ -17,5 +17,5 @@ int main(int argc, char** argv)
     curlmodule cm;
     curl& c = cm.create();
     var d = c.transfer("https://raw.githubusercontent.com/pgarner/libube/master/test/test-curl.cmake");
-    std::cout << d.str() << std::endl;
+    std::cout << d.str();
 }
