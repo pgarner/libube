@@ -65,6 +65,7 @@ if (USE_MKL)
     dft-mkl.cpp
     transpose-mkl.cpp
     )
+  include_directories($ENV{MKLROOT}/include)
   add_definitions(-DHAVE_MKL)
   message(STATUS "MKL BLAS seems available; using it for DFT & transpose")
 else (USE_MKL)
