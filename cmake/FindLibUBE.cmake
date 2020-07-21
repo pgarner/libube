@@ -1,22 +1,14 @@
 #
-# Copyright 2013 by Idiap Research Institute, http://www.idiap.ch
+# Written by cfind.sh
+# Part of lube, https://github.com/pgarner/libube
+# See also https://cmake.org/Wiki/CMake:How_To_Find_Libraries
 #
-# See the file COPYING for the licence associated with this software.
+# The following should end up defined: 
+#  LIBUBE_FOUND          - System has LibUBE
+#  LIBUBE_INCLUDE_DIR    - The LibUBE include directories
+#  LIBUBE_LIBRARIES      - The libraries needed to use LibUBE
+#  LIBUBE_DEFINITIONS    - Compiler switches required for using LibUBE
 #
-# Author(s):
-#   Phil Garner, December 2013
-#
-
-#
-# Try to find LibUBE; see
-#  https://cmake.org/Wiki/CMake:How_To_Find_Libraries
-# Once done this will define
-#  LIBUBE_FOUND          - System has libube
-#  LIBUBE_INCLUDE_DIRS   - The libube include directory
-#  LIBUBE_LIBRARIES      - The libraries needed to use Libube
-#  LIBUBE_DEFINITIONS    - Compiler switches required for using libube
-#
-
 find_package(PkgConfig)
 pkg_check_modules(PC_LIBUBE QUIET libube)
 
@@ -29,7 +21,7 @@ find_path(
 )
 
 find_library(
-  LIBUBE_LIBRARY ube
+  LIBUBE_LIBRARY ube  # Without the lib- prefix
   HINTS ${PC_LIBUBE_LIBDIR} ${PC_LIBUBE_LIBRARY_DIRS}
 )
 
