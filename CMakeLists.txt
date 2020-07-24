@@ -11,6 +11,7 @@ cmake_minimum_required(VERSION 3.7)
 # Package information
 project(libube)
 set(VERSION 0.1)
+enable_testing()
 # enable_language(Fortran)
 
 # add_definitions(-DVARBOSE)
@@ -22,8 +23,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # External deps
 include(KissFFT)
-
-enable_testing()
 
 add_subdirectory(lube)
 add_subdirectory(test)

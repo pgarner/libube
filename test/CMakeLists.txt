@@ -7,12 +7,6 @@
 #   Phil Garner, June 2015
 #
 
-# Testing
-#
-# The tests get built here, but they are run from a different cmake
-# file.  This lets us compare output with a reference output rather
-# than just test that something runs.
-
 set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DTEST_DIR="${TEST_DIR}")
 
@@ -31,81 +25,32 @@ endif()
 # add_definitions(-DCMAKE_DIR="${CMAKE_SOURCE_DIR}/cmake")
 add_definitions(-DCMAKE_DIR="../../cmake")
 
-add_executable(test-ind test-ind.cpp)
-add_test(
-  NAME ind
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-ind.cmake
-  )
+# General form of a test that produces an output to compare with a reference.
+# The tests get built here, but they are run from a different cmake file.  This
+# lets us compare output with a reference output rather than just test that
+# something runs.
+macro(add_diff_test NAME)
+  add_executable(test-${NAME} test-${NAME}.cpp)
+  target_link_libraries(test-${NAME} lube-shared)
+  add_test(
+    NAME ${NAME}
+    COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR}
+                             -D CMAKE_MODULE_PATH=${TEST_DIR}
+                             -P ${TEST_DIR}/test-${NAME}.cmake
+    )
+endmacro()
 
-add_executable(test-var test-var.cpp)
-target_link_libraries(test-var lube-shared)
-add_test(
-  NAME var
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-var.cmake
-  )
-
-add_executable(test-file test-file.cpp)
-target_link_libraries(test-file lube-shared)
-add_test(
-  NAME file
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-file.cmake
-  )
-
-add_executable(test-stream test-stream.cpp)
-target_link_libraries(test-stream lube-shared)
-add_test(
-  NAME stream
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-stream.cmake
-  )
-
-add_executable(test-math test-math.cpp)
-target_link_libraries(test-math lube-shared)
-add_test(
-  NAME math
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-math.cmake
-  )
-
-add_executable(test-path test-path.cpp)
-target_link_libraries(test-path lube-shared)
-add_test(
-  NAME path
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-path.cmake
-  )
-
-add_executable(test-lapack test-lapack.cpp)
-target_link_libraries(test-lapack lube-shared)
-add_test(
-  NAME lapack
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-lapack.cmake
-  )
-
-add_executable(test-config test-config.cpp)
-target_link_libraries(test-config lube-shared)
-add_test(
-  NAME config
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-config.cmake
-  )
-
-add_executable(test-graph test-graph.cpp)
-target_link_libraries(test-graph lube-shared)
-add_test(
-  NAME graph
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-graph.cmake
-  )
-
-add_executable(test-json test-json.cpp)
-target_link_libraries(test-json lube-shared)
-add_test(
-  NAME json
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-json.cmake
-  )
-
-add_executable(test-curl test-curl.cpp)
-target_link_libraries(test-curl lube-shared)
-add_test(
-  NAME curl
-  COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR} -P ${TEST_DIR}/test-curl.cmake
-  )
+add_diff_test(ind)
+add_diff_test(var)
+add_diff_test(file)
+add_diff_test(stream)
+add_diff_test(math)
+add_diff_test(path)
+add_diff_test(lapack)
+add_diff_test(config)
+add_diff_test(graph)
+add_diff_test(json)
+add_diff_test(curl)
 
 add_executable(test-qwt test-qwt.cpp)
 target_link_libraries(test-qwt lube-shared)

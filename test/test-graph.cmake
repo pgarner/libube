@@ -7,26 +7,9 @@
 #   Phil Garner, June 2015
 #
 
-# Set up the test to compare reference and output files
-set(CMD ./test-graph)
-set(REF ${TEST_DIR}/test-graph-ref.txt)
-set(OUT test-graph-out.txt)
-
-# Run the test
-execute_process(
-  COMMAND ${CMD}
-  OUTPUT_FILE ${OUT}
-  RESULT_VARIABLE RETURN_TESTS
+include(LubeTest)
+exe_diff_test(
+  CMD ./test-graph
+  REF ${TEST_DIR}/test-graph-ref.txt
+  OUT test-graph-out.txt
   )
-if(RETURN_TESTS)
-  message(FATAL_ERROR "Test returned non-zero value ${RETURN_TESTS}")
-endif()
-
-# Use CMake to compare the reference and output files
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E compare_files ${OUT} ${REF}
-  RESULT_VARIABLE RETURN_COMPARE
-  )
-if(RETURN_COMPARE)
-  message(FATAL_ERROR "Test failed: ${REF} and ${OUT} differ")
-endif()
