@@ -10,6 +10,8 @@
 #include <istream>
 #include <cctype>
 #include <cstring>
+#include <cassert>
+
 #include <lube/var.h>
 
 namespace libube
@@ -369,8 +371,7 @@ void JSON::formatArray(std::ostream& iStream, var iVar, int iIndent)
 // May still be too verbose
 void JSON::formatView(std::ostream& iStream, var iVar, int iIndent)
 {
-    assert(mData.vp); // Any of the pointers
-    assert(mType == TYPE_INT);
+    assert(iVar.heap());
 
     // Output shape if it's more than a matrix
     int nDim = iVar.dim();
