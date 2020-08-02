@@ -15,13 +15,17 @@
 namespace libube
 {
     /**
-     * Ad-hoc JSON (JavaScript Object Notation) parser; (see http://json.org/)
+     * Ad-hoc JSON (JavaScript Object Notation) parser and writer
+     * (see http://json.org/)
      */
     class JSON
     {
     public:
         var operator ()(std::istream& iStream);
+        void format(std::ostream& iStream, var iVar, int iIndent = 0);
     private:
+        void formatArray(std::ostream& iStream, var iVar, int iIndent);
+        void formatView(std::ostream& iStream, var iVar, int iIndent);
         char peek(std::istream& iStream);
         var doValue(std::istream& iStream);
         var doObject(std::istream& iStream);
@@ -226,4 +230,204 @@ std::istream& libube::operator >>(std::istream& iStream, var& ioVar)
     var in = json(iStream);
     ioVar = in;
     return iStream;
+}
+
+
+/**
+ * Never indent a basic var, but do pass the current level along to the array
+ * formatter.
+ */
+void JSON::format(std::ostream& iStream, var iVar, int iIndent)
+{
+    switch (iVar.type())
+    {
+    case TYPE_ARRAY:
+        if (iVar.heap())
+            iVar.view()
+                ? formatView(iStream, iVar, iIndent)
+                : formatArray(iStream, iVar, iIndent);
+        else
+            iStream << "null";
+        break;
+    case TYPE_CHAR:
+        // This is probably not JSON
+        iStream << "\'";
+        iStream << iVar.get<char>();
+        iStream << "\'";
+        break;
+    case TYPE_INT:
+        iStream << iVar.get<int>();
+        break;
+    case TYPE_LONG:
+        iStream << iVar.get<long>();
+        break;
+    case TYPE_FLOAT:
+        iStream << iVar.get<float>();
+        break;
+    case TYPE_DOUBLE:
+        iStream << iVar.get<double>();
+        break;
+    case TYPE_CFLOAT:
+        iStream << iVar.get<cfloat>();
+        break;
+    case TYPE_CDOUBLE:
+        //iStream << iVar.get<cdouble>();
+        throw error("var::format(): cdouble should be array");
+        break;
+    default:
+        throw error("var::format(): Unknown type");
+    }
+}
+
+
+// i: input variable; o: output stream...
+std::ostream& libube::operator <<(std::ostream& iStream, var iVar)
+{
+    JSON json;
+    json.format(iStream, iVar);
+    return iStream;
+}
+
+void JSON::formatArray(std::ostream& iStream, var iVar, int iIndent)
+{
+    switch (iVar.atype())
+    {
+    case TYPE_CHAR:
+        iStream << "\"";
+        iStream << iVar.ptr<char>();
+        iStream << "\"";
+        break;
+    case TYPE_PAIR:
+        // Might be empty
+        iStream << "{";
+        for (int i=0; i<iVar.size(); i++)
+        {
+            iStream << "\n";
+            for (int j=0; j<iIndent+2; j++)
+                iStream << " ";
+            iStream << iVar.key(i) << ": ";
+            format(iStream, iVar[i], iIndent+2);
+            if (i < iVar.size()-1)
+                iStream << ",";
+        }
+        if (iVar.size())
+        {
+            iStream << "\n";
+            for (int j=0; j<iIndent; j++)
+                iStream << " ";
+        }
+        iStream << "}";
+        break;
+    case TYPE_VAR:
+        iStream << "[\n";
+        for (int i=0; i<iVar.size(); i++)
+        {
+            for (int j=0; j<iIndent+2; j++)
+                iStream << " ";
+            format(iStream, iVar[i], iIndent+2);
+            if (i < iVar.size()-1)
+                iStream << ",";
+            iStream << "\n";
+        }
+        for (int j=0; j<iIndent; j++)
+            iStream << " ";
+        iStream << "]";
+        break;
+    case TYPE_CDOUBLE:
+        // Don't call at(); it will just create more arrays & loop
+        if (iVar.size() == 1)
+            iStream << *iVar.ptr<cdouble>();
+        else
+        {
+            iStream << "[\n";
+            for (int i=0; i<iVar.size(); i++)
+            {
+                for (int j=0; j<iIndent+2; j++)
+                    iStream << " ";
+                iStream << iVar.ptr<cdouble>(i);
+                if (i < iVar.size()-1)
+                    iStream << ",";
+                iStream << "\n";
+            }
+            for (int j=0; j<iIndent; j++)
+                iStream << " ";
+            iStream << "]";
+        }
+        break;
+    default:
+        iStream << "[";
+        for (int i=0; i<iVar.size(); i++)
+        {
+            if (i != 0)
+                iStream << ", ";
+            iStream << iVar.at(i);
+        }
+        iStream << "]";
+    }
+}
+
+// May still be too verbose
+void JSON::formatView(std::ostream& iStream, var iVar, int iIndent)
+{
+    assert(mData.vp); // Any of the pointers
+    assert(mType == TYPE_INT);
+
+    // Output shape if it's more than a matrix
+    int nDim = iVar.dim();
+    if (nDim > 2)
+    {
+        for (int i=0; i<nDim; i++)
+        {
+            iStream << iVar.shape(i);
+            if (i != nDim-1)
+                iStream << "x";
+        }
+        iStream << " tensor:" << std::endl;
+    }
+
+    // If it's less than 2D, just print it as with format
+    if (nDim < 2)
+    {
+        iStream << "[";
+        for (int i=0; i<iVar.size(); i++)
+        {
+            iStream << iVar[i];
+            if (i != iVar.size()-1 )
+                iStream << ", ";
+        }
+        iStream << "]";
+        return;
+    }
+
+    // Calculate how many matrices we have
+    int nMats = 1;
+    for (int i=0; i<nDim-2; i++)
+        nMats *= iVar.shape(i);
+
+    // Format as a sequence of matrices
+    int nRows = iVar.shape(nDim-2);
+    int nCols = iVar.shape(nDim-1);
+    for (int k=0; k<nMats; k++)
+    {
+        iStream << "[\n";
+        for (int j=0; j<nRows; j++)
+        {
+            for (int k=0; k<iIndent+2; k++)
+                iStream << " ";
+            for (int i=0; i<nCols; i++)
+            {
+                iStream << iVar[k*nRows*nCols + j*nCols + i];
+                if ( (j != nRows-1) || (i != nCols-1) )
+                    iStream << ",";
+                if (i != nCols-1)
+                    iStream << " ";
+            }
+            iStream << "\n";
+        }
+        for (int j=0; j<iIndent; j++)
+            iStream << " ";
+        iStream << "]";
+        if (k != nMats-1)
+            iStream << std::endl;
+    }
 }

@@ -848,51 +848,6 @@ var var::key(int iIndex) const
 
 
 /**
- * Never indent a basic var, but do pass the current level along to the array
- * formatter.
- */
-void var::format(std::ostream& iStream, int iIndent) const
-{
-    switch (type())
-    {
-    case TYPE_ARRAY:
-        if (heap())
-            heap()->format(iStream, iIndent);
-        else
-            iStream << "null";
-        break;
-    case TYPE_CHAR:
-        // This is probably not JSON
-        iStream << "\'";
-        iStream << get<char>();
-        iStream << "\'";
-        break;
-    case TYPE_INT:
-        iStream << get<int>();
-        break;
-    case TYPE_LONG:
-        iStream << get<long>();
-        break;
-    case TYPE_FLOAT:
-        iStream << get<float>();
-        break;
-    case TYPE_DOUBLE:
-        iStream << get<double>();
-        break;
-    case TYPE_CFLOAT:
-        iStream << get<cfloat>();
-        break;
-    case TYPE_CDOUBLE:
-        //iStream << get<cdouble>();
-        throw error("var::format(): cdouble should be array");
-        break;
-    default:
-        throw error("var::format(): Unknown type");
-    }
-}
-
-
-/**
  * Generate a range of indeces.  Does pretty much what python's range() does,
  * in that the higher value is not included, and it starts at 0 if the lower
  * value is omitted.  To start at 1 and include the higher value, use range().
@@ -938,13 +893,6 @@ var libube::range(var iLo, var iHi, var iStep)
 var libube::range(var iHi)
 {
     return libube::range(iHi-iHi+1, iHi);
-}
-
-
-std::ostream& libube::operator <<(std::ostream& iStream, var iVar)
-{
-    iVar.format(iStream);
-    return iStream;
 }
 
 

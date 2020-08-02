@@ -61,7 +61,6 @@ namespace libube
         virtual int attach() = 0;
         virtual int detach() = 0;
         virtual void resize(int iSize) = 0;
-        virtual void format(std::ostream& iStream, int iIndent = 0) = 0;
         virtual var at(int iIndex, bool iKey=false) const = 0;
         virtual var& key(int iIndex) = 0;
         virtual bool neq(IHeap* iHeap) = 0;
@@ -137,7 +136,6 @@ namespace libube
         virtual int attach();
         virtual int detach();
         virtual void resize(int iSize);
-        virtual void format(std::ostream& iStream, int iIndent = 0);
         virtual var at(int iIndex, bool iKey=false) const;
         virtual var& key(int iIndex);
         virtual bool neq(IHeap* iHeap);
@@ -222,7 +220,6 @@ namespace libube
         virtual int dim() const { return (mSize-1) / 2; };
         virtual int offset() const { return mData.ip[0]; };
         virtual int offset(int iOffset);
-        virtual void format(std::ostream& iStream, int iIndent=0);
         virtual Heap* view() const { return mHeap; };
         virtual int& shape(int iDim) const;
         virtual int& stride(int iDim) const;

@@ -150,7 +150,6 @@ namespace libube
         var& array();
         var& resize(int iSize);
         var& presize(int iSize);
-        void format(std::ostream& iStream, int iIndent = 0) const;
 
         // Math functors
         var floor() { return libube::floor(*this, *this); };
