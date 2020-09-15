@@ -1352,6 +1352,8 @@ int var::binary(var iData) const
  */
 var var::view(const std::initializer_list<int> iList, int iOffset)
 {
+    if (!heap())
+        throw error("var::view: Input not an array");
     var v;
     v.attach(new View(heap(), iList, iOffset));
     return v;
@@ -1364,6 +1366,8 @@ var var::view(const std::initializer_list<int> iList, int iOffset)
  */
 var var::view(var iShape, int iOffset)
 {
+    if (!heap())
+        throw error("var::view: Input not an array");
     var v;
     v.attach(new View(heap(), iShape, iOffset));
     return v;
@@ -1380,6 +1384,7 @@ var libube::view(const std::initializer_list<int> iShape, var iType)
     for (const int* it=begin(iShape); it!=end(iShape); ++it)
         s *= *it;
     var v = iType ? iType : 0.0f;
+    v.array();
     v.resize(s);
     return v.view(iShape);
 }
@@ -1395,6 +1400,7 @@ var libube::view(var iShape, var iType)
     for (int i=0; i<iShape.size(); i++)
         s *= iShape[i].cast<int>();
     var v = iType ? iType : 0.0f;
+    v.array();
     v.resize(s);
     return v.view(iShape);
 }
