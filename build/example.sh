@@ -14,16 +14,18 @@
 rm -rf CMakeCache.txt CMakeFiles cmake_install.cmake
 
 # I like clang recently as the error messages are nicer than gcc
-# export CC=clang
-# export CXX=clang++
+export CC=clang
+export CXX=clang++
 
 # Try for MKL; otherwise it'll find OpenBLAS or the like
-# export BLA_VENDOR=Intel10_64lp
+export BLA_VENDOR=Intel10_64lp
 
 # Build the static library?
 export USE_STATIC=0
 
+# Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 cmake \
+    -D CMAKE_CXX_FLAGS="-Wall -Werror -std=c++14"
     -D CMAKE_BUILD_TYPE=minsizerel \
     -D CMAKE_INSTALL_PREFIX=~/local \
     ..

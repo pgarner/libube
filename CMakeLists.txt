@@ -12,13 +12,9 @@ cmake_minimum_required(VERSION 3.7)
 project(libube)
 set(VERSION 0.1)
 enable_testing()
-# enable_language(Fortran)
 
-# add_definitions(-DVARBOSE)
-# Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 set(KISSFFT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/kissfft")
-set(CMAKE_CXX_FLAGS "-Wall -Werror -std=c++14")
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # External deps
