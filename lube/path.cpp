@@ -50,9 +50,9 @@ Path::Path(var iArg)
 var bits(fs::path iPath)
 {
     var val;
-    val[2] = iPath.extension().c_str();
-    val[1] = iPath.stem().c_str();
-    val[0] = iPath.parent_path().c_str();
+    val[2] = iPath.extension().string().c_str();
+    val[1] = iPath.stem().string().c_str();
+    val[0] = iPath.parent_path().string().c_str();
     return val;
 }
 
@@ -64,7 +64,7 @@ var Path::dir(bool iVal)
     var dir;
     fs::directory_iterator end;
     for (fs::directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = iVal ? bits(it->path()) : nil;
+        dir[it->path().string().c_str()] = iVal ? bits(it->path()) : nil;
     return dir;
 }
 
@@ -76,13 +76,13 @@ var Path::rdir(bool iVal)
     var dir;
     if (!fs::is_directory(mPath))
     {
-        dir[mPath.c_str()] = iVal ? bits(mPath) : nil;
+        dir[mPath.string().c_str()] = iVal ? bits(mPath) : nil;
         return dir;
     }
 
     fs::recursive_directory_iterator end;
     for (fs::recursive_directory_iterator it(mPath); it != end; it++)
-        dir[it->path().c_str()] = iVal ? bits(it->path()) : nil;
+        dir[it->path().string().c_str()] = iVal ? bits(it->path()) : nil;
     return dir;
 }
 
@@ -100,9 +100,9 @@ var Path::tree(boost::filesystem::path iPath)
     fs::directory_iterator end;
     for (fs::directory_iterator it(iPath); it != end; it++)
         if (fs::is_directory(*it))
-            dir[it->path().filename().c_str()] = tree(*it);
+            dir[it->path().filename().string().c_str()] = tree(*it);
         else
-            dir[it->path().filename().c_str()] = nil;
+            dir[it->path().filename().string().c_str()] = nil;
 
     return dir;
 }
