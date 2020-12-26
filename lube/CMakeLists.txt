@@ -54,6 +54,13 @@ set(SOURCES
   stream.cpp
   )
 
+# Backtrace doesn't exist on at least MinGW
+include(CheckSymbolExists)
+check_symbol_exists(backtrace "execinfo.h" HAVE_BACKTRACE)
+if (HAVE_BACKTRACE)
+  add_definitions(-DHAVE_BACKTRACE)
+endif (HAVE_BACKTRACE)
+
 # If we have MKL then we should use the DFT and matrix transpose in MKL (in
 # addition to the BLAS stuff in there).  If not, BLAS is covered by OpenBLAS
 # and the like, but we need a fallback for the DFT and transpose.  Right now,

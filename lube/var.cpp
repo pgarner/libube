@@ -11,7 +11,9 @@
 #include <cstring>
 #include <cstdarg>
 #include <stdexcept>
-#include <execinfo.h>
+#ifdef HAVE_BACKTRACE
+# include <execinfo.h>
+#endif
 #include <cxxabi.h>
 
 #include "lube/var.h"
@@ -1536,6 +1538,7 @@ error::error(var iVar)
  */
 void error::backTrace(std::ostream& iStream)
 {
+#ifdef HAVE_BACKTRACE
     // Backtrace of more than a screenfull is probably not useful
     const int cBTSize = 64;
     void* callStack[cBTSize];
@@ -1590,6 +1593,7 @@ void error::backTrace(std::ostream& iStream)
     }
     free(buffer);
     free(symbol);
+#endif // HAVE_BACKTRACE
 }
 
 const char* error::what() const noexcept
