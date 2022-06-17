@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     var wr(3, 0.0f);
     var wi(3, 0.0f);
     float *z = 0;
-    long ret = lapack::geev(
+    lapack::geev(
         3, x.ptr<float>(),
         wr.ptr<float>(), wi.ptr<float>(),
         z, vr.ptr<float>()
@@ -42,7 +42,7 @@ int main(int argc, char** argv)
     cout << "vr: " << vr << endl;
 
     x = lube::range(1.0f, 9.0f).view({3,3});
-    ret = lapack::gees(
+    lapack::gees(
         3, x.ptr<float>(),
         wr.ptr<float>(), wi.ptr<float>()
     );
