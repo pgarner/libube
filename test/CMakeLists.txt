@@ -11,7 +11,7 @@ set(TEST_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 add_definitions(-DTEST_DIR="${TEST_DIR}")
 
 # Download a test wav file
-set(ARCTIC "http://www.speech.cs.cmu.edu/cmu_arctic")
+set(ARCTIC "http://festvox.org/cmu_arctic/cmu_arctic")
 set(TESTWAV "${TEST_DIR}/test.wav")
 if (NOT EXISTS "${TESTWAV}")
   message(STATUS "Downloading ${TESTWAV}")

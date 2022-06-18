@@ -9,8 +9,8 @@
 cmake_minimum_required(VERSION 3.7)
 
 # Package information
-project(libube VERSION 1.0.1)
-set(CMAKE_CXX_STANDARD 14)
+project(libube VERSION 1.0.2)
+set(CMAKE_CXX_STANDARD 17)
 enable_testing()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
