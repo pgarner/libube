@@ -247,6 +247,7 @@ endif (QWT_FOUND)
 # Normal install path for the library
 install(
   TARGETS ${LIBUBE_TARGETS}
+  EXPORT lubeTargets
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
   ARCHIVE DESTINATION lib
@@ -258,3 +259,37 @@ install(
   TARGETS ${MODULE_TARGETS}
   LIBRARY DESTINATION lib/lube
   )
+
+
+# CMake's config
+# In principle from https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html#package-configuration-file without attempting to understand it :-(
+# Actually from https://github.com/facebook/zstd/blob/dev/build/cmake/CMakeLists.txt
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/lubeConfigVersion.cmake"
+  VERSION ${VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+export(EXPORT lubeTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/lubeTargets.cmake"
+  NAMESPACE lube::
+)
+
+configure_file(lubeConfig.cmake
+  "${CMAKE_CURRENT_BINARY_DIR}/lubeConfig.cmake"
+  COPYONLY
+)
+
+set(ConfigPackageLocation lib/cmake/lube)
+install(EXPORT lubeTargets
+  FILE lubeTargets.cmake
+  NAMESPACE lube::
+  DESTINATION ${ConfigPackageLocation}
+)
+
+install(
+  FILES lubeConfig.cmake "${CMAKE_CURRENT_BINARY_DIR}/lubeConfigVersion.cmake"
+  DESTINATION ${ConfigPackageLocation}
+  COMPONENT Devel
+)
