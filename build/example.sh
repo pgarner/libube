@@ -25,7 +25,7 @@ export USE_STATIC=0
 
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 cmake \
-    -D CMAKE_CXX_FLAGS="-Wall -Werror -std=c++14"
+    -D CMAKE_CXX_FLAGS="-Wall -Werror" \
     -D CMAKE_BUILD_TYPE=minsizerel \
     -D CMAKE_INSTALL_PREFIX=~/local \
     ..
