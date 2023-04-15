@@ -20,9 +20,6 @@ export CXX=clang++
 # Try for MKL; otherwise it'll find OpenBLAS or the like
 export BLA_VENDOR=Intel10_64lp
 
-# Build the static library?
-export USE_STATIC=0
-
 # Compile with "-std=c++11 -stdlib=libc++ -lc++abi" to use libc++
 cmake \
     -D CMAKE_CXX_FLAGS="-Wall -Werror" \

@@ -188,7 +188,7 @@ namespace libube
      *
      * Essentially a Heap object, but the semantic is that it describes a view
      * of another Heap.  The data type is always int, the first element is the
-     * offest, then the others occur in pairs, being the shape and stride
+     * offset, then the others occur in pairs, being the shape and stride
      * respectively.
      */
     class View : public Heap
