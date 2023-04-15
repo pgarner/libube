@@ -8,8 +8,8 @@ libdir=@LIBDIR@
 Name: libube
 Description: A C++ class with dynamic type behaviour
 URL: https://github.com/pgarner/libube
-Version: @VERSION@
-Requires: @LIBUBE_REQUIRES@
+Version: @PROJECT_VERSION@
+Requires:
 Libs: -L${libdir} -lube
 Libs.private: -ldl
 Cflags: -I${includedir}

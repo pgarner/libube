@@ -7,14 +7,15 @@
  *   Phil Garner, February 2015
  */
 
-#include "lube.h"
+#include "var.h"
 
+using namespace libube;
 using namespace std;
 
 void myfunction()
 {
     cout << "Throwing an exception" << endl;
-    throw lube::error("This is the exception");
+    throw error("This is the exception");
 }
 
 /**
@@ -26,9 +27,9 @@ int main()
     // Exception
     var ts = "Exception string";
     try {
-        throw lube::error(ts);
+        throw error(ts);
     }
-    catch (lube::error e) {
+    catch (error e) {
         cout << "Caught: " << e.what() << endl;
     };
 

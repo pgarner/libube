@@ -21,8 +21,8 @@ if (NOT EXISTS "${TESTWAV}")
     )
 endif()
 
-# Slight hack.  Also, cmake is not a great directory to test on anyway.
-# add_definitions(-DCMAKE_DIR="${CMAKE_SOURCE_DIR}/cmake")
+# cmake is not a great directory to test on, but it stable and predictable.
+# Must be relative for the paths to work on different machines.
 add_definitions(-DCMAKE_DIR="../../cmake")
 
 # General form of a test that produces an output to compare with a reference.
@@ -32,6 +32,7 @@ add_definitions(-DCMAKE_DIR="../../cmake")
 macro(add_diff_test NAME)
   add_executable(test-${NAME} test-${NAME}.cpp)
   target_link_libraries(test-${NAME} lube-shared)
+  target_include_directories(test-${NAME} PUBLIC ${CMAKE_SOURCE_DIR}/lube)
   add_test(
     NAME ${NAME}
     COMMAND ${CMAKE_COMMAND} -D TEST_DIR=${TEST_DIR}
@@ -54,4 +55,5 @@ add_diff_test(curl)
 
 add_executable(test-qwt test-qwt.cpp)
 target_link_libraries(test-qwt lube-shared)
+target_include_directories(test-qwt PUBLIC ${CMAKE_SOURCE_DIR}/lube)
 # No test yet as it's a window thing
