@@ -7,7 +7,7 @@
  *   Phil Garner, March 2015
  */
 
-#include "lube.h"
+#include "lube/lube.h"
 #include "lube/c++lapack.h"
 
 using namespace std;

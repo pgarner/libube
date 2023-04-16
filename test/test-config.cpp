@@ -10,7 +10,7 @@
 // First so we know the includes in the header are sufficient
 #include "lube/config.h"
 
-#include "lube.h"
+#include "lube/lube.h"
 
 using namespace std;
 

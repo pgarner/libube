@@ -7,8 +7,8 @@
  *   Phil Garner, May 2016
  */
 
-#include <lube.h>
-#include <lube/curl.h>
+#include "lube/lube.h"
+#include "lube/curl.h"
 
 using namespace lube;
 

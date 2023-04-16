@@ -1,7 +1,7 @@
 #include <cassert>
 #include <map>
 
-#include "lube.h"
+#include "lube/lube.h"
 
 using namespace std;
 

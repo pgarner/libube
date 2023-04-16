@@ -1,5 +1,6 @@
 #include <fstream>
-#include <lube.h>
+
+#include "lube/lube.h"
 
 using namespace std;
 using namespace lube;

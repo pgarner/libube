@@ -7,8 +7,8 @@
  *   Phil Garner, October 2016
  */
 
-#include <lube.h>
-#include <lube/qwt.h>
+#include "lube/lube.h"
+#include "lube/qwt.h"
 
 using namespace lube;
 using namespace std;

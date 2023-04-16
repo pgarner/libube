@@ -7,7 +7,7 @@
  *   Phil Garner, December 2014
  */
 
-#include "lube.h"
+#include "lube/lube.h"
 #include "lube/path.h"
 
 using namespace lube;
