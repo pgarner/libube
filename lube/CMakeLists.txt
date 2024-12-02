@@ -9,9 +9,8 @@
 
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
-find_package(Boost COMPONENTS
+find_package(Boost CONFIG COMPONENTS
   regex REQUIRED
-  filesystem REQUIRED
   system REQUIRED
 )
 

@@ -6,7 +6,7 @@
 # Author(s):
 #   Phil Garner, July 2013
 #
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.10)
 project(libube VERSION 1.0.3)
 
 # Package information

@@ -14,9 +14,9 @@
  */
 
 #include "lube/path.h"
-#include "boost/filesystem/operations.hpp"
+#include <filesystem>
 
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 namespace libube
 {
@@ -44,7 +44,7 @@ using namespace libube;
 
 Path::Path(var iArg)
 {
-    mPath = iArg ? iArg.str() : fs::initial_path();
+    mPath = iArg ? iArg.str() : fs::current_path();
 }
 
 var bits(fs::path iPath)
@@ -91,7 +91,7 @@ var Path::tree()
     return tree(mPath);
 }
 
-var Path::tree(boost::filesystem::path iPath)
+var Path::tree(std::filesystem::path iPath)
 {
     if (!exists(iPath))
         throw error("tree: path doesn't exist");
