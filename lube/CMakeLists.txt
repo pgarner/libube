@@ -7,11 +7,11 @@
 #   Phil Garner, June 2015
 #
 
+# cmake_policy(SET CMP0167 NEW)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(Boost CONFIG COMPONENTS
   regex REQUIRED
-  system REQUIRED
 )
 
 include_directories(
